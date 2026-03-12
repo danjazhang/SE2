@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/SE2.iml" filepath="$PROJECT_DIR$/.idea/SE2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hotel sim/hotel sim.iml" filepath="$PROJECT_DIR$/hotel sim/hotel sim.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hotelsim/hotelsim.iml" filepath="$PROJECT_DIR$/hotelsim/hotelsim.iml" />
+    </modules>
+  </component>
+</project>
