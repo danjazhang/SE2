@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SE2.iml" filepath="$PROJECT_DIR$/.idea/SE2.iml" />
-      <module fileurl="file://$PROJECT_DIR$/hotel sim/hotel sim.iml" filepath="$PROJECT_DIR$/hotel sim/hotel sim.iml" />
-      <module fileurl="file://$PROJECT_DIR$/hotelsim/hotelsim.iml" filepath="$PROJECT_DIR$/hotelsim/hotelsim.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Hotel sim.iml" filepath="$PROJECT_DIR$/Hotel sim.iml" />
     </modules>
   </component>
 </project>

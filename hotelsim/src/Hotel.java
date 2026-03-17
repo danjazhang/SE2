@@ -1,33 +1,123 @@
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+
 public class Hotel {
-    //breedte en hoogte van het hotel
     int breedte;
     int hoogte;
 
     Layout layout;
+    List<Ruimte> ruimtes;
+    List<Persoon> personen;
 
-    // lijst van alle ruimtes binnen het hotel
-    List <Ruimte> ruimtes;
-
-    //lijst van alle personnen gast en schoonmakers
-    List <Persoon> personen;
-
-// lift en trap in het hotel
     Lift lift;
     Trap trap;
-    //constructor
-    public Hotel(){}
-     // laadt het layout van het hotel uit een bestand
-    public void laadLayoutBestand(){
 
+    public Hotel() {
+        ruimtes = new ArrayList<>();
+        personen = new ArrayList<>();
     }
-    // voegt een persoon toe aan het hotel
-    public void voegPersoonToe(Persoon p){
 
+    // laadt het layout van het hotel uit een JSON bestand
+    public void laadLayoutBestand(String bestandspad) {
+        try {
+            String inhoud = new String(Files.readAllBytes(Paths.get(bestandspad)));
+            JSONArray array = new JSONArray(inhoud);
+
+            // bepaal de maximale breedte en hoogte
+            int maxX = 0, maxY = 0;
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+                int[] pos = parsePositie(obj.getString("Position"));
+                int[] dim = parseDimensie(obj.getString("Dimension"));
+                maxX = Math.max(maxX, pos[0] + dim[0] - 1);
+                maxY = Math.max(maxY, pos[1] + dim[1] - 1);
+            }
+
+            this.breedte = maxX;
+            this.hoogte = maxY;
+            this.layout = new Layout(breedte, hoogte);
+
+            // maak elke ruimte aan
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+                String areaType = obj.getString("AreaType");
+                int[] pos = parsePositie(obj.getString("Position"));
+                int[] dim = parseDimensie(obj.getString("Dimension"));
+
+                Ruimte ruimte = maakRuimte(areaType, obj);
+                ruimte.posX = pos[0];
+                ruimte.posY = pos[1];
+                ruimte.breedte = dim[0];
+                ruimte.hoogte = dim[1];
+
+                ruimtes.add(ruimte);
+                layout.plaatsRuimte(ruimte);
+            }
+
+            System.out.println("Layout geladen: " + breedte + "x" + hoogte + ", " + ruimtes.size() + " ruimtes");
+
+        } catch (IOException e) {
+            System.err.println("Fout bij laden layout: " + e.getMessage());
+        }
     }
-    // geeft de ruimte terug op positie
+
+    // maakt de juiste subklasse aan op basis van het AreaType
+    private Ruimte maakRuimte(String areaType, JSONObject obj) {
+        switch (areaType) {
+            case "Room":
+                Kamer kamer = new Kamer();
+                String classificatie = obj.getString("Classification");
+                kamer.sterren = Integer.parseInt(classificatie.split(" ")[0]);
+                return kamer;
+
+            case "Restaurant":
+                Restaurant restaurant = new Restaurant();
+                if (obj.has("Capacity")) {
+                    restaurant.capaciteit = obj.getInt("Capacity");
+                }
+                return restaurant;
+
+            case "Cinema":
+                return new Bioscoop();
+
+            case "Fitness":
+                return new Fitnesruimte();
+
+            default:
+                return new Ruimte();
+        }
+    }
+
+    // parse "x, y" string naar int array [x, y]
+    private int[] parsePositie(String positie) {
+        String[] delen = positie.split(",");
+        return new int[]{
+            Integer.parseInt(delen[0].trim()),
+            Integer.parseInt(delen[1].trim())
+        };
+    }
+
+    // parse "breedte, hoogte" string naar int array [breedte, hoogte]
+    private int[] parseDimensie(String dimensie) {
+        String[] delen = dimensie.split(",");
+        return new int[]{
+            Integer.parseInt(delen[0].trim()),
+            Integer.parseInt(delen[1].trim())
+        };
+    }
+
+    public void voegPersoonToe(Persoon p) {
+        personen.add(p);
+    }
+
     public Ruimte krijgRuimteOp(int x, int y) {
-        return null; //TODO: implementatie later toevoegen
+        Vakje vakje = layout.krijgVakje(x, y);
+        if (vakje != null) return vakje.ruimte;
+        return null;
     }
 }
-
