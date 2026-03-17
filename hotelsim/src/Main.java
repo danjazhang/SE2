@@ -2,8 +2,11 @@ public class Main {
     public static void main(String[] args) {
         Hotel hotel = new Hotel();
 
+
         // pas het pad aan naar waar jouw JSON file staat
         hotel.laadLayoutBestand("layout.json");
+
+        new HotelFrame(hotel);
 
         // test: print alle ruimtes
         for (Ruimte r : hotel.ruimtes) {
