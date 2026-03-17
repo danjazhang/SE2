@@ -3,7 +3,10 @@ public class Klok {
     int tickduur;
 
     //constructor
-    public Klok(){}
+    public Klok(int tickduur){
+        this.tickduur = tickduur;
+        this.huidigetijd = 0;
+    }
 
     public void tick(){}
     public void reste(){}

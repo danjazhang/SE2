@@ -1,8 +1,8 @@
 public class Persoon {
-    // het vakje waar nu de persoon staat
+    // het vakje waar de persoon nu staat
     Vakje huidigVakje;
 
-    // het vaakje waar de persoon wil naartoe gaan
+    // het vakje waar de persoon naartoe wil gaan
     Vakje doelVakje;
 
     /* In het huidige ontwerp is er geen aparte Taak-klasse.
@@ -11,7 +11,10 @@ direct geïmplementeerd in de klassen Gast en Schoonmaker.*/
     //taak huidigetaak ?
 
     //constructor
-    public Persoon(){}
+    public Persoon(){
+        this.huidigVakje = null;
+        this.doelVakje = null;
+    }
 
     public void beweeg(){
 

@@ -4,7 +4,10 @@ public class Bioscoop extends Ruimte {
     //arraylist gasten;
 
     //constructor
-    public Bioscoop(){}
+    public Bioscoop(){
+        this.filmBezig = false;
+        this.filmDuur = 0;
+    }
 
     public void startFilm(){}
     public void stopFilm(){}
