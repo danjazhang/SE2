@@ -6,11 +6,14 @@ public class Gast extends Persoon {
     // kamer waar de gast verblijft
     Kamer kamer;
 
-    // Geen Activiteit-klasse in het klassediagram daarom wordt dit hier niet gebruikt.
+    // Geen Activiteit-klasse in het klassendiagram daarom wordt dit hier niet gebruikt.
     //Activiteit activiteit;
 
     // constructor
-    public Gast(){}
+    public Gast(int gewensteSterren){
+        this.gewensteSterren = gewensteSterren;
+        this.kamer = null;
+    }
 
     // gast checkt in bij een kamer
     public void checkIn(Kamer k){

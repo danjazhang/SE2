@@ -5,7 +5,9 @@ public class Lift {
     //verdiepingverzoeken list?
 
     //constructor
-    public Lift(){}
+    public Lift(){
+        this.huidigeverdieping = 0;
+    }
 
     public void gaOmhoog(){}
     public void gaOmlaag(){}

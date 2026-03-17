@@ -7,7 +7,10 @@ public class Schoonmaker extends Persoon {
     Kamer kamer;
 
     // constructor
-    public Schoonmaker(){}
+    public Schoonmaker(){
+        this.bezig = false;
+        this.kamer = null;
+    }
 
     // maakt een kamer schoon
     public void maakKamerSchoon(Kamer k){}
