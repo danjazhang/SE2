@@ -10,7 +10,18 @@ public class Scenario {
         this.gebeurtenissen = new ArrayList<>();
     }
 
-    public void krijgGebeurtenissen(){} //parameter tijd
-    public void voegGebeurtenisToe(){} //parameter Gebeurtenis g
+    public List<Gebeurtenis> krijgGebeurtenissen(int tijd) {
+        List<Gebeurtenis> resultaat = new ArrayList<>();
+        for (Gebeurtenis g : gebeurtenissen) {
+            if (g.tijd == tijd) {
+                resultaat.add(g);
+            }
+        }
+        return resultaat;
+    }
+
+    public void voegGebeurtenisToe(Gebeurtenis g) {
+        gebeurtenissen.add(g);
+    }
 
 }
