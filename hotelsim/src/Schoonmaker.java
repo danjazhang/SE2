@@ -1,23 +1,24 @@
-public class Schoonmaker extends Persoon {
+public class Schoonmaker extends Persoon implements HotelEventListener {
 
-    // geeft aan of de schoonmaker bezig is
     boolean bezig;
-
-    // kamer waar de schoonmaker werkt
     Kamer kamer;
 
-    // constructor
     public Schoonmaker(){
         this.bezig = false;
         this.kamer = null;
     }
 
-    // maakt een kamer schoon
     public void maakKamerSchoon(Kamer k){}
 
-    // handelt een noodsituatie af in een kamer
     public void handelEmergency(Kamer k){}
 
-    // gaat naar een optimale positie in het hotel
     public void gaNaarOptimalePositie(){}
+
+    @Override
+    public void notify(HotelEvent evt) {
+
+        if (evt.getEventType() == HotelEventType.CLEANING_EMERGENCY) {
+            System.out.println("Schoonmaker: noodsituatie! Naar kamer.");
+        }
+    }
 }
