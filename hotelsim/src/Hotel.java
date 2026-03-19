@@ -1,12 +1,19 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Hotel {
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventManager;
+import hotelevents.HotelEventType;
+import hotelevents.HotelEventListener;
+
+public class Hotel implements HotelEventListener{
     int breedte;
     int hoogte;
 
@@ -120,4 +127,23 @@ public class Hotel {
         if (vakje != null) return vakje.ruimte;
         return null;
     }
+
+    @Override
+    public void notify(HotelEvent evt) {
+
+        switch (evt.getEventType()) {
+
+            case EVACUATE:
+                System.out.println("[" + evt.getTime() + "] HOTEL: evacuatie gestart!");
+                break;
+
+            case GODZILLA:
+                System.out.println("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
+                break;
+
+            default:
+                break;
+        }
+    }
+
 }

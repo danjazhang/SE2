@@ -1,3 +1,8 @@
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventManager;
+import hotelevents.HotelEventType;
+import hotelevents.HotelEventListener;
+
 public class Main {
     public static void main(String[] args) {
         Hotel hotel = new Hotel();
@@ -14,5 +19,25 @@ public class Main {
                 " op positie (" + r.posX + ", " + r.posY + ")" +
                 " dimensie " + r.breedte + "x" + r.hoogte);
         }
+
+        HotelEventManager manager = new HotelEventManager();
+
+        // listeners maken
+        Lobby lobby = new Lobby(0, 0, 10, 10, 1, 1);
+        Schoonmaker schoonmaker = new Schoonmaker();
+        Restaurant restaurant = new Restaurant();
+        Fitnesruimte fitness = new Fitnesruimte();
+        Bioscoop bioscoop = new Bioscoop();
+
+        manager.register(lobby);
+        manager.register(schoonmaker);
+        manager.register(restaurant);
+        manager.register(fitness);
+        manager.register(bioscoop);
+
+
+        // event triggeren
+        manager.start(1);
+
     }
 }
