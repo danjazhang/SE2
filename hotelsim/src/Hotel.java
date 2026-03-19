@@ -74,7 +74,7 @@ public class Hotel implements HotelEventListener{
     }
 
     // maakt de juiste subklasse aan op basis van het AreaType
-    private Ruimte maakRuimte(String areaType, JSONObject obj) {
+    Ruimte maakRuimte(String areaType, JSONObject obj) {
         switch (areaType) {
             case "Room":
                 Kamer kamer = new Kamer();
@@ -101,7 +101,7 @@ public class Hotel implements HotelEventListener{
     }
 
     // parse "x, y" string naar int array [x, y]
-    private int[] parsePositie(String positie) {
+    int[] parsePositie(String positie) {
         String[] delen = positie.split(",");
         return new int[]{
             Integer.parseInt(delen[0].trim()),
@@ -110,7 +110,7 @@ public class Hotel implements HotelEventListener{
     }
 
     // parse "breedte, hoogte" string naar int array [breedte, hoogte]
-    private int[] parseDimensie(String dimensie) {
+    int[] parseDimensie(String dimensie) {
         String[] delen = dimensie.split(",");
         return new int[]{
             Integer.parseInt(delen[0].trim()),
