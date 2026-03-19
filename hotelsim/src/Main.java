@@ -39,5 +39,7 @@ public class Main {
         // event triggeren
         manager.start(1);
 
+        System.out.println("dit is de juiste code van delisha");
+
     }
 }
