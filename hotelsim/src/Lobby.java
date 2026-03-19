@@ -1,21 +1,22 @@
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventManager;
+import hotelevents.HotelEventType;
+import hotelevents.HotelEventListener;
+
 public class Lobby extends Ruimte implements HotelEventListener {
 
     private int balieX;
     private int balieY;
 
     // constructor
-    public Lobby() {
-        //super(posX, posY, breedte, hoogte);
+    public Lobby(int posX, int posY, int breedte, int hoogte, int balieX, int balieY) {
+        super(posX, posY, breedte, hoogte);
         this.balieX = balieX;
         this.balieY = balieY;
     }
 
     public void toonStatusScherm() {
         System.out.println("Status van hotel wordt getoond...");
-    }
-
-    public void pauzeerSim() {
-        System.out.println("Simulatie gepauzeerd.");
     }
 
     public int getBalieX() {
@@ -29,12 +30,20 @@ public class Lobby extends Ruimte implements HotelEventListener {
     @Override
     public void notify(HotelEvent evt) {
 
-        if (evt.getEventType() == HotelEventType.CHECK_IN) {
-            System.out.println("Lobby: gast " + evt.getGuestId() + " checkt in");
-        }
+        switch (evt.getEventType()) {
 
-        if (evt.getEventType() == HotelEventType.CHECK_OUT) {
-            System.out.println("Lobby: gast " + evt.getGuestId() + " checkt uit");
+            case CHECK_IN:
+                System.out.println("[" + evt.getTime() + "] Lobby: gast "
+                        + evt.getGuestId() + " checkt in");
+                break;
+
+            case CHECK_OUT:
+                System.out.println("[" + evt.getTime() + "] Lobby: gast "
+                        + evt.getGuestId() + " checkt uit");
+                break;
+
+            default:
+                break;
         }
     }
 }

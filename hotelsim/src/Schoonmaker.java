@@ -1,3 +1,8 @@
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventManager;
+import hotelevents.HotelEventType;
+import hotelevents.HotelEventListener;
+
 public class Schoonmaker extends Persoon implements HotelEventListener {
 
     boolean bezig;
@@ -18,7 +23,7 @@ public class Schoonmaker extends Persoon implements HotelEventListener {
     public void notify(HotelEvent evt) {
 
         if (evt.getEventType() == HotelEventType.CLEANING_EMERGENCY) {
-            System.out.println("Schoonmaker: noodsituatie! Naar kamer.");
+            System.out.println("[" + evt.getTime() + "] Schoonmaker: noodsituatie! Kamer moet worden schoongemaakt");
         }
     }
 }
