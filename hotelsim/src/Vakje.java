@@ -14,7 +14,23 @@ public class Vakje {
 
     // constructor
     public Vakje(){
+        //this.x = x;
+        //this.y = y;
         personen = new ArrayList<>();
+    }
+    public Ruimte getRuimte() {
+        return ruimte;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+    public void setRuimte(Ruimte ruimte) {
+        this.ruimte = ruimte;
     }
 
     // voegt een persoon toe aan dit vakje
@@ -29,7 +45,7 @@ public class Vakje {
 
     // geeft de lijst van personen op dit vakje terug
     public List<Persoon> krijgPersonen(){
-        return personen;
+        return new ArrayList<>(personen);
     }
 
 }

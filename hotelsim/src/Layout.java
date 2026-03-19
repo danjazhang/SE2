@@ -22,7 +22,7 @@ public class Layout {
     // koppel een ruimte aan alle vakjes die het inneemt
     public void plaatsRuimte(Ruimte ruimte) {
         for (int x = ruimte.posX; x < ruimte.posX + ruimte.breedte; x++) {
-            for (int y = ruimte.posY; y < ruimte.posY + ruimte.hoogte; y++) {
+            for (int y = ruimte.posY; y < ruimte.getY() + ruimte.hoogte; y++) {
                 if (x <= breedte && y <= hoogte) {
                     vakjes[x - 1][y - 1].ruimte = ruimte;
                 }
