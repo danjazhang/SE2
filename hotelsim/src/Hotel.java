@@ -39,7 +39,9 @@ public class Hotel implements HotelEventListener{
             int maxX = 0, maxY = 0;
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
+                //position is locatie
                 int[] pos = parsePositie(obj.getString("Position"));
+                //dimension is grootte
                 int[] dim = parseDimensie(obj.getString("Dimension"));
                 maxX = Math.max(maxX, pos[0] + dim[0] - 1);
                 maxY = Math.max(maxY, pos[1] + dim[1] - 1);

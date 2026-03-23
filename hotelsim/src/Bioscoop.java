@@ -2,14 +2,18 @@ import hotelevents.HotelEvent;
 import hotelevents.HotelEventManager;
 import hotelevents.HotelEventType;
 import hotelevents.HotelEventListener;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Bioscoop extends Ruimte implements HotelEventListener {
     boolean filmBezig;
     int filmDuur;
     //arraylist gasten;
+    List<Gast> gasten;
 
     //constructor
     public Bioscoop(){
+        this.gasten = new ArrayList<>();
         this.filmBezig = false;
         this.filmDuur = 0;
     }

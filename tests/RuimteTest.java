@@ -11,7 +11,15 @@ public class RuimteTest {
         assertEquals(0, r.posY);
         assertEquals(0, r.breedte);
         assertEquals(0, r.hoogte);
-        assertEquals(0, r.ingangX);
-        assertEquals(0, r.ingangY);
+    }
+
+    // ingang kan gezet worden en wordt correct teruggegeven
+    @Test
+    void testSetEnKrijgIngang() {
+        Ruimte r = new Ruimte();
+        r.setIngang(2, 3);
+        int[] ingang = r.krijgIngang();
+        assertEquals(2, ingang[0]);
+        assertEquals(3, ingang[1]);
     }
 }
