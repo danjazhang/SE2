@@ -2,12 +2,17 @@ import hotelevents.HotelEvent;
 import hotelevents.HotelEventManager;
 import hotelevents.HotelEventType;
 import hotelevents.HotelEventListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Fitnesruimte extends Ruimte implements HotelEventListener {
     //arraylist gasten
+    List<Gast> gasten;
 
     //constructor
-    public Fitnesruimte(){}
+    public Fitnesruimte(){
+        this.gasten = new ArrayList<>();
+    }
 
     public void breedteFitness(){}
     public void verlaatFitness(){}
