@@ -3,30 +3,38 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class LiftTest {
 
-    // lift begint op verdieping 0 met een lege passagierslijst
+    // lift begint op verdieping 0 met een lege verzoeklijst
     @Test
     void testConstructor() {
         Lift l = new Lift();
-        assertEquals(0, l.huidigeverdieping);
-        assertNotNull(l.passagiers);
-        assertTrue(l.passagiers.isEmpty());
+        assertEquals(0, l.getHuidigeVerdieping());
+        assertNotNull(l.getVerzoeken());
+        assertTrue(l.getVerzoeken().isEmpty());
     }
 
-    // een passagier kan aan de lijst toegevoegd worden
+    // verdieping gaat omhoog na gaOmhoog()
     @Test
-    void testVoegPassagierToe() {
+    void testGaOmhoog() {
         Lift l = new Lift();
-        Persoon p = new Persoon();
-        l.passagiers.add(p);
-        assertEquals(1, l.passagiers.size());
-        assertEquals(p, l.passagiers.get(0));
+        l.gaOmhoog();
+        assertEquals(1, l.getHuidigeVerdieping());
     }
 
-    // verdieping kan handmatig gezet worden
+    // verdieping gaat omlaag na gaOmlaag()
     @Test
-    void testZetVerdieping() {
+    void testGaOmlaag() {
         Lift l = new Lift();
-        l.huidigeverdieping = 3;
-        assertEquals(3, l.huidigeverdieping);
+        l.gaOmhoog();
+        l.gaOmlaag();
+        assertEquals(0, l.getHuidigeVerdieping());
+    }
+
+    // verzoek wordt toegevoegd aan de lijst
+    @Test
+    void testVoegVerzoekToe() {
+        Lift l = new Lift();
+        l.voegVerzoekToe(3);
+        assertEquals(1, l.getVerzoeken().size());
+        assertEquals(3, l.getVerzoeken().get(0));
     }
 }
