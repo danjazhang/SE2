@@ -22,7 +22,7 @@ direct geïmplementeerd in de klassen Gast en Schoonmaker.*/
 
     //zet het doel vakje
     public void zetDoel(Vakje v){
-
+        this.doelVakje = v;
     }
     public void voerTaakUit(){
 

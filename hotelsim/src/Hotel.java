@@ -1,12 +1,19 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Hotel {
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventManager;
+import hotelevents.HotelEventType;
+import hotelevents.HotelEventListener;
+
+public class Hotel implements HotelEventListener{
     int breedte;
     int hoogte;
 
@@ -32,7 +39,9 @@ public class Hotel {
             int maxX = 0, maxY = 0;
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
+                //position is locatie
                 int[] pos = parsePositie(obj.getString("Position"));
+                //dimension is grootte
                 int[] dim = parseDimensie(obj.getString("Dimension"));
                 maxX = Math.max(maxX, pos[0] + dim[0] - 1);
                 maxY = Math.max(maxY, pos[1] + dim[1] - 1);
@@ -67,7 +76,7 @@ public class Hotel {
     }
 
     // maakt de juiste subklasse aan op basis van het AreaType
-    private Ruimte maakRuimte(String areaType, JSONObject obj) {
+    Ruimte maakRuimte(String areaType, JSONObject obj) {
         switch (areaType) {
             case "Room":
                 Kamer kamer = new Kamer();
@@ -94,7 +103,7 @@ public class Hotel {
     }
 
     // parse "x, y" string naar int array [x, y]
-    private int[] parsePositie(String positie) {
+    int[] parsePositie(String positie) {
         String[] delen = positie.split(",");
         return new int[]{
             Integer.parseInt(delen[0].trim()),
@@ -103,7 +112,7 @@ public class Hotel {
     }
 
     // parse "breedte, hoogte" string naar int array [breedte, hoogte]
-    private int[] parseDimensie(String dimensie) {
+    int[] parseDimensie(String dimensie) {
         String[] delen = dimensie.split(",");
         return new int[]{
             Integer.parseInt(delen[0].trim()),
@@ -120,4 +129,23 @@ public class Hotel {
         if (vakje != null) return vakje.ruimte;
         return null;
     }
+
+    @Override
+    public void notify(HotelEvent evt) {
+
+        switch (evt.getEventType()) {
+
+            case EVACUATE:
+                System.out.println("[" + evt.getTime() + "] HOTEL: evacuatie gestart!");
+                break;
+
+            case GODZILLA:
+                System.out.println("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
+                break;
+
+            default:
+                break;
+        }
+    }
+
 }
