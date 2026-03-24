@@ -23,16 +23,4 @@ public class Scenario {
         return null;
     }
 
-    /*
-     Voorbeeld gebruik:
-
-     Scenario scenario = new Scenario();
-
-     scenario.voegGebeurtenisToe(new Gebeurtenis(10, "checkin"));
-     scenario.voegGebeurtenisToe(new Gebeurtenis(20, "schoonmaak"));
-
-     // later in de simulatie:
-     // scenario.krijgGebeurtenissen(tijd);
-    */
-
 }

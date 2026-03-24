@@ -32,6 +32,11 @@ public class Hotel implements HotelEventListener{
     // laadt het layout van het hotel uit een JSON bestand
     public void laadLayoutBestand(String bestandspad) {
         try {
+            ruimtes.clear();
+            personen.clear();
+            layout = null;
+
+
             String inhoud = new String(Files.readAllBytes(Paths.get(bestandspad)));
             JSONArray array = new JSONArray(inhoud);
 
