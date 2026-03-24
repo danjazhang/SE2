@@ -17,6 +17,8 @@ public class Hotel implements HotelEventListener{
     int breedte;
     int hoogte;
 
+    HotelManager manager = new HotelManager();
+
     Layout layout;
     List<Ruimte> ruimtes;
     List<Persoon> personen;
@@ -50,6 +52,7 @@ public class Hotel implements HotelEventListener{
             this.breedte = maxX;
             this.hoogte = maxY;
             this.layout = new Layout(breedte, hoogte);
+            manager.addLayout(bestandspad, this.layout);
 
             // maak elke ruimte aan
             for (int i = 0; i < array.length(); i++) {
@@ -81,6 +84,7 @@ public class Hotel implements HotelEventListener{
             case "Room":
                 Kamer kamer = new Kamer();
                 String classificatie = obj.getString("Classification");
+                //haalt het getal uit bv "5 sterren"
                 kamer.sterren = Integer.parseInt(classificatie.split(" ")[0]);
                 return kamer;
 
