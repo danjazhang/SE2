@@ -27,14 +27,17 @@ public class HotelPanel extends JPanel {
                 else if (r instanceof Bioscoop) g.setColor(Color.RED);
                 else if (r instanceof Fitnesruimte) g.setColor(Color.GREEN);
                 else if (r instanceof Lobby) g.setColor(Color.YELLOW);
+                else if (r != null && "Lift".equals(r.type)) g.setColor(Color.CYAN);
+                else if (r != null && "Trap".equals(r.type)) g.setColor(Color.MAGENTA);
+
                 else g.setColor(Color.LIGHT_GRAY);
 
-                //teken gevulde rechthoek op de juiste pixelpositie
-                g.fillRect((x-1)* tileSize, (y-1)*tileSize, tileSize, tileSize);
+                // verschuif alles 1 vakje naar rechts voor de lift
+                g.fillRect(x * tileSize, (y-1)*tileSize, tileSize, tileSize);
 
                 //teken zwarte rand eromheen
                 g.setColor(Color.BLACK);
-                g.drawRect((x-1)* tileSize, (y-1)*tileSize, tileSize, tileSize);
+                g.drawRect(x * tileSize, (y-1)*tileSize, tileSize, tileSize);
 
                 //naam tekenen
                 String naam;
@@ -45,10 +48,25 @@ public class HotelPanel extends JPanel {
                 }
                 g.setColor(Color.BLACK);
                 g.setFont(new Font("Arial", Font.BOLD,12));
-                g.drawString(naam, (x-1) * tileSize +4, (y-1)* tileSize+16);
-
-
+                g.drawString(naam, x * tileSize + 4, (y-1) * tileSize + 16);
             }
         }
+
+        // teken lift helemaal links, midden
+        int liftY = (hotel.hoogte / 2 - 1) * tileSize;
+        g.setColor(Color.CYAN);
+        g.fillRect(0, liftY, tileSize, tileSize * 2);
+        g.setColor(Color.BLACK);
+        g.drawRect(0, liftY, tileSize, tileSize * 2);
+        g.setFont(new Font("Arial", Font.BOLD, 12));
+        g.drawString("Lift", 4, liftY + 16);
+
+        // teken trap helemaal rechts, midden
+        int trapX = (hotel.breedte + 1) * tileSize;
+        g.setColor(Color.MAGENTA);
+        g.fillRect(trapX, liftY, tileSize, tileSize * 2);
+        g.setColor(Color.BLACK);
+        g.drawRect(trapX, liftY, tileSize, tileSize * 2);
+        g.drawString("Trap", trapX + 4, liftY + 16);
     }
 }

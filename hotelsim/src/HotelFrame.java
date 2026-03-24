@@ -6,7 +6,7 @@ public class HotelFrame extends JFrame {
         setTitle("Hotel Simulatie");
 
         //venstergrootte gebaseerd op grid grootte
-        setSize(hotel.breedte*HotelPanel.tileSize, hotel.hoogte*HotelPanel.tileSize);
+        setSize((hotel.breedte + 2) * HotelPanel.tileSize, hotel.hoogte * HotelPanel.tileSize);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 

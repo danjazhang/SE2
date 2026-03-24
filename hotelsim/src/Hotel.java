@@ -101,6 +101,18 @@ public class Hotel implements HotelEventListener{
             case "Fitness":
                 return new Fitnesruimte();
 
+            //lift en trap erven niet van ruimte dus je maakt een nieuwe ruimte
+            //die de type lift en trap krijgen
+            case "Lift":
+                Ruimte lift = new Ruimte();
+                lift.type = "Lift";
+                return lift;
+
+            case "Trap":
+                Ruimte trap = new Ruimte();
+                trap.type = "Trap";
+                return trap;
+
             default:
                 return new Ruimte();
         }
