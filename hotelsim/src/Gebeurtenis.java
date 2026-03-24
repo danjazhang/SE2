@@ -22,15 +22,4 @@ public class Gebeurtenis {
     // voert de gebeurtenis uit
     public void voerUit(){}
 
-    /*
-     Voorbeeld gebruik (later in de simulatie):
-
-     Gebeurtenis g1 = new Gebeurtenis(10, "checkin");
-     Gebeurtenis g2 = new Gebeurtenis(20, "schoonmaak");
-
-     // in de simulatie:
-     // als type = "checkin" → gast.checkIn()
-     // als type = "schoonmaak" → schoonmaker.maakKamerSchoon()
-    */
-
 }

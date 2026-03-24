@@ -7,7 +7,6 @@ public class Main {
     public static void main(String[] args) {
         Hotel hotel = new Hotel();
 
-
         // pas het pad aan naar waar jouw JSON file staat
         hotel.laadLayoutBestand("layout.json");
 
@@ -35,9 +34,7 @@ public class Main {
         manager.register(fitness);
         manager.register(bioscoop);
 
-
         // event triggeren
         manager.start(1);
-
     }
 }
