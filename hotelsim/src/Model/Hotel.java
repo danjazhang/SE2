@@ -93,6 +93,14 @@ public class Hotel implements HotelEventListener {
                 return restaurant;
             case "Cinema": return new Bioscoop();
             case "Fitness": return new Fitnesruimte();
+            case "Lift":
+                Ruimte lift = new Ruimte();
+                lift.type = "Lift";
+                return lift;
+            case "Trap":
+                Ruimte trap = new Ruimte();
+                trap.type = "Trap";
+                return trap;
             default: return new Ruimte();
         }
     }

@@ -9,6 +9,7 @@ public class Ruimte {
     public int posY;
     public int breedte;
     public int hoogte;
+    public String type = "";
 
     private int ingangX;
     private int ingangY;
