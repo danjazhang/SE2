@@ -1,29 +1,30 @@
+import Model.Lobby;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
 
 public class LobbyTest {
 
-    // controleer dat balie positie correct wordt opgeslagen
+    // balieX en balieY worden correct opgeslagen via de constructor
     @Test
     void testConstructor() {
-        Lobby lobby = new Lobby(0, 0, 10, 10, 1, 1);
-        assertEquals(1, lobby.getBalieX());
-        assertEquals(1, lobby.getBalieY());
+        Lobby lobby = new Lobby(1, 1, 2, 2, 3, 4);
+        assertEquals(3, lobby.getBalieX());
+        assertEquals(4, lobby.getBalieY());
     }
 
-    // lobby erft van Ruimte, posX en posY beginnen op de meegegeven waarden
+    // lobby erft van Ruimte, posX en posY worden correct opgeslagen
     @Test
     void testErftVanRuimte() {
-        Lobby lobby = new Lobby(2, 3, 5, 5, 1, 1);
+        Lobby lobby = new Lobby(2, 3, 2, 2, 1, 1);
         assertEquals(2, lobby.posX);
         assertEquals(3, lobby.posY);
     }
 
-    // toonStatusScherm mag niet crashen
+    // breedte en hoogte worden correct opgeslagen
     @Test
-    void testToonStatusScherm() {
-        Lobby lobby = new Lobby(0, 0, 10, 10, 1, 1);
-        assertDoesNotThrow(() -> lobby.toonStatusScherm());
+    void testAfmetingen() {
+        Lobby lobby = new Lobby(1, 1, 4, 5, 1, 1);
+        assertEquals(4, lobby.breedte);
+        assertEquals(5, lobby.hoogte);
     }
 }

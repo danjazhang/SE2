@@ -16,6 +16,7 @@ class HotelTest {
         assertEquals(8,hotel.hoogte);
     }
 
+    //controleer of er op 1,1 een kamer is
     @Test
     void testKrijgRuimteOp(){
         Hotel hotel = new Hotel();
