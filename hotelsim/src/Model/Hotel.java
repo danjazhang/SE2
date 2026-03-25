@@ -9,6 +9,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventManager;
+import hotelevents.HotelEventType;
+import hotelevents.HotelEventListener;
 
 public class Hotel implements HotelEventListener {
     public int breedte;
@@ -46,6 +50,7 @@ public class Hotel implements HotelEventListener {
 
             // bepaal de maximale breedte en hoogte
             int maxX = 0, maxY = 0;
+
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
                 //position is locatie
@@ -64,6 +69,7 @@ public class Hotel implements HotelEventListener {
             // maak elke ruimte aan
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
+
                 String areaType = obj.getString("AreaType");
                 int[] pos = parsePositie(obj.getString("Position"));
                 int[] dim = parseDimensie(obj.getString("Dimension"));
@@ -74,8 +80,8 @@ public class Hotel implements HotelEventListener {
                 ruimte.breedte = dim[0];
                 ruimte.hoogte = dim[1];
 
-                ruimtes.add(ruimte);
-                layout.plaatsRuimte(ruimte);
+                hotel.ruimtes.add(ruimte);
+                hotel.layout.plaatsRuimte(ruimte);
             }
 
             System.out.println("Layout geladen: " + breedte + "x" + hoogte + ", " + ruimtes.size() + " ruimtes");
@@ -84,6 +90,8 @@ public class Hotel implements HotelEventListener {
         } catch (IOException e) {
             System.err.println("Fout bij laden layout: " + e.getMessage());
         }
+
+        return hotel;
     }
 
     // maakt de juiste subklasse aan op basis van het AreaType
@@ -126,14 +134,20 @@ public class Hotel implements HotelEventListener {
 
     @Override
     public void notify(HotelEvent evt) {
+
         switch (evt.getEventType()) {
+
             case EVACUATE:
                 System.out.println("[" + evt.getTime() + "] HOTEL: evacuatie gestart!");
                 break;
+
             case GODZILLA:
                 System.out.println("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
                 break;
-            default: break;
+
+            default:
+                break;
         }
     }
+
 }
