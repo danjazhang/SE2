@@ -9,7 +9,15 @@ public class HotelPanel extends JPanel {
 
     public HotelPanel(Hotel hotel) {
         this.hotel = hotel;
-        //repaint();
+        revalidate();
+        repaint();
+    }
+    public void setHotel(Hotel hotel) {
+        this.hotel = hotel;
+        repaint();
+    }
+    public Hotel getHotel() {
+        return hotel;
     }
 
 

@@ -1,9 +1,24 @@
 <component name="libraryTable">
   <library name="HotelEventsObs1">
+    <ANNOTATIONS>
+      <root url="jar://$USER_HOME$/Downloads/HotelEventsObs 1.zip!/" />
+    </ANNOTATIONS>
     <CLASSES>
       <root url="jar://$USER_HOME$/Downloads/HotelEventsObs 1/HotelEventsObs.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/HotelEventsObs 1.zip!/" />
+      <root url="jar://$USER_HOME$/Downloads/HotelEventsObs 1.zip!/" />
     </CLASSES>
-    <JAVADOC />
-    <SOURCES />
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/Downloads/HotelEventsObs 1.zip!/" />
+    </JAVADOC>
+    <NATIVE>
+      <root url="jar://$USER_HOME$/Downloads/HotelEventsObs 1.zip!/" />
+    </NATIVE>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Downloads/HotelEventsObs 1.zip!/" />
+      <root url="jar://$USER_HOME$/Downloads/HotelEventsObs 1.zip!/" />
+    </SOURCES>
+    <jarDirectory url="jar://$USER_HOME$/Downloads/HotelEventsObs 1.zip!/" recursive="false" />
+    <jarDirectory url="jar://$USER_HOME$/Downloads/HotelEventsObs 1.zip!/" recursive="false" type="SOURCES" />
   </library>
 </component>

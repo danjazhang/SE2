@@ -32,55 +32,52 @@ public class Hotel implements HotelEventListener{
     }
 
     // laadt het layout van het hotel uit een JSON bestand
-    public void laadLayoutBestand(String bestandspad) {
+    public static Hotel laadVanBestand(String bestandspad) {
+        Hotel hotel = new Hotel();
+        hotel.ruimtes = new ArrayList<>();
+        hotel.personen = new ArrayList<>();
+
         try {
-            ruimtes.clear();
-            personen.clear();
-            layout = null;
-
-
             String inhoud = new String(Files.readAllBytes(Paths.get(bestandspad)));
             JSONArray array = new JSONArray(inhoud);
 
-            // bepaal de maximale breedte en hoogte
             int maxX = 0, maxY = 0;
+
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
-                //position is locatie
-                int[] pos = parsePositie(obj.getString("Position"));
-                //dimension is grootte
-                int[] dim = parseDimensie(obj.getString("Dimension"));
+                int[] pos = hotel.parsePositie(obj.getString("Position"));
+                int[] dim = hotel.parseDimensie(obj.getString("Dimension"));
+
                 maxX = Math.max(maxX, pos[0] + dim[0] - 1);
                 maxY = Math.max(maxY, pos[1] + dim[1] - 1);
             }
 
-            this.breedte = maxX;
-            this.hoogte = maxY;
-            this.layout = new Layout(breedte, hoogte);
-            manager.addLayout(bestandspad, this.layout);
+            hotel.breedte = maxX;
+            hotel.hoogte = maxY;
+            hotel.layout = new Layout(maxX, maxY);
 
-            // maak elke ruimte aan
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
-                String areaType = obj.getString("AreaType");
-                int[] pos = parsePositie(obj.getString("Position"));
-                int[] dim = parseDimensie(obj.getString("Dimension"));
 
-                Ruimte ruimte = maakRuimte(areaType, obj);
+                String areaType = obj.getString("AreaType");
+                int[] pos = hotel.parsePositie(obj.getString("Position"));
+                int[] dim = hotel.parseDimensie(obj.getString("Dimension"));
+
+                Ruimte ruimte = hotel.maakRuimte(areaType, obj);
                 ruimte.posX = pos[0];
                 ruimte.posY = pos[1];
                 ruimte.breedte = dim[0];
                 ruimte.hoogte = dim[1];
 
-                ruimtes.add(ruimte);
-                layout.plaatsRuimte(ruimte);
+                hotel.ruimtes.add(ruimte);
+                hotel.layout.plaatsRuimte(ruimte);
             }
 
-            System.out.println("Layout geladen: " + breedte + "x" + hoogte + ", " + ruimtes.size() + " ruimtes");
-
         } catch (IOException e) {
-            System.err.println("Fout bij laden layout: " + e.getMessage());
+            e.printStackTrace();
         }
+
+        return hotel;
     }
 
     // maakt de juiste subklasse aan op basis van het AreaType

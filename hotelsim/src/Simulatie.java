@@ -37,6 +37,7 @@ public class Simulatie {
         }
     }
 
+
     // verwerkt één gebeurtenis
     public void verwerkGebeurtenis(Gebeurtenis g){
 

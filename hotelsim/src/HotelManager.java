@@ -9,6 +9,10 @@ public class HotelManager {
     //maak nieuwe hashmap om geladen layouts als hotel object op te slaan
     private Map<Integer, Hotel> loadedHotels = new HashMap<>();
 
+    //test om alles in te zien
+    public Map<Integer, Layout> getAllLayouts() {
+        return allLayouts;
+    }
 
     //voeg nieuwe layout
     public int addLayout(String naam, Layout layout) {
@@ -17,6 +21,17 @@ public class HotelManager {
         layout.id = id;
         layout.naam = naam;
         allLayouts.put(id, layout);
+        return id;
+    }
+
+    public int addHotel(String naam, Hotel hotel) {
+        int id = volgendeId++;
+        hotel.layout.id = id;
+        hotel.layout.naam = naam;
+
+        allLayouts.put(id, hotel.layout);
+        loadedHotels.put(id, hotel);
+
         return id;
     }
 
