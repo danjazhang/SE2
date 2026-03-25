@@ -7,17 +7,18 @@ public class Main {
     public static void main(String[] args) {
         Hotel hotel = new Hotel();
 
+        //voor testen is dit makkelijk, hoef je neit file te kiezen hele tijd
         // pas het pad aan naar waar jouw JSON file staat
-        hotel.laadLayoutBestand("layout.json");
 
-        new HotelFrame(hotel);
-
-        // test: print alle ruimtes
+        /* hotel.laadLayoutBestand("layout.json");
+        //new HotelFrame(hotel);
+         test: print alle ruimtes
         for (Ruimte r : hotel.ruimtes) {
             System.out.println(r.getClass().getSimpleName() +
                 " op positie (" + r.posX + ", " + r.posY + ")" +
                 " dimensie " + r.breedte + "x" + r.hoogte);
         }
+         */
 
         HotelEventManager manager = new HotelEventManager();
 
@@ -34,7 +35,7 @@ public class Main {
         manager.register(fitness);
         manager.register(bioscoop);
 
-        // event triggeren
-        manager.start(1);
+        // event triggeren en beginnen
+        new HotelFrame(hotel, manager);
     }
 }

@@ -9,17 +9,25 @@ public class HotelPanel extends JPanel {
 
     public HotelPanel(Hotel hotel) {
         this.hotel = hotel;
+        //repaint();
     }
+
 
     @Override
     protected void paintComponent(Graphics g){
         //tekent de achtergrond leeg, altijd eerst aanroepen
         super.paintComponent(g);
+        if (hotel.layout == null) {
+            g.drawString("Geen layout geladen", 20, 20);
+            return;
+        }
+
 
         //loop over elk vakje in het grid
         for(int x = 1; x <= hotel.breedte; x++){
             for (int y = 1; y <= hotel.hoogte; y++){
                 Ruimte r = hotel.krijgRuimteOp(x, y);
+                if (r == null) continue;
 
                 //kies kleur op basis van ruimtetype
                 if (r instanceof Kamer) g.setColor(new Color(70, 130, 180)); //rgb kleur
