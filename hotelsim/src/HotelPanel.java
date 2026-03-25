@@ -34,10 +34,6 @@ public class HotelPanel extends JPanel {
                 else if (r instanceof Restaurant) g.setColor(Color.ORANGE);
                 else if (r instanceof Bioscoop) g.setColor(Color.RED);
                 else if (r instanceof Fitnesruimte) g.setColor(Color.GREEN);
-                else if (r instanceof Lobby) g.setColor(Color.YELLOW);
-                else if (r != null && "Lift".equals(r.type)) g.setColor(Color.CYAN);
-                else if (r != null && "Trap".equals(r.type)) g.setColor(Color.MAGENTA);
-
                 else g.setColor(Color.LIGHT_GRAY);
 
                 // verschuif alles 1 vakje naar rechts voor de lift
@@ -60,21 +56,29 @@ public class HotelPanel extends JPanel {
             }
         }
 
-        // teken lift helemaal links, midden
-        int liftY = (hotel.hoogte / 2 - 1) * tileSize;
+        // teken lift helemaal links
         g.setColor(Color.CYAN);
-        g.fillRect(0, liftY, tileSize, tileSize * 2);
+        g.fillRect(0, 0, tileSize, (hotel.hoogte+1) * tileSize);
         g.setColor(Color.BLACK);
-        g.drawRect(0, liftY, tileSize, tileSize * 2);
+        g.drawRect(0, 0, tileSize, (hotel.hoogte + 1) *tileSize);
         g.setFont(new Font("Arial", Font.BOLD, 12));
-        g.drawString("Lift", 4, liftY + 16);
+        g.drawString("Lift", 4, 16);
 
-        // teken trap helemaal rechts, midden
+        // teken trap helemaal rechts
         int trapX = (hotel.breedte + 1) * tileSize;
         g.setColor(Color.MAGENTA);
-        g.fillRect(trapX, liftY, tileSize, tileSize * 2);
+        g.fillRect(trapX, 0, tileSize, (hotel.hoogte+1) * tileSize);
         g.setColor(Color.BLACK);
-        g.drawRect(trapX, liftY, tileSize, tileSize * 2);
-        g.drawString("Trap", trapX + 4, liftY + 16);
+        g.drawRect(trapX, 0, tileSize, (hotel.hoogte+1) * tileSize);
+        g.drawString("Trap", trapX + 4, 16);
+
+        // teken lobby onderin, even breed als hotel
+        int lobbyY = hotel.hoogte * tileSize;
+        g.setColor(Color.YELLOW);
+        g.fillRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
+        g.setColor(Color.BLACK);
+        g.drawRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
+        g.drawString("Lobby", tileSize + 4, lobbyY + 16);
+
     }
 }
