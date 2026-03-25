@@ -42,4 +42,21 @@ public class KamerTest {
         k.schoon = false;
         assertFalse(k.schoon);
     }
+
+    // checkIn mag niet crashen bij een geldige gast
+    @Test
+    void testCheckInCrashetNiet() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(3);
+        // checkIn koppelt de gast aan de kamer, mag niet crashen
+        assertDoesNotThrow(() -> k.checkIn(g));
+    }
+
+    // checkOut mag niet crashen
+    @Test
+    void testCheckOutCrashetNiet() {
+        Kamer k = new Kamer();
+        // checkOut verwijdert de gast uit de kamer, mag niet crashen
+        assertDoesNotThrow(() -> k.checkOut());
+    }
 }

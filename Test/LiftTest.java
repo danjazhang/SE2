@@ -38,4 +38,14 @@ public class LiftTest {
         assertEquals(1, l.getVerzoeken().size());
         assertEquals(3, l.getVerzoeken().get(0));
     }
+
+    // hetzelfde verzoek mag maar één keer in de lijst staan
+    @Test
+    void testDubbelVerzoekWordtNietToegevoegd() {
+        Lift l = new Lift();
+        l.voegVerzoekToe(3);
+        l.voegVerzoekToe(3);
+        // verzoek 3 staat maar één keer in de lijst
+        assertEquals(1, l.getVerzoeken().size());
+    }
 }
