@@ -1,3 +1,7 @@
+package View;
+import Model.Hotel;
+import Model.HotelManager;
+import View.HotelPanel;
 import hotelevents.HotelEventManager;
 
 import javax.swing.*;
@@ -16,7 +20,7 @@ public class HotelFrame extends JFrame {
     public HotelFrame(Hotel hotel, HotelEventManager manager) {
         this.hotel = hotel;
         this.manager = manager;
-        this.hotel2 = new Hotel();
+
 
         // Basis instellingen van het venster
         setTitle("Hotel Simulatie");
@@ -25,17 +29,10 @@ public class HotelFrame extends JFrame {
 
         // Panel dat de hotel visualisatie toont
         panel = new HotelPanel(hotel);
-        panel1 = new HotelPanel(hotel1);
-        panel2 = new HotelPanel(hotel2);
-
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel1, panel2);
-        add(splitPane, BorderLayout.CENTER);
 
         // UI componenten aanmaken
         JButton importButton = new JButton("Import layout");
         layoutSelector = new JComboBox<>();
-        JButton importButton1 = new JButton("Import layout 1");
-        JButton importButton2 = new JButton("Import layout 2");
         JButton startButton = new JButton("Start simulatie");
 
         // ================= IMPORT =================
@@ -48,10 +45,14 @@ public class HotelFrame extends JFrame {
                 File file = chooser.getSelectedFile();
 
                 // Laad hotel vanuit bestand
-                Hotel nieuwHotel = Hotel.laadVanBestand(file.getAbsolutePath());
+                Hotel nieuwHotel = new Hotel();
+                nieuwHotel.laadLayoutBestand(file.getAbsolutePath());
 
                 // Voeg hotel toe aan manager en krijg een ID terug
-                int id = hotelManager.addHotel(file.getName(), nieuwHotel);
+                int id = hotelManager.addLayout(file.getName(), nieuwHotel.layout);
+
+                // sla hotel op in loadedHotels
+                hotelManager.loadHotel(id, nieuwHotel);
 
                 // Voeg item toe aan dropdown (ID + bestandsnaam)
                 layoutSelector.addItem(id + " - " + file.getName());
@@ -91,30 +92,6 @@ public class HotelFrame extends JFrame {
 
             // Start de simulatie via de event manager
             manager.start(1);
-        });
-
-        importButton1.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser();
-            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile();
-                hotel1.laadLayoutBestand(file.getAbsolutePath());
-                panel1.setPreferredSize(new Dimension(hotel1.breedte * HotelPanel.tileSize, hotel1.hoogte * HotelPanel.tileSize));
-                panel1.revalidate();
-                panel1.repaint();
-                pack();
-            }
-        });
-
-        importButton2.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser();
-            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile();
-                hotel2.laadLayoutBestand(file.getAbsolutePath());
-                panel2.setPreferredSize(new Dimension(hotel2.breedte * HotelPanel.tileSize, hotel2.hoogte * HotelPanel.tileSize));
-                panel2.revalidate();
-                panel2.repaint();
-                pack();
-            }
         });
 
         // ================= TOP BAR =================

@@ -1,5 +1,9 @@
 package Model;
 
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventListener;
+import hotelevents.HotelEventType;
+
 public class Restaurant extends Ruimte implements HotelEventListener {
     public int capaciteit;
     public Gast gasten;

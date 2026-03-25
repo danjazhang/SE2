@@ -1,5 +1,8 @@
 package Model;
 
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventListener;
+
 public class Lobby extends Ruimte implements HotelEventListener {
 
     private int balieX;

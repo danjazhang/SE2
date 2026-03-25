@@ -1,4 +1,4 @@
-package Vieuw;
+package View;
 
 import Model.Hotel;
 import Model.Ruimte;
@@ -22,6 +22,19 @@ public class HotelPanel extends JPanel implements ModelListener {
         this.hotel = hotel;
         hotel.voegListenerToe(this);
     }
+
+    //vervangt huidige hotel met nieuwe hotel
+    public void setHotel(Hotel hotel) {
+    this.hotel = hotel;
+    repaint();
+
+    }
+
+    //geeft huidige hotel terug om te controleren of er een geldige hotel is geladen
+    public Hotel getHotel() {
+        return hotel;
+    }
+
 
     @Override
     public void modelGewijzigd() {

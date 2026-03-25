@@ -1,5 +1,9 @@
 package Model;
 
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventListener;
+import hotelevents.HotelEventType;
+
 import java.util.ArrayList;
 import java.util.List;
 

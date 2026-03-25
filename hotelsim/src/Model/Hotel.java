@@ -80,8 +80,8 @@ public class Hotel implements HotelEventListener {
                 ruimte.breedte = dim[0];
                 ruimte.hoogte = dim[1];
 
-                hotel.ruimtes.add(ruimte);
-                hotel.layout.plaatsRuimte(ruimte);
+                this.ruimtes.add(ruimte);
+                this.layout.plaatsRuimte(ruimte);
             }
 
             System.out.println("Layout geladen: " + breedte + "x" + hoogte + ", " + ruimtes.size() + " ruimtes");
@@ -90,8 +90,6 @@ public class Hotel implements HotelEventListener {
         } catch (IOException e) {
             System.err.println("Fout bij laden layout: " + e.getMessage());
         }
-
-        return hotel;
     }
 
     // maakt de juiste subklasse aan op basis van het AreaType
