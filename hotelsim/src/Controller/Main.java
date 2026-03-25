@@ -6,8 +6,9 @@ import Model.Schoonmaker;
 import Model.Restaurant;
 import Model.Fitnesruimte;
 import Model.Bioscoop;
-import hotelevents.HotelEventManager;
 import View.HotelFrame;
+import hotelevents.HotelEventManager;
+
 
 public class Main {
     public static void main(String[] args) {

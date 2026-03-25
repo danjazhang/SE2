@@ -12,6 +12,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventManager;
+import hotelevents.HotelEventType;
+import hotelevents.HotelEventListener;
 
 public class Hotel implements HotelEventListener {
     public int breedte;
@@ -37,6 +41,7 @@ public class Hotel implements HotelEventListener {
         personen = new ArrayList<>();
     }
 
+    // laadt het layout van het hotel uit een JSON bestand
     public void laadLayoutBestand(String bestandspad) {
         try {
             ruimtes.clear();
@@ -46,10 +51,14 @@ public class Hotel implements HotelEventListener {
             String inhoud = new String(Files.readAllBytes(Paths.get(bestandspad)));
             JSONArray array = new JSONArray(inhoud);
 
+            // bepaal de maximale breedte en hoogte
             int maxX = 0, maxY = 0;
+
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
+                //position is locatie
                 int[] pos = parsePositie(obj.getString("Position"));
+                //dimension is grootte
                 int[] dim = parseDimensie(obj.getString("Dimension"));
                 maxX = Math.max(maxX, pos[0] + dim[0] - 1);
                 maxY = Math.max(maxY, pos[1] + dim[1] - 1);
@@ -60,8 +69,10 @@ public class Hotel implements HotelEventListener {
             this.layout = new Layout(breedte, hoogte);
             manager.addLayout(bestandspad, this.layout);
 
+            // maak elke ruimte aan
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
+
                 String areaType = obj.getString("AreaType");
                 int[] pos = parsePositie(obj.getString("Position"));
                 int[] dim = parseDimensie(obj.getString("Dimension"));
@@ -72,8 +83,8 @@ public class Hotel implements HotelEventListener {
                 ruimte.breedte = dim[0];
                 ruimte.hoogte = dim[1];
 
-                ruimtes.add(ruimte);
-                layout.plaatsRuimte(ruimte);
+                this.ruimtes.add(ruimte);
+                this.layout.plaatsRuimte(ruimte);
             }
 
             System.out.println("Layout geladen: " + breedte + "x" + hoogte + ", " + ruimtes.size() + " ruimtes");
@@ -84,12 +95,14 @@ public class Hotel implements HotelEventListener {
         }
     }
 
+    // maakt de juiste subklasse aan op basis van het AreaType
     Ruimte maakRuimte(String areaType, JSONObject obj) {
         switch (areaType) {
             case "Room":
                 Kamer kamer = new Kamer();
                 kamer.sterren = Integer.parseInt(obj.getString("Classification").split(" ")[0]);
                 return kamer;
+
             case "Restaurant":
                 Restaurant restaurant = new Restaurant();
                 if (obj.has("Capacity")) restaurant.capaciteit = obj.getInt("Capacity");
@@ -108,11 +121,13 @@ public class Hotel implements HotelEventListener {
         }
     }
 
+    // parse "x, y" string naar int array [x, y]
     int[] parsePositie(String positie) {
         String[] delen = positie.split(",");
         return new int[]{Integer.parseInt(delen[0].trim()), Integer.parseInt(delen[1].trim())};
     }
 
+    // parse "breedte, hoogte" string naar int array [breedte, hoogte]
     int[] parseDimensie(String dimensie) {
         String[] delen = dimensie.split(",");
         return new int[]{Integer.parseInt(delen[0].trim()), Integer.parseInt(delen[1].trim())};
@@ -128,14 +143,20 @@ public class Hotel implements HotelEventListener {
 
     @Override
     public void notify(HotelEvent evt) {
+
         switch (evt.getEventType()) {
+
             case EVACUATE:
                 System.out.println("[" + evt.getTime() + "] HOTEL: evacuatie gestart!");
                 break;
+
             case GODZILLA:
                 System.out.println("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
                 break;
-            default: break;
+
+            default:
+                break;
         }
     }
+
 }
