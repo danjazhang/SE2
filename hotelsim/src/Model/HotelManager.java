@@ -6,10 +6,13 @@ import java.util.Set;
 
 public class HotelManager {
     private int volgendeId = 1;
+    //map voor alle layouts
     private Map<Integer, Layout> allLayouts = new HashMap<>();
+    //map voor alle geladen layouts
     private Map<Integer, Hotel> loadedHotels = new HashMap<>();
 
     public int addLayout(String naam, Layout layout) {
+        //geef layout een id en naam en sla dat op
         int id = volgendeId++;
         layout.id = id;
         layout.naam = naam;
@@ -17,9 +20,16 @@ public class HotelManager {
         return id;
     }
 
+    //sla hotel op in loadedHotels map met id als sleutel
     public void loadHotel(int id, Hotel hotel) { loadedHotels.put(id, hotel); }
+
+    //geef layout terug op basis van id
     public Layout getLayout(int id) { return allLayouts.get(id); }
+
+    //verwijder layout uit allLayouts map
     public void removeLayout(int id) { allLayouts.remove(id); }
+    // geef alle layout ids terug
     public Set<Integer> getAllLayoutIds() { return allLayouts.keySet(); }
+    // geef hotel terug op basis van id
     public Hotel getHotel(int id) { return loadedHotels.get(id); }
 }
