@@ -6,7 +6,7 @@ import Model.Schoonmaker;
 import Model.Restaurant;
 import Model.Fitnesruimte;
 import Model.Bioscoop;
-import Model.HotelEventManager;
+import hotelevents.HotelEventManager;
 import View.HotelFrame;
 
 public class Main {

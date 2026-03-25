@@ -1,5 +1,9 @@
 package Model;
 
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventListener;
+import hotelevents.HotelEventType;
+
 public class Schoonmaker extends Persoon implements HotelEventListener {
 
     public boolean bezig;

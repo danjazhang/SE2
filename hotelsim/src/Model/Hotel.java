@@ -3,6 +3,9 @@ package Model;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventListener;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
