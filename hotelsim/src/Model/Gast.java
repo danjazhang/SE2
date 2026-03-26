@@ -5,6 +5,7 @@ public class Gast extends Persoon {
     public int gewensteSterren;
     public Kamer kamer;
 
+    //constructor
     public Gast(int gewensteSterren) {
         this.gewensteSterren = gewensteSterren;
         this.kamer = null;

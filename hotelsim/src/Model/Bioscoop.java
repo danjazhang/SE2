@@ -9,8 +9,10 @@ import java.util.ArrayList;
 public class Bioscoop extends Ruimte implements HotelEventListener {
     public boolean filmBezig;
     public int filmDuur;
+    //arraylist
     public List<Gast> gasten;
 
+    //constructor
     public Bioscoop() {
         this.gasten = new ArrayList<>();
         this.filmBezig = false;

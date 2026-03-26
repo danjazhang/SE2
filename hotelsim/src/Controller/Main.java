@@ -22,12 +22,14 @@ public class Main {
         Fitnesruimte fitness = new Fitnesruimte();
         Bioscoop bioscoop = new Bioscoop();
 
+        //registreer ruimte bij event manager zodat die events kan ontvangen
         manager.register(lobby);
         manager.register(schoonmaker);
         manager.register(restaurant);
         manager.register(fitness);
         manager.register(bioscoop);
 
+        //open venster met hotel en event manager
         new HotelFrame(hotel, manager);
     }
 }

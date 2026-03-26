@@ -20,6 +20,7 @@ public class Hotel implements HotelEventListener {
 
     public HotelManager manager = new HotelManager();
     public Layout layout;
+    //arraylists
     public List<Ruimte> ruimtes;
     public List<Persoon> personen;
     private List<ModelListener> listeners = new ArrayList<>();
@@ -40,30 +41,40 @@ public class Hotel implements HotelEventListener {
 
     // laadt het layout van het hotel uit een JSON bestand
     public void laadLayoutBestand(String bestandspad) {
-        try {
+        //code kan fout gaan
+        try { 
+            //maakt alles leeg
             ruimtes.clear();
             personen.clear();
             layout = null;
 
+            //lees bestand als tekst
             String inhoud = new String(Files.readAllBytes(Paths.get(bestandspad)));
+            //zet tekst om naar een lijst van JSON objecten
             JSONArray array = new JSONArray(inhoud);
 
             // bepaal de maximale breedte en hoogte
             int maxX = 0, maxY = 0;
 
             for (int i = 0; i < array.length(); i++) {
+                //haal object van de array op positie i
                 JSONObject obj = array.getJSONObject(i);
-                //position is locatie
+                //position is de locatie van de ruimte
                 int[] pos = parsePositie(obj.getString("Position"));
-                //dimension is grootte
+                //dimension is de grootte van de ruimte
                 int[] dim = parseDimensie(obj.getString("Dimension"));
+                //bepaal de maximale X en Y
+                //-1 omdat er anders een vakje te veel is
+                //Math.max vergelijkt de grootste van 2 waarden dus (maxX/maxY, de andere ruimte)
                 maxX = Math.max(maxX, pos[0] + dim[0] - 1);
                 maxY = Math.max(maxY, pos[1] + dim[1] - 1);
             }
 
+            //sla de breedte en hoogte van hotel op
             this.breedte = maxX;
             this.hoogte = maxY;
             this.layout = new Layout(breedte, hoogte);
+            //voeg layout toe in allLayouts map
             manager.addLayout(bestandspad, this.layout);
 
             // maak elke ruimte aan
@@ -87,6 +98,7 @@ public class Hotel implements HotelEventListener {
             System.out.println("Layout geladen: " + breedte + "x" + hoogte + ", " + ruimtes.size() + " ruimtes");
             notifyListeners();
 
+        //als de code fout gaat dan ->
         } catch (IOException e) {
             System.err.println("Fout bij laden layout: " + e.getMessage());
         }

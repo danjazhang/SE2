@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Fitnesruimte extends Ruimte implements HotelEventListener {
+    //arraylist
     public List<Gast> gasten;
 
+    //constructor
     public Fitnesruimte() {
         this.gasten = new ArrayList<>();
     }
