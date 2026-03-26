@@ -28,6 +28,16 @@ public class HotelPanel extends JPanel implements ModelListener {
         hotel.voegListenerToe(this);
     }
 
+    // geef het hotel terug
+    public Hotel getHotel() { return hotel; }
+
+    // stel een nieuw hotel in en herteken het panel
+    public void setHotel(Hotel hotel) {
+        this.hotel = hotel;
+        hotel.voegListenerToe(this);
+        repaint();
+    }
+
     // wordt aangeroepen door Hotel als de layout veranderd is
     // repaint() zorgt dat paintComponent opnieuw aangeroepen wordt
     @Override

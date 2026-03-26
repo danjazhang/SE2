@@ -1,6 +1,8 @@
 package View;
 
 import Model.Hotel;
+import Model.HotelManager;
+import View.HotelPanel;
 import hotelevents.HotelEventManager;
 
 import javax.swing.*;
@@ -8,87 +10,107 @@ import java.awt.*;
 import java.io.File;
 
 // View klasse: het hoofdvenster van de applicatie
-// Toont twee hotel panels naast elkaar en knoppen voor import en simulatie
+// Toont één hotel panel met een dropdown om tussen layouts te wisselen
 public class HotelFrame extends JFrame {
 
-    // de twee hotel modellen voor de twee panels
-    private Hotel hotel1;
-    private Hotel hotel2;
+    // het momenteel geselecteerde hotel
+    private Hotel hotel;
 
-    // de twee panels die de hotels tekenen
-    private HotelPanel panel1;
-    private HotelPanel panel2;
+    // het panel dat de hotel layout tekent
+    private HotelPanel panel;
 
     // de event manager die events verstuurt naar alle listeners
     private HotelEventManager manager;
 
-    // constructor: bouw het venster op met twee panels en knoppen
-    public HotelFrame(Hotel hotel, HotelEventManager manager) {
-        this.hotel1 = hotel;
-        this.manager = manager;
-        // maak een tweede hotel aan voor het tweede panel
-        this.hotel2 = new Hotel();
+    // beheert meerdere geladen hotels
+    private HotelManager hotelManager = new HotelManager();
 
+    // dropdown om tussen geladen hotel layouts te kiezen
+    private JComboBox<String> layoutSelector;
+
+    // constructor: bouw het venster op
+    public HotelFrame(Hotel hotel, HotelEventManager manager) {
+        this.hotel = hotel;
+        this.manager = manager;
+
+        // basisinstellingen van het venster
         setTitle("Hotel Simulatie");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // maak de twee hotel panels aan
-        panel1 = new HotelPanel(hotel1);
-        panel2 = new HotelPanel(hotel2);
+        // panel dat de hotel visualisatie toont
+        panel = new HotelPanel(hotel);
 
-        // plaats de panels naast elkaar in een splitpane
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel1, panel2);
-        add(splitPane, BorderLayout.CENTER);
-
-        // knoppen voor importeren en starten
-        JButton importButton1 = new JButton("Import layout 1");
-        JButton importButton2 = new JButton("Import layout 2");
+        // UI componenten aanmaken
+        JButton importButton = new JButton("Import layout");
+        layoutSelector = new JComboBox<>();
         JButton startButton = new JButton("Start simulatie");
 
-        // start de simulatie als er een layout geladen is
+        // button om een hotel layout bestand te importeren
+        importButton.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            // toon bestandskiezer en check of gebruiker een bestand selecteert
+            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+
+                // laad hotel vanuit bestand
+                Hotel nieuwHotel = new Hotel();
+                nieuwHotel.laadLayoutBestand(file.getAbsolutePath());
+
+                // voeg hotel toe aan manager en krijg een ID terug
+                int id = hotelManager.addLayout(file.getName(), nieuwHotel.layout);
+
+                // sla hotel op in loadedHotels
+                hotelManager.loadHotel(id, nieuwHotel);
+
+                // voeg item toe aan dropdown (ID + bestandsnaam)
+                layoutSelector.addItem(id + " - " + file.getName());
+
+                // selecteer automatisch het laatst toegevoegde hotel
+                layoutSelector.setSelectedIndex(layoutSelector.getItemCount() - 1);
+            }
+        });
+
+        // wanneer gebruiker een andere layout kiest in de dropdown
+        layoutSelector.addActionListener(e -> {
+            if (layoutSelector.getSelectedItem() == null) return;
+
+            String selected = (String) layoutSelector.getSelectedItem();
+
+            // ID uit de string halen (voor " - ")
+            int id = Integer.parseInt(selected.split(" - ")[0]);
+
+            // haal bijbehorend hotel op uit manager
+            this.hotel = hotelManager.getHotel(id);
+
+            if (this.hotel == null) return;
+
+            // update het panel met het nieuwe hotel
+            panel.setHotel(this.hotel);
+        });
+
+        // start de simulatie wanneer knop wordt ingedrukt
         startButton.addActionListener(e -> {
-            if (hotel.layout == null) {
-                JOptionPane.showMessageDialog(this, "Laad eerst een layout!");
+            // controleer of een geldig hotel en layout aanwezig zijn
+            if (panel.getHotel() == null || panel.getHotel().layout == null) {
+                JOptionPane.showMessageDialog(this, "Kies eerst een layout!");
                 return;
             }
+            // start de simulatie via de event manager
             manager.start(1);
         });
 
-        // open een bestandskiezer en laad de layout voor hotel 1
-        importButton1.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser();
-            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile();
-                hotel1.laadLayoutBestand(file.getAbsolutePath());
-                panel1.setPreferredSize(new Dimension(hotel1.breedte * HotelPanel.tileSize, hotel1.hoogte * HotelPanel.tileSize));
-                panel1.revalidate();
-                panel1.repaint();
-                pack();
-            }
-        });
-
-        // open een bestandskiezer en laad de layout voor hotel 2
-        importButton2.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser();
-            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile();
-                hotel2.laadLayoutBestand(file.getAbsolutePath());
-                panel2.setPreferredSize(new Dimension(hotel2.breedte * HotelPanel.tileSize, hotel2.hoogte * HotelPanel.tileSize));
-                panel2.revalidate();
-                panel2.repaint();
-                pack();
-            }
-        });
-
-        // voeg de knoppen toe aan een panel bovenaan
+        // bovenste balk met knoppen en dropdown
         JPanel top = new JPanel();
-        top.add(importButton1);
-        top.add(importButton2);
+        top.add(importButton);
+        top.add(layoutSelector);
         top.add(startButton);
         add(top, BorderLayout.NORTH);
 
-        setSize(600, 600);
+        // hoofdweergave met scroll mogelijkheid voor grotere layouts
+        add(new JScrollPane(panel), BorderLayout.CENTER);
+
+        setSize(800, 600);
         setVisible(true);
     }
 }
