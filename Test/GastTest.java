@@ -48,4 +48,22 @@ public class GastTest {
         assertNull(gast.huidigVakje);
         assertNull(gast.doelVakje);
     }
+
+    // checkOut mag niet crashen, gast verlaat de kamer
+    @Test
+    void testCheckOutCrashetNiet() {
+        Gast gast = new Gast(3);
+        Kamer kamer = new Kamer();
+        gast.checkIn(kamer);
+        // checkOut verwijdert de koppeling met de kamer, mag niet crashen
+        assertDoesNotThrow(() -> gast.checkOut());
+    }
+
+    // gaNaarActiviteit mag niet crashen
+    @Test
+    void testGaNaarActiviteitCrashetNiet() {
+        Gast gast = new Gast(3);
+        // gast gaat naar een activiteit in het hotel, mag niet crashen
+        assertDoesNotThrow(() -> gast.gaNaarActiviteit());
+    }
 }
