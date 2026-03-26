@@ -54,7 +54,6 @@ public class Simulatie implements ModelListener {
         }
     }
 
-    // verwerk een enkele gebeurtenis op basis van het type
     public void verwerkGebeurtenis(Gebeurtenis g) {
         if (g.type.equals("checkin")) {
             System.out.println("Gast checkt in");
