@@ -1,5 +1,6 @@
 package Model;
 
+import View.EventLog;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventListener;
 
@@ -29,10 +30,10 @@ public class Lobby extends Ruimte implements HotelEventListener {
     public void notify(HotelEvent evt) {
         switch (evt.getEventType()) {
             case CHECK_IN:
-                System.out.println("[" + evt.getTime() + "] Lobby: gast " + evt.getGuestId() + " checkt in");
+                EventLog.log("[" + evt.getTime() + "] Lobby: gast " + evt.getGuestId() + " checkt in");
                 break;
             case CHECK_OUT:
-                System.out.println("[" + evt.getTime() + "] Lobby: gast " + evt.getGuestId() + " checkt uit");
+                EventLog.log("[" + evt.getTime() + "] Lobby: gast " + evt.getGuestId() + " checkt uit");
                 break;
             default: break;
         }

@@ -1,5 +1,6 @@
 package Model;
 
+import View.EventLog;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventListener;
 import hotelevents.HotelEventType;
@@ -28,7 +29,7 @@ public class Fitnesruimte extends Ruimte implements HotelEventListener {
     @Override
     public void notify(HotelEvent evt) {
         if (evt.getEventType() == HotelEventType.GOTO_FITNESS) {
-            System.out.println("[" + evt.getTime() + "] Fitness: gast " + evt.getGuestId() + " gaat sporten");
+            EventLog.log("[" + evt.getTime() + "] Fitness: gast " + evt.getGuestId() + " gaat sporten");
         }
     }
 }

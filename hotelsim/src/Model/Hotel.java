@@ -1,5 +1,6 @@
 package Model;
 
+import View.EventLog;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventListener;
 
@@ -75,10 +76,10 @@ public class Hotel implements HotelEventListener {
     public void notify(HotelEvent evt) {
         switch (evt.getEventType()) {
             case EVACUATE:
-                System.out.println("[" + evt.getTime() + "] HOTEL: evacuatie gestart!");
+                EventLog.log("[" + evt.getTime() + "] HOTEL: evacuatie gestart!");
                 break;
             case GODZILLA:
-                System.out.println("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
+                EventLog.log("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
                 break;
             default: break;
         }

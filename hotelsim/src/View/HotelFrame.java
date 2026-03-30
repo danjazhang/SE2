@@ -110,7 +110,16 @@ public class HotelFrame extends JFrame {
         // hoofdweergave met scroll mogelijkheid voor grotere layouts
         add(new JScrollPane(panel), BorderLayout.CENTER);
 
-        setSize(800, 600);
+        //bepaal grootte van event log
+        EventLog.getLogArea().setPreferredSize(new Dimension (200,0));
+        //maak het tekstvak scrollbaar
+        JScrollPane logPane = new JScrollPane(EventLog.getLogArea());
+        //voeg event log toe aan de onderkant van het venster
+        add(logPane, BorderLayout.WEST);
+        //venster grootte
+        setSize(730, 650);
+        //laad venster in midden van scherm
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 }
