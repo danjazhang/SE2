@@ -9,7 +9,6 @@ import java.nio.file.Paths;
 
 // Verantwoordelijk voor het inlezen en verwerken van een JSON layout bestand
 // Gescheiden van Hotel zodat Hotel alleen data beheert en niet weet hoe een bestand gelezen wordt
-// Dit heet het Single Responsibility Principle: elke klasse heeft één verantwoordelijkheid
 public class LayoutParser {
 
     // leest een JSON bestand en vult het hotel met ruimtes en een layout
