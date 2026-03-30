@@ -1,5 +1,6 @@
 package Model;
 
+import View.EventLog;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -54,11 +55,11 @@ public class LayoutParser {
                 hotel.layout.plaatsRuimte(ruimte);
             }
 
-            System.out.println("Layout geladen: " + hotel.breedte + "x" + hotel.hoogte + ", " + hotel.ruimtes.size() + " ruimtes");
+            EventLog.log("Layout geladen: " + hotel.breedte + "x" + hotel.hoogte + ", " + hotel.ruimtes.size() + " ruimtes");
             return true;
 
         } catch (IOException e) {
-            System.err.println("Fout bij laden layout: " + e.getMessage());
+            EventLog.log("Fout bij laden layout: " + e.getMessage());
             return false;
         }
     }

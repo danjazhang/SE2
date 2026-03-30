@@ -5,6 +5,7 @@ import Model.Scenario;
 import Model.Klok;
 import Model.Gebeurtenis;
 import Model.ModelListener;
+import View.EventLog;
 
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class Simulatie implements ModelListener {
 
     public void verwerkGebeurtenis(Gebeurtenis g) {
         if (g.type.equals("checkin")) {
-            System.out.println("Gast checkt in");
+            EventLog.log("Gast checkt in");
         }
         if (g.type.equals("schoonmaak")) {
             System.out.println("Kamer wordt schoongemaakt");

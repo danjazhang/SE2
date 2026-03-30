@@ -1,5 +1,6 @@
 package Model;
 
+import View.EventLog;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventListener;
 import hotelevents.HotelEventType;
@@ -30,7 +31,7 @@ public class Restaurant extends Ruimte implements HotelEventListener {
     @Override
     public void notify(HotelEvent evt) {
         if (evt.getEventType() == HotelEventType.NEED_FOOD) {
-            System.out.println("[" + evt.getTime() + "] Restaurant: gast " + evt.getGuestId() + " bestelt eten");
+            EventLog.log("[" + evt.getTime() + "] Restaurant: gast " + evt.getGuestId() + " bestelt eten");
         }
     }
 }
