@@ -1,8 +1,11 @@
 package Model;
 
+import View.EventLog;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventListener;
 import hotelevents.HotelEventType;
+import jdk.jfr.Event;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -40,10 +43,10 @@ public class Bioscoop extends Ruimte implements HotelEventListener {
     public void notify(HotelEvent evt) {
         switch (evt.getEventType()) {
             case GOTO_CINEMA:
-                System.out.println("[" + evt.getTime() + "] Bioscoop: gast " + evt.getGuestId() + " komt binnen");
+                EventLog.log("[" + evt.getTime() + "] Bioscoop: gast " + evt.getGuestId() + " komt binnen");
                 break;
             case START_CINEMA:
-                System.out.println("[" + evt.getTime() + "] Bioscoop: film start");
+                EventLog.log("[" + evt.getTime() + "] Bioscoop: film start");
                 break;
             default: break;
         }

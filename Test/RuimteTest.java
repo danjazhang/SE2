@@ -32,4 +32,12 @@ public class RuimteTest {
         r.type = "Lift";
         assertEquals("Lift", r.type);
     }
+
+    @Test
+    void testBetreedEnVerlaat() {
+        Ruimte r = new Ruimte(1, 1, 2, 2);
+        Persoon p = new Persoon();
+        r.betreed(p);
+        r.verlaat(p);
+    }
 }
