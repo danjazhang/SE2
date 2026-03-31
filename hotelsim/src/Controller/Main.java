@@ -16,6 +16,8 @@ public class Main {
 
         HotelEventManager manager = new HotelEventManager();
 
+        manager.register(hotel);
+
         Lobby lobby = new Lobby(0, 0, 10, 10, 1, 1);
         Schoonmaker schoonmaker = new Schoonmaker();
         Restaurant restaurant = new Restaurant();
