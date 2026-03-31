@@ -1,25 +1,39 @@
 package Model;
 
+// Stelt de plattegrond van het hotel voor als een 2D grid van vakjes
+// Elke positie in het grid bevat een Vakje met een verwijzing naar een Ruimte
 public class Layout {
+
+    // uniek id van de layout
     public int id;
+
+    // naam van de layout (bijv. het bestandspad)
     public String naam;
+
+    // breedte en hoogte van het grid
     public int breedte;
     public int hoogte;
+
+    // het 2D grid van vakjes, geindexeerd op [x-1][y-1]
     public Vakje[][] vakjes;
 
+    // constructor: maak een leeg grid aan van de opgegeven grootte
     public Layout(int breedte, int hoogte) {
         this.breedte = breedte;
         this.hoogte = hoogte;
         this.vakjes = new Vakje[breedte][hoogte];
+        // vul het grid met lege vakjes
         for (int x = 0; x < breedte; x++) {
             for (int y = 0; y < hoogte; y++) {
                 vakjes[x][y] = new Vakje();
+                // vakjes zijn 1-geindexeerd
                 vakjes[x][y].x = x + 1;
                 vakjes[x][y].y = y + 1;
             }
         }
     }
 
+    // plaats een ruimte in het grid op basis van de positie en afmetingen van de ruimte
     public void plaatsRuimte(Ruimte ruimte) {
         for (int x = ruimte.posX; x < ruimte.posX + ruimte.breedte; x++) {
             for (int y = ruimte.posY; y < ruimte.posY + ruimte.hoogte; y++) {
@@ -30,6 +44,8 @@ public class Layout {
         }
     }
 
+    // geef het vakje op positie (x, y) terug
+    // geeft null terug als de positie buiten het grid valt
     public Vakje krijgVakje(int x, int y) {
         if (x >= 1 && x <= breedte && y >= 1 && y <= hoogte) {
             return vakjes[x - 1][y - 1];

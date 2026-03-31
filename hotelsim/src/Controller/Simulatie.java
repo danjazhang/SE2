@@ -1,76 +1,69 @@
-/* DEZE KLASSE HEBBEN WIJ NIET NODIG en komt in conflict met andere hotel klasses
 package Controller;
 
-
 import Model.Hotel;
+import Model.Scenario;
+import Model.Klok;
+import Model.Gebeurtenis;
 import Model.ModelListener;
+import View.EventLog;
 
-import hotelevents.HotelEvent;
-import hotelevents.HotelEventListener;
-import hotelevents.HotelEventManager;
-import hotelevents.HotelEventType;
+import java.util.List;
 
-public class Simulatie implements ModelListener, HotelEventListener {
+// Controller klasse: beheert de simulatie
+// Loopt door de tijd en verwerkt gebeurtenissen per tijdstap
+// Implementeert ModelListener zodat het genotificeerd wordt als het Model verandert
+public class Simulatie implements ModelListener {
 
-    private Hotel hotel;
-    private HotelEventManager manager;
+    // de klok die de tijd bijhoudt
+    public Klok klok;
 
-    public Simulatie(Hotel hotel, HotelEventManager manager) {
+    // het scenario met alle geplande gebeurtenissen
+    public Scenario scenario;
+
+    // het hotel model
+    public Hotel hotel;
+
+    // constructor: koppel hotel, scenario en klok
+    // registreer de simulatie als observer bij het hotel
+    public Simulatie(Hotel hotel, Scenario scenario, Klok klok) {
         this.hotel = hotel;
-        this.manager = manager;
-
+        this.scenario = scenario;
+        this.klok = klok;
         hotel.voegListenerToe(this);
-
-        // ✅ juiste methode!
-        manager.register(this);
     }
 
-
+    // wordt aangeroepen door Hotel als de data veranderd is (Observer pattern)
     @Override
     public void modelGewijzigd() {
-        System.out.println("Model gewijzigd");
+        System.out.println("Controller: model is gewijzigd");
     }
 
-    // 🔥 HIER komen alle events binnen vanuit de library
-    @Override
-    public void notify(HotelEvent evt) {
+    // start de simulatie: loop 100 tijdstappen door
+    public void start() {
+        for (int i = 0; i < 100; i++) {
+            klok.tick();
+            int tijd = klok.huidigeTijd;
 
-        System.out.println("Event: " + evt.getEventType() + " tijd=" + evt.getTime());
+            // haal alle gebeurtenissen op voor dit tijdstip
+            List<Gebeurtenis> events = scenario.krijgGebeurtenissen(tijd);
 
-        switch (evt.getEventType()) {
-
-            case CHECK_IN:
-                System.out.println("Gast ingecheckt: " + evt.getGuestId());
-                break;
-
-            case CHECK_OUT:
-                System.out.println("Gast uitgecheckt: " + evt.getGuestId());
-                break;
-
-            case NEED_FOOD:
-                System.out.println("Gast wil eten");
-                break;
-
-            case GOTO_FITNESS:
-                System.out.println("Gast gaat fitness");
-                break;
-
-            case GOTO_CINEMA:
-                System.out.println("Gast gaat bioscoop");
-                break;
-
-            case EVACUATE:
-                System.out.println("🚨 EVACUATIE!");
-                break;
-
-            case GODZILLA:
-                System.out.println("🦖 GODZILLA!");
-                break;
-
-            default:
-                break;
+            if (events != null) {
+                for (Gebeurtenis g : events) {
+                    verwerkGebeurtenis(g);
+                }
+            }
         }
     }
 
-
-} */
+    public void verwerkGebeurtenis(Gebeurtenis g) {
+        if (g.type.equals("checkin")) {
+            EventLog.log("Gast checkt in");
+        }
+        if (g.type.equals("schoonmaak")) {
+            System.out.println("Kamer wordt schoongemaakt");
+        }
+        if (g.type.equals("brandalarm")) {
+            System.out.println("Brandalarm!");
+        }
+    }
+}

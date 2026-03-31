@@ -23,4 +23,21 @@ public class RuimteTest {
         assertEquals(2, ingang[0]);
         assertEquals(3, ingang[1]);
     }
+
+    // type veld begint leeg en kan gezet worden
+    @Test
+    void testType() {
+        Ruimte r = new Ruimte();
+        assertEquals("", r.type);
+        r.type = "Lift";
+        assertEquals("Lift", r.type);
+    }
+
+    @Test
+    void testBetreedEnVerlaat() {
+        Ruimte r = new Ruimte(1, 1, 2, 2);
+        Persoon p = new Persoon();
+        r.betreed(p);
+        r.verlaat(p);
+    }
 }
