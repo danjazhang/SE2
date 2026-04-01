@@ -1,3 +1,4 @@
+/*
 package Controller;
 
 import Model.Hotel;
@@ -60,10 +61,45 @@ public class Simulatie implements ModelListener {
             EventLog.log("Gast checkt in");
         }
         if (g.type.equals("schoonmaak")) {
-            System.out.println("Kamer wordt schoongemaakt");
+            EventLog.log("Kamer wordt schoongemaakt");
         }
         if (g.type.equals("brandalarm")) {
-            System.out.println("Brandalarm!");
+            EventLog.log("Brandalarm!");
         }
+    }
+}
+*/
+
+package Controller;
+
+import Model.*;
+import hotelevents.HotelEventManager;
+
+public class Simulatie {
+
+    private Hotel hotel;
+    private HotelEventManager manager;
+
+    private Lobby lobby;
+    private Schoonmaker schoonmaker;
+    private Restaurant restaurant;
+    private Fitnesruimte fitness;
+    private Bioscoop bioscoop;
+
+    public Simulatie() {
+        hotel = new Hotel();
+        manager = new HotelEventManager();
+        Lobby lobby = new Lobby(0, 0, 10, 10, 1, 1);
+        manager.register(lobby);
+        manager.register(hotel);
+
+    }
+
+    public Hotel getHotel() {
+        return hotel;
+    }
+
+    public HotelEventManager getManager() {
+        return manager;
     }
 }

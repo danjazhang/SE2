@@ -1,3 +1,4 @@
+/*
 package Model;
 
 import java.util.List;
@@ -29,3 +30,5 @@ public class Scenario {
         return resultaat;
     }
 }
+
+ */

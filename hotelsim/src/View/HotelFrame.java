@@ -2,7 +2,10 @@ package View;
 
 import Model.Hotel;
 import Model.HotelManager;
+import Model.Persoon;
+import Model.Ruimte;
 import View.HotelPanel;
+import hotelevents.HotelEventListener;
 import hotelevents.HotelEventManager;
 
 import javax.swing.*;
@@ -56,6 +59,20 @@ public class HotelFrame extends JFrame {
                 // laad hotel vanuit bestand
                 Hotel nieuwHotel = new Hotel();
                 nieuwHotel.laadLayoutBestand(file.getAbsolutePath());
+
+                // registreer de ruimtes uit de layout als event listeners
+                for (Ruimte r : nieuwHotel.ruimtes) {
+                    if (r instanceof HotelEventListener) {
+                        manager.register((HotelEventListener) r);
+                    }
+                }
+
+                //hotel bijwerken naar nieuwe hotel
+                this.hotel = nieuwHotel;
+                //tekent nieuwe hotel
+                panel.setHotel(nieuwHotel);
+
+
 
                 // voeg hotel toe aan manager en krijg een ID terug
                 int id = hotelManager.addLayout(file.getName(), nieuwHotel.layout);
