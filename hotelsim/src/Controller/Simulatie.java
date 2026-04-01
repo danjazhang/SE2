@@ -89,25 +89,10 @@ public class Simulatie {
     public Simulatie() {
         hotel = new Hotel();
         manager = new HotelEventManager();
-
-        maakRuimtes();
-        registreerListeners();
-    }
-
-    private void maakRuimtes() {
-        lobby = new Lobby(0, 0, 10, 10, 1, 1);
-        schoonmaker = new Schoonmaker();
-        restaurant = new Restaurant();
-        fitness = new Fitnesruimte();
-        bioscoop = new Bioscoop();
-    }
-
-    private void registreerListeners() {
+        Lobby lobby = new Lobby(0, 0, 10, 10, 1, 1);
         manager.register(lobby);
-        manager.register(schoonmaker);
-        manager.register(restaurant);
-        manager.register(fitness);
-        manager.register(bioscoop);
+        manager.register(hotel);
+
     }
 
     public Hotel getHotel() {
