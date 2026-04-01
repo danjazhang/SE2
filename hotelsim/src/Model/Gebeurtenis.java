@@ -1,3 +1,4 @@
+/*
 package Model;
 
 // Stelt een gebeurtenis voor in de simulatie
@@ -26,3 +27,4 @@ public class Gebeurtenis {
     // voer de gebeurtenis uit
     public void voerUit() {}
 }
+*/

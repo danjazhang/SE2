@@ -16,6 +16,7 @@ public class LayoutParser {
     // leest een JSON bestand en vult het hotel met ruimtes en een layout
     // geeft true terug als het laden gelukt is, false als er een fout was
     public boolean laad(String bestandspad, Hotel hotel) {
+        //try betekent dat code fout kan gaan
         try {
             hotel.ruimtes.clear();
             hotel.personen.clear();
@@ -34,9 +35,12 @@ public class LayoutParser {
                 maxY = Math.max(maxY, pos[1] + dim[1] - 1);
             }
 
+            //sla berekende x en y op
             hotel.breedte = maxX;
             hotel.hoogte = maxY;
+            //maak lege grid met de afmetingen
             hotel.layout = new Layout(hotel.breedte, hotel.hoogte);
+            //sla layout op in hotelmanager met bestandspad als naam
             hotel.manager.addLayout(bestandspad, hotel.layout);
 
             // maak elke ruimte aan op basis van het type in de JSON
@@ -59,6 +63,7 @@ public class LayoutParser {
             EventLog.log("Layout geladen: " + hotel.breedte + "x" + hotel.hoogte + ", " + hotel.ruimtes.size() + " ruimtes");
             return true;
 
+        //catch word gebruikt voor het geval dat de try code fout gaat
         } catch (IOException e) {
             EventLog.log("Fout bij laden layout: " + e.getMessage());
             return false;
@@ -81,15 +86,6 @@ public class LayoutParser {
                 return new Bioscoop();
             case "Fitness":
                 return new Fitnesruimte();
-            // lift en trap erven niet van Ruimte, dus maak een gewone Ruimte met een type
-            case "Lift":
-                Ruimte lift = new Ruimte();
-                lift.type = "Lift";
-                return lift;
-            case "Trap":
-                Ruimte trap = new Ruimte();
-                trap.type = "Trap";
-                return trap;
             default:
                 return new Ruimte();
         }
