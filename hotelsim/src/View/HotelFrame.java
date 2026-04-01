@@ -48,6 +48,8 @@ public class HotelFrame extends JFrame {
         JButton importButton = new JButton("Import layout");
         layoutSelector = new JComboBox<>();
         JButton startButton = new JButton("Start simulatie");
+        JButton pauseButton = new JButton("Pauzeer");
+        JButton stopButton = new JButton("Stop");
 
         // button om een hotel layout bestand te importeren
         importButton.addActionListener(e -> {
@@ -117,11 +119,29 @@ public class HotelFrame extends JFrame {
             manager.start(1);
         });
 
+        // PAUZE
+        pauseButton.addActionListener(e -> {
+            manager.pauze();
+
+            if (pauseButton.getText().equals("Pauze")) {
+                pauseButton.setText("Resume");
+            } else {
+                pauseButton.setText("Pauze");
+            }
+        });
+
+        // STOP
+        stopButton.addActionListener(e -> {
+            manager.stop();
+        });
+
         // bovenste balk met knoppen en dropdown
         JPanel top = new JPanel();
         top.add(importButton);
         top.add(layoutSelector);
         top.add(startButton);
+        top.add(pauseButton);
+        top.add(stopButton);
         add(top, BorderLayout.NORTH);
 
         // hoofdweergave met scroll mogelijkheid voor grotere layouts
