@@ -1,5 +1,6 @@
 package View;
 
+import Controller.LayoutController;
 import Model.Hotel;
 import Model.HotelManager;
 import Model.Persoon;
@@ -22,11 +23,13 @@ public class HotelFrame extends JFrame {
     // het panel dat de hotel layout tekent
     private HotelPanel panel;
 
+    //beheert het laden en opslaan van layouts
+    private LayoutController layoutController = new LayoutController();
+
+
+    //moet in evencontroller
     // de event manager die events verstuurt naar alle listeners
     private HotelEventManager manager;
-
-    // beheert meerdere geladen hotels
-    private HotelManager hotelManager = new HotelManager();
 
     // dropdown om tussen geladen hotel layouts te kiezen
     private JComboBox<String> layoutSelector;
@@ -58,9 +61,10 @@ public class HotelFrame extends JFrame {
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
 
-                // laad hotel vanuit bestand
-                Hotel nieuwHotel = new Hotel();
-                nieuwHotel.laadLayoutBestand(file.getAbsolutePath());
+                //laad hotel via layoutcontroller en sla het id op
+                int id = layoutController.laadHotel(file.getAbsolutePath(), file.getName());
+                // haal het geladen hotel op via het id
+                Hotel nieuwHotel = layoutController.getHotel(id);
 
                 // registreer de ruimtes uit de layout als event listeners
                 for (Ruimte r : nieuwHotel.ruimtes) {
@@ -73,14 +77,6 @@ public class HotelFrame extends JFrame {
                 this.hotel = nieuwHotel;
                 //tekent nieuwe hotel
                 panel.setHotel(nieuwHotel);
-
-
-
-                // voeg hotel toe aan manager en krijg een ID terug
-                int id = hotelManager.addLayout(file.getName(), nieuwHotel.layout);
-
-                // sla hotel op in loadedHotels
-                hotelManager.loadHotel(id, nieuwHotel);
 
                 // voeg item toe aan dropdown (ID + bestandsnaam)
                 layoutSelector.addItem(id + " - " + file.getName());
@@ -100,7 +96,8 @@ public class HotelFrame extends JFrame {
             int id = Integer.parseInt(selected.split(" - ")[0]);
 
             // haal bijbehorend hotel op uit manager
-            this.hotel = hotelManager.getHotel(id);
+            this.hotel = layoutController.getHotel(id);
+
 
             if (this.hotel == null) return;
 
