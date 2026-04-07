@@ -9,13 +9,13 @@ import java.util.List;
 
 // Stelt de fitnessruimte voor in het hotel
 // Erft van Ruimte en reageert op fitness events
-public class Fitnesruimte extends Ruimte implements HotelEventListener {
+public class Fitnessruimte extends Ruimte implements HotelEventListener {
 
     // de gasten die momenteel in de fitnessruimte zijn
     public List<Gast> gasten;
 
     // constructor: fitnessruimte begint zonder gasten
-    public Fitnesruimte() {
+    public Fitnessruimte() {
         this.gasten = new ArrayList<>();
     }
 

@@ -5,7 +5,7 @@ import Model.Ruimte;
 import Model.Kamer;
 import Model.Restaurant;
 import Model.Bioscoop;
-import Model.Fitnesruimte;
+import Model.Fitnessruimte;
 import Model.ModelListener;
 
 import javax.swing.*;
@@ -67,7 +67,7 @@ public class HotelPanel extends JPanel implements ModelListener {
                 if (r instanceof Kamer) g.setColor(new Color(70, 130, 180));
                 else if (r instanceof Restaurant) g.setColor(Color.ORANGE);
                 else if (r instanceof Bioscoop) g.setColor(Color.RED);
-                else if (r instanceof Fitnesruimte) g.setColor(Color.GREEN);
+                else if (r instanceof Fitnessruimte) g.setColor(Color.GREEN);
                 else g.setColor(Color.LIGHT_GRAY);
 
                 // verschuif alles 1 vakje naar rechts zodat de lift links past

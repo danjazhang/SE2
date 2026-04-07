@@ -2,12 +2,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import Model.*;
 
-public class FitnesruimteTest {
+public class FitnessruimteTest {
 
     // gastenlijst is leeg na aanmaken
     @Test
     void testConstructor() {
-        Fitnesruimte f = new Fitnesruimte();
+        Fitnessruimte f = new Fitnessruimte();
         assertNotNull(f.gasten);
         assertTrue(f.gasten.isEmpty());
     }
@@ -15,7 +15,7 @@ public class FitnesruimteTest {
     // fitnesruimte erft van Ruimte, posX en posY beginnen op 0
     @Test
     void testErftVanRuimte() {
-        Fitnesruimte f = new Fitnesruimte();
+        Fitnessruimte f = new Fitnessruimte();
         assertEquals(0, f.posX);
         assertEquals(0, f.posY);
     }
@@ -23,7 +23,7 @@ public class FitnesruimteTest {
     // een gast kan aan de gastenlijst toegevoegd worden
     @Test
     void testVoegGastToe() {
-        Fitnesruimte f = new Fitnesruimte();
+        Fitnessruimte f = new Fitnessruimte();
         Gast g = new Gast(2);
         f.gasten.add(g);
         assertEquals(1, f.gasten.size());

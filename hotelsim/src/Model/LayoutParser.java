@@ -1,7 +1,4 @@
 package Model;
-import hotelevents.HotelEventListener;
-import hotelevents.HotelEventManager;
-import hotelevents.HotelEventManager;
 
 import View.EventLog;
 import org.json.JSONArray;
@@ -92,7 +89,7 @@ public class LayoutParser {
             case "Cinema":
                 return new Bioscoop();
             case "Fitness":
-                return new Fitnesruimte();
+                return new Fitnessruimte();
             default:
                 return new Ruimte();
         }
