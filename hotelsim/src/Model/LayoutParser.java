@@ -1,4 +1,7 @@
 package Model;
+import hotelevents.HotelEventListener;
+import hotelevents.HotelEventManager;
+import hotelevents.HotelEventManager;
 
 import View.EventLog;
 import org.json.JSONArray;
@@ -15,14 +18,15 @@ public class LayoutParser {
 
     // leest een JSON bestand en vult het hotel met ruimtes en een layout
     // geeft true terug als het laden gelukt is, false als er een fout was
-    public boolean laad(String bestandspad, Hotel hotel) {
+    public boolean laad(String bestandspad, Hotel hotel ) {
         //try betekent dat code fout kan gaan
         try {
             hotel.ruimtes.clear();
             hotel.personen.clear();
-            hotel.layout = null;
+
 
             String inhoud = new String(Files.readAllBytes(Paths.get(bestandspad)));
+            System.out.println(inhoud);
             JSONArray array = new JSONArray(inhoud);
 
             // bepaal de maximale breedte en hoogte van het grid
@@ -51,6 +55,8 @@ public class LayoutParser {
                 int[] dim = parseDimensie(obj.getString("Dimension"));
 
                 Ruimte ruimte = maakRuimte(areaType, obj);
+
+
                 ruimte.posX = pos[0];
                 ruimte.posY = pos[1];
                 ruimte.breedte = dim[0];
@@ -58,6 +64,8 @@ public class LayoutParser {
 
                 hotel.ruimtes.add(ruimte);
                 hotel.layout.plaatsRuimte(ruimte);
+
+
             }
 
             EventLog.log("Layout geladen: " + hotel.breedte + "x" + hotel.hoogte + ", " + hotel.ruimtes.size() + " ruimtes");

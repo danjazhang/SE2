@@ -70,7 +70,7 @@ public class Simulatie implements ModelListener {
 }
 */
 
-package Controller;
+/*package Controller;
 
 import Model.*;
 import hotelevents.HotelEventManager;
@@ -103,3 +103,4 @@ public class Simulatie {
         return manager;
     }
 }
+*/

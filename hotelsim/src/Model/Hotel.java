@@ -1,5 +1,8 @@
 package Model;
 
+import hotelevents.HotelEventManager;
+
+
 import View.EventLog;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventListener;
@@ -37,7 +40,9 @@ public class Hotel implements HotelEventListener {
     Trap trap;
 
     // voeg een observer toe aan de lijst
-    public void voegListenerToe(ModelListener l) { listeners.add(l); }
+    public void voegListenerToe(ModelListener l) {
+        listeners.add(l);
+    }
 
     // stuur een melding naar alle observers dat het model veranderd is
     private void notifyListeners() {
@@ -62,7 +67,9 @@ public class Hotel implements HotelEventListener {
     }
 
     // voeg een persoon toe aan het hotel
-    public void voegPersoonToe(Persoon p) { personen.add(p); }
+    public void voegPersoonToe(Persoon p) {
+        personen.add(p);
+    }
 
     // geef de ruimte op positie (x, y) terug
     public Ruimte krijgRuimteOp(int x, int y) {
@@ -71,8 +78,11 @@ public class Hotel implements HotelEventListener {
         return null;
     }
 
+
     // reageer op hotel events zoals evacuatie en godzilla aanval
+
     @Override
+
     public void notify(HotelEvent evt) {
         switch (evt.getEventType()) {
             case EVACUATE:
@@ -81,7 +91,8 @@ public class Hotel implements HotelEventListener {
             case GODZILLA:
                 EventLog.log("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
                 break;
-            default: break;
+            default:
+                break;
         }
     }
 }
