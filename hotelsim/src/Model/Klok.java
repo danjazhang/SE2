@@ -1,3 +1,4 @@
+/*
 package Model;
 
 // Stelt de simulatieklok voor
@@ -25,3 +26,4 @@ public class Klok {
     // geef de huidige tijd terug
     public int krijgTijd() { return huidigeTijd; }
 }
+*/

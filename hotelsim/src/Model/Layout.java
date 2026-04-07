@@ -26,7 +26,8 @@ public class Layout {
         for (int x = 0; x < breedte; x++) {
             for (int y = 0; y < hoogte; y++) {
                 vakjes[x][y] = new Vakje();
-                // vakjes zijn 1-geindexeerd
+                // vakjes zijn 1 geindexeerd
+                //slaat json positie op in het vakje zodat het zijn eigen locatie kent
                 vakjes[x][y].x = x + 1;
                 vakjes[x][y].y = y + 1;
             }
@@ -38,6 +39,7 @@ public class Layout {
         for (int x = ruimte.posX; x < ruimte.posX + ruimte.breedte; x++) {
             for (int y = ruimte.posY; y < ruimte.posY + ruimte.hoogte; y++) {
                 if (x <= breedte && y <= hoogte) {
+                    //-1 omdat 1,1 in json bestand gelijk moet zijn aan 0,0 in array
                     vakjes[x - 1][y - 1].ruimte = ruimte;
                 }
             }
@@ -48,6 +50,7 @@ public class Layout {
     // geeft null terug als de positie buiten het grid valt
     public Vakje krijgVakje(int x, int y) {
         if (x >= 1 && x <= breedte && y >= 1 && y <= hoogte) {
+            //-1 omdat 1,1 in json bestand gelijk moet zijn aan 0,0 in array
             return vakjes[x - 1][y - 1];
         }
         return null;

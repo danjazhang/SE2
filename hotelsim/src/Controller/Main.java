@@ -1,39 +1,52 @@
-package Controller;
+/*package Controller;
 
-import Model.Hotel;
-import Model.Lobby;
-import Model.Schoonmaker;
-import Model.Restaurant;
-import Model.Fitnesruimte;
-import Model.Bioscoop;
-import hotelevents.HotelEventManager;
 import View.HotelFrame;
 
-// Controller klasse: startpunt van de applicatie
-// Maakt het hotel en alle ruimtes aan, registreert listeners en opent de UI
 public class Main {
+
     public static void main(String[] args) {
-        // maak het hotel model aan
-        Hotel hotel = new Hotel();
 
-        // maak de event manager aan die events verstuurt naar alle listeners
+        // controller maken (start van systeem)
+        HotelController controller = new HotelController();
+
+        // view openen met data van controller
+        new HotelFrame(controller);
+    }
+}
+*/
+
+/**
+ * Main klasse: startpunt van de applicatie
+ */
+
+package Controller;
+
+import View.HotelFrame;
+import Model.Hotel;
+import hotelevents.HotelEventManager;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        // controller (eski sistem)
+        HotelController hotelController = new HotelController();
+
+
+
+        // event system (yeni eklediğin)
         HotelEventManager manager = new HotelEventManager();
+        EventController eventController = new EventController(manager);
 
-        // maak alle ruimtes aan die reageren op events
-        Lobby lobby = new Lobby(0, 0, 10, 10, 1, 1);
-        Schoonmaker schoonmaker = new Schoonmaker();
-        Restaurant restaurant = new Restaurant();
-        Fitnesruimte fitness = new Fitnesruimte();
-        Bioscoop bioscoop = new Bioscoop();
+        // hotel'i al
+         Hotel hotel = hotelController.getHotel(); // varsa
 
-        // registreer alle ruimtes als listeners bij de event manager
-        manager.register(lobby);
-        manager.register(schoonmaker);
-        manager.register(restaurant);
-        manager.register(fitness);
-        manager.register(bioscoop);
-
-        // open de grafische interface (View)
-        new HotelFrame(hotel, manager);
+        // register
+        eventController.registreerHotel(hotel);
+        eventController.registreerRuimtes(hotel);
+        //GUI opent
+       new HotelFrame(hotelController);
+        // start
+        eventController.startSimulatie();
     }
 }

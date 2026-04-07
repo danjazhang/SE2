@@ -1,124 +1,140 @@
 package View;
 
+import Controller.HotelController;
 import Model.Hotel;
-import Model.HotelManager;
+import View.EventLog;
 import View.HotelPanel;
 import hotelevents.HotelEventManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 
-// View klasse: het hoofdvenster van de applicatie
-// Toont één hotel panel met een dropdown om tussen layouts te wisselen
 public class HotelFrame extends JFrame {
 
-    // het momenteel geselecteerde hotel
     private Hotel hotel;
-
-    // het panel dat de hotel layout tekent
     private HotelPanel panel;
-
-    // de event manager die events verstuurt naar alle listeners
+    private HotelController controller;
     private HotelEventManager manager;
-
-    // beheert meerdere geladen hotels
-    private HotelManager hotelManager = new HotelManager();
-
-    // dropdown om tussen geladen hotel layouts te kiezen
     private JComboBox<String> layoutSelector;
 
-    // constructor: bouw het venster op
-    public HotelFrame(Hotel hotel, HotelEventManager manager) {
-        this.hotel = hotel;
-        this.manager = manager;
+    public HotelFrame(HotelController controller) {
 
-        // basisinstellingen van het venster
+        this.controller = controller;
+        this.hotel = controller.getHotel();
+        this.manager = controller.getManager();
+
         setTitle("Hotel Simulatie");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // panel dat de hotel visualisatie toont
         panel = new HotelPanel(hotel);
 
-        // UI componenten aanmaken
         JButton importButton = new JButton("Import layout");
-        layoutSelector = new JComboBox<>();
-        JButton startButton = new JButton("Start simulatie");
+        JButton startButton = new JButton("Start");
+        JButton pauseButton = new JButton("Pauze");
+        JButton stopButton = new JButton("Stop");
 
-        // button om een hotel layout bestand te importeren
-        importButton.addActionListener(e -> {
+        layoutSelector = new JComboBox<>();
+
+        // =========================
+        // IMPORT BUTTON
+        // =========================
+        importButton.addActionListener((ActionEvent e) -> {
+
             JFileChooser chooser = new JFileChooser();
-            // toon bestandskiezer en check of gebruiker een bestand selecteert
+
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+
                 File file = chooser.getSelectedFile();
 
-                // laad hotel vanuit bestand
-                Hotel nieuwHotel = new Hotel();
-                nieuwHotel.laadLayoutBestand(file.getAbsolutePath());
+                // ✅ DOĞRU HALİ
+                Hotel nieuwHotel = controller.importHotel(
+                        file.getAbsolutePath(),
+                        file.getName()
+                );
 
-                // voeg hotel toe aan manager en krijg een ID terug
-                int id = hotelManager.addLayout(file.getName(), nieuwHotel.layout);
+                // güvenlik (null gelirse)
+                if (nieuwHotel == null) {
+                    JOptionPane.showMessageDialog(this, "Fout bij laden van layout!");
+                    return;
+                }
 
-                // sla hotel op in loadedHotels
-                hotelManager.loadHotel(id, nieuwHotel);
+                this.hotel = nieuwHotel;
+                panel.setHotel(nieuwHotel);
 
-                // voeg item toe aan dropdown (ID + bestandsnaam)
-                layoutSelector.addItem(id + " - " + file.getName());
-
-                // selecteer automatisch het laatst toegevoegde hotel
-                layoutSelector.setSelectedIndex(layoutSelector.getItemCount() - 1);
+                layoutSelector.addItem(file.getName());
             }
         });
 
-        // wanneer gebruiker een andere layout kiest in de dropdown
-        layoutSelector.addActionListener(e -> {
-            if (layoutSelector.getSelectedItem() == null) return;
+        // =========================
+        // DROPDOWN
+        // =========================
+        layoutSelector.addActionListener((ActionEvent e) -> {
 
-            String selected = (String) layoutSelector.getSelectedItem();
+            int index = layoutSelector.getSelectedIndex();
+            if (index < 0) return;
 
-            // ID uit de string halen (voor " - ")
-            int id = Integer.parseInt(selected.split(" - ")[0]);
+            Hotel geselecteerd = controller.getHotelByIndex(index);
+            if (geselecteerd == null) return;
 
-            // haal bijbehorend hotel op uit manager
-            this.hotel = hotelManager.getHotel(id);
-
-            if (this.hotel == null) return;
-
-            // update het panel met het nieuwe hotel
-            panel.setHotel(this.hotel);
+            this.hotel = geselecteerd;
+            panel.setHotel(geselecteerd);
         });
 
-        // start de simulatie wanneer knop wordt ingedrukt
-        startButton.addActionListener(e -> {
-            // controleer of een geldig hotel en layout aanwezig zijn
-            if (panel.getHotel() == null || panel.getHotel().layout == null) {
+        // =========================
+        // START BUTTON
+        // =========================
+        startButton.addActionListener((ActionEvent e) -> {
+
+            if (hotel == null || hotel.layout == null) {
                 JOptionPane.showMessageDialog(this, "Kies eerst een layout!");
                 return;
             }
-            // start de simulatie via de event manager
-            manager.start(1);
+
+            // 👉 senin sistemde ID yok → sabit başlat
+            manager.start(0);
         });
 
-        // bovenste balk met knoppen en dropdown
+        // =========================
+        // PAUZE
+        // =========================
+        pauseButton.addActionListener((ActionEvent e) -> {
+
+            manager.pauze();
+
+            if (pauseButton.getText().equals("Pauze")) {
+                pauseButton.setText("Resume");
+            } else {
+                pauseButton.setText("Pauze");
+            }
+        });
+
+        // =========================
+        // STOP
+        // =========================
+        stopButton.addActionListener((ActionEvent e) -> {
+            manager.stop();
+        });
+
+        // =========================
+        // UI
+        // =========================
         JPanel top = new JPanel();
         top.add(importButton);
         top.add(layoutSelector);
         top.add(startButton);
-        add(top, BorderLayout.NORTH);
+        top.add(pauseButton);
+        top.add(stopButton);
 
-        // hoofdweergave met scroll mogelijkheid voor grotere layouts
+        add(top, BorderLayout.NORTH);
         add(new JScrollPane(panel), BorderLayout.CENTER);
 
-        //bepaal grootte van event log
-        EventLog.getLogArea().setPreferredSize(new Dimension (200,0));
-        //maak het tekstvak scrollbaar
-        JScrollPane logPane = new JScrollPane(EventLog.getLogArea());
-        //voeg event log toe aan de onderkant van het venster
-        add(logPane, BorderLayout.WEST);
-        //venster grootte
+        EventLog.getLogArea().setPreferredSize(new Dimension(200, 0));
+        add(new JScrollPane(EventLog.getLogArea()), BorderLayout.WEST);
+
         setSize(730, 650);
-        //laad venster in midden van scherm
         setLocationRelativeTo(null);
         setVisible(true);
     }
