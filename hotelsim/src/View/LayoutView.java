@@ -14,7 +14,7 @@ import java.awt.*;
 // View klasse: tekent het hotel grid op het scherm
 // Implementeert ModelListener zodat het automatisch hertekent als het Model verandert
 // Dit is het Observer pattern: Hotel notificeert HotelPanel via modelGewijzigd()
-public class HotelPanel extends JPanel implements ModelListener {
+public class LayoutView extends JPanel implements ModelListener {
 
     // het hotel model waarvan de data gelezen wordt
     Hotel hotel;
@@ -23,7 +23,7 @@ public class HotelPanel extends JPanel implements ModelListener {
     static int tileSize = 64;
 
     // constructor: registreer dit panel als observer bij het hotel
-    public HotelPanel(Hotel hotel) {
+    public LayoutView(Hotel hotel) {
         this.hotel = hotel;
         hotel.voegListenerToe(this);
     }

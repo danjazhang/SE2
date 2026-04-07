@@ -1,13 +1,8 @@
 package Model;
 
-import View.EventLog;
-import hotelevents.HotelEvent;
-import hotelevents.HotelEventListener;
-import hotelevents.HotelEventType;
-
 // Stelt een schoonmaker voor in het hotel
 // Erft van Persoon en reageert op schoonmaak events
-public class Schoonmaker extends Persoon implements HotelEventListener {
+public class Schoonmaker extends Persoon {
 
     // of de schoonmaker momenteel bezig is
     public boolean bezig;
@@ -29,12 +24,4 @@ public class Schoonmaker extends Persoon implements HotelEventListener {
 
     // ga naar de optimale positie in het hotel
     public void gaNaarOptimalePositie() {}
-
-    // reageer op een schoonmaak noodsituatie event
-    @Override
-    public void notify(HotelEvent evt) {
-        if (evt.getEventType() == HotelEventType.CLEANING_EMERGENCY) {
-            EventLog.log("[" + evt.getTime() + "] Schoonmaker: noodsituatie! Kamer moet worden schoongemaakt");
-        }
-    }
 }

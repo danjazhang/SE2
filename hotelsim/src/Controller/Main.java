@@ -1,52 +1,35 @@
-/*package Controller;
-
-import View.HotelFrame;
-
-public class Main {
-
-    public static void main(String[] args) {
-
-        // controller maken (start van systeem)
-        HotelController controller = new HotelController();
-
-        // view openen met data van controller
-        new HotelFrame(controller);
-    }
-}
-*/
-
-/**
- * Main klasse: startpunt van de applicatie
- */
 
 package Controller;
 
-import View.HotelFrame;
-import Model.Hotel;
+import View.HotelView;
 import hotelevents.HotelEventManager;
+import View.EventLogView;
 
+// Verantwoordelijkheid: applicatie opstarten
 public class Main {
 
+    private static SimulatieController simulatieController;
+    private static HotelView hotelView;
+
     public static void main(String[] args) {
+        
+        //maak eventlogview aan
+        EventLogView logView = new EventLogView();
 
-        // controller (eski sistem)
+        // maak controllers aan
         HotelController hotelController = new HotelController();
+        HotelEventManager eventManager = new HotelEventManager();
+        EventController eventController = new EventController(eventManager);
+    
+        //koppel controllers aan elkaar
+        eventController.setLogger(logView);
+        eventController.setHotelController(hotelController);
+        eventController.registreer();
 
+        //maak simulatiecontroller aan
+        simulatieController = new SimulatieController(eventManager, eventController);
 
-
-        // event system (yeni eklediğin)
-        HotelEventManager manager = new HotelEventManager();
-        EventController eventController = new EventController(manager);
-
-        // hotel'i al
-         Hotel hotel = hotelController.getHotel(); // varsa
-
-        // register
-        eventController.registreerHotel(hotel);
-        eventController.registreerRuimtes(hotel);
-        //GUI opent
-       new HotelFrame(hotelController);
-        // start
-        eventController.startSimulatie();
+        //open het venster
+       hotelView = new HotelView(hotelController, logView, eventController, simulatieController);
     }
 }
