@@ -11,6 +11,7 @@ public class HotelController {
     private LayoutController layoutController;
 
     public HotelController() {
+        //maak layoutcontroller
         layoutController = new LayoutController();
         // nieuw hotel maken
         hotel = new Hotel();
