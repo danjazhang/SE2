@@ -1,5 +1,7 @@
 package Controller;
 
+import org.json.JSONObject;
+import Model.RuimteMaker;
 import Model.Hotel;
 import Model.HotelManager;
 import Model.Layout;
@@ -15,8 +17,10 @@ public class LayoutController {
 
     // laad een nieuw hotel vanuit een JSON bestand
     public int laadVanBestand(String bestandspad, String bestandsnaam) {
-    ParseResultaat resultaat = new LayoutParser().laad(bestandspad);
-    if (resultaat == null) return -1; //-1 geeft aan dat er iets fout is gegaan want id begint bij 1
+        //lees het JSON bestand via de parser
+        ParseResultaat resultaat = new LayoutParser().laad(bestandspad);
+        //als laden mislukt geef -1 terug, want id begint bij 1
+        if (resultaat == null) return -1;
 
     //maak nieuwe hotel
     Hotel nieuwHotel = new Hotel();
@@ -25,9 +29,22 @@ public class LayoutController {
     //maak grid op basis van bovenstaande afmetingen
     nieuwHotel.layout = new Layout(resultaat.breedte, resultaat.hoogte);
 
-    //voeg elke ruimte toe aan het hotel en plaats in grid
-    for (Ruimte r : resultaat.ruimtes) {
+    //maak ruimtes aan via ruimtemaker en voeg toe aan hotel en grid
+
+    //loopt door alle jsonobjecten
+    for (JSONObject obj : resultaat.ruimteData) {
+        //maak de juiste ruimte subklasse aan
+        Ruimte r = new RuimteMaker().maakRuimte(obj.getString("AreaType"), obj);
+        //waardes zijn allemaal opgeslagen in jsonobject 
+        //set de x en y positie 
+        r.posX = obj.getInt("_posX");
+        r.posY = obj.getInt("_posY");
+        //set de breedte en hoogte
+        r.breedte = obj.getInt("_breedte");
+        r.hoogte = obj.getInt("_hoogte");
+        //voeg de ruimte toe aan de lijst van ruimtes in het hotel
         nieuwHotel.ruimtes.add(r);
+        //plaats de ruimte op de juiste positie in het grid
         nieuwHotel.layout.plaatsRuimte(r);
     }
 

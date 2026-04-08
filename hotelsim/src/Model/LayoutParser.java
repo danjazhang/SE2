@@ -30,23 +30,23 @@ public class LayoutParser {
             resultaat.breedte = maxX;
             resultaat.hoogte = maxY;
 
-            // maak elke ruimte aan
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject obj = array.getJSONObject(i);
-                String areaType = obj.getString("AreaType");
-                int[] pos = parsePositie(obj.getString("Position"));
-                int[] dim = parseDimensie(obj.getString("Dimension"));
-
-                Ruimte ruimte = new RuimteMaker().maakRuimte(areaType, obj);
-                ruimte.posX = pos[0];
-                ruimte.posY = pos[1];
-                ruimte.breedte = dim[0];
-                ruimte.hoogte = dim[1];
-
-                resultaat.ruimtes.add(ruimte);
-            }
-
-            return resultaat;
+        //loop door alle json objecten in het bestand
+        for (int i = 0; i < array.length(); i++) {
+            //haal huidige json object op
+            JSONObject obj = array.getJSONObject(i);
+            //zet de positie en dimensie string om naar een array
+            int[] pos = parsePositie(obj.getString("Position"));
+            int[] dim = parseDimensie(obj.getString("Dimension"));
+            //sla de positie en dimensie op in het json object 
+            obj.put("_posX", pos[0]);
+            obj.put("_posY", pos[1]);
+            obj.put("_breedte", dim[0]);
+            obj.put("_hoogte", dim[1]);
+            //voeg het json object toe aan de lijst
+            resultaat.ruimteData.add(obj);
+        }
+         //geef parseresultaat terug
+        return resultaat;
 
         } catch (IOException e) {
             System.out.println("Fout bij laden layout: " + e.getMessage());

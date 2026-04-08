@@ -1,12 +1,12 @@
 package Model;
 
-import Model.Ruimte;
-
+import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ParseResultaat {
-    public List<Ruimte> ruimtes = new ArrayList<>();
+    //lijst van json objecten
+    public List<JSONObject> ruimteData = new ArrayList<>();
     public int breedte;
     public int hoogte;
 }
