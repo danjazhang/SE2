@@ -35,6 +35,7 @@ public class Layout {
     }
 
     // plaats een ruimte in het grid op basis van de positie en afmetingen van de ruimte
+    //ruimte moet al gemaakt zijn in ruimtemaker
     public void plaatsRuimte(Ruimte ruimte) {
         for (int x = ruimte.posX; x < ruimte.posX + ruimte.breedte; x++) {
             for (int y = ruimte.posY; y < ruimte.posY + ruimte.hoogte; y++) {

@@ -8,7 +8,7 @@ public class Kamer extends Ruimte {
     public int sterren;
 
     // de gast die momenteel in de kamer verblijft
-    public Gast Gast;
+    public Gast gast;
 
     // of de kamer schoon is
     public boolean schoon;
@@ -16,7 +16,7 @@ public class Kamer extends Ruimte {
     // constructor: kamer begint schoon en zonder gast
     public Kamer() {
         this.schoon = true;
-        this.Gast = null;
+        this.gast = null;
     }
 
     // laat een gast inchecken in de kamer

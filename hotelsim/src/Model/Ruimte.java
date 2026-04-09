@@ -15,9 +15,6 @@ public class Ruimte {
     public int breedte;
     public int hoogte;
 
-    // type wordt gebruikt voor Lift en Trap die niet van Ruimte erven
-    public String type = "";
-
     // positie van de ingang van de ruimte
     private int ingangX;
     private int ingangY;
