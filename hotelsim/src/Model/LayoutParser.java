@@ -1,31 +1,23 @@
 package Model;
 
-import View.EventLog;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-// Verantwoordelijk voor het inlezen en verwerken van een JSON layout bestand
-// Gescheiden van Hotel zodat Hotel alleen data beheert en niet weet hoe een bestand gelezen wordt
-// Dit heet het Single Responsibility Principle: elke klasse heeft één verantwoordelijkheid
+// Verantwoordelijkheid: JSON bestand lezen en omzetten naar ParseResultaat
 public class LayoutParser {
 
-    // leest een JSON bestand en vult het hotel met ruimtes en een layout
-    // geeft true terug als het laden gelukt is, false als er een fout was
-    public boolean laad(String bestandspad, Hotel hotel) {
-        //try betekent dat code fout kan gaan
+    // leest een JSON bestand en geeft een ParseResultaat terug
+    public ParseResultaat laad(String bestandspad) {
         try {
-            hotel.ruimtes.clear();
-            hotel.personen.clear();
-            hotel.layout = null;
-
             String inhoud = new String(Files.readAllBytes(Paths.get(bestandspad)));
             JSONArray array = new JSONArray(inhoud);
 
-            // bepaal de maximale breedte en hoogte van het grid
+            ParseResultaat resultaat = new ParseResultaat();
+
+            // bepaal de maximale breedte en hoogte
             int maxX = 0, maxY = 0;
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
@@ -35,69 +27,38 @@ public class LayoutParser {
                 maxY = Math.max(maxY, pos[1] + dim[1] - 1);
             }
 
-            //sla berekende x en y op
-            hotel.breedte = maxX;
-            hotel.hoogte = maxY;
-            //maak lege grid met de afmetingen
-            hotel.layout = new Layout(hotel.breedte, hotel.hoogte);
-            //sla layout op in hotelmanager met bestandspad als naam
-            hotel.manager.addLayout(bestandspad, hotel.layout);
+            resultaat.breedte = maxX;
+            resultaat.hoogte = maxY;
 
-            // maak elke ruimte aan op basis van het type in de JSON
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject obj = array.getJSONObject(i);
-                String areaType = obj.getString("AreaType");
-                int[] pos = parsePositie(obj.getString("Position"));
-                int[] dim = parseDimensie(obj.getString("Dimension"));
+        //loop door alle json objecten in het bestand
+        for (int i = 0; i < array.length(); i++) {
+            //haal huidige json object op
+            JSONObject obj = array.getJSONObject(i);
+            //zet de positie en dimensie string om naar een array
+            int[] pos = parsePositie(obj.getString("Position"));
+            int[] dim = parseDimensie(obj.getString("Dimension"));
+            //sla de positie en dimensie op in het json object 
+            obj.put("_posX", pos[0]);
+            obj.put("_posY", pos[1]);
+            obj.put("_breedte", dim[0]);
+            obj.put("_hoogte", dim[1]);
+            //voeg het json object toe aan de lijst
+            resultaat.ruimteData.add(obj);
+        }
+         //geef parseresultaat terug
+        return resultaat;
 
-                Ruimte ruimte = maakRuimte(areaType, obj);
-                ruimte.posX = pos[0];
-                ruimte.posY = pos[1];
-                ruimte.breedte = dim[0];
-                ruimte.hoogte = dim[1];
-
-                hotel.ruimtes.add(ruimte);
-                hotel.layout.plaatsRuimte(ruimte);
-            }
-
-            EventLog.log("Layout geladen: " + hotel.breedte + "x" + hotel.hoogte + ", " + hotel.ruimtes.size() + " ruimtes");
-            return true;
-
-        //catch word gebruikt voor het geval dat de try code fout gaat
         } catch (IOException e) {
-            EventLog.log("Fout bij laden layout: " + e.getMessage());
-            return false;
+            System.out.println("Fout bij laden layout: " + e.getMessage());
+            return null;
         }
     }
 
-    // maakt de juiste subklasse aan op basis van het AreaType uit de JSON
-    private Ruimte maakRuimte(String areaType, JSONObject obj) {
-        switch (areaType) {
-            case "Room":
-                Kamer kamer = new Kamer();
-                // haalt het getal uit bv "5 sterren"
-                kamer.sterren = Integer.parseInt(obj.getString("Classification").split(" ")[0]);
-                return kamer;
-            case "Restaurant":
-                Restaurant restaurant = new Restaurant();
-                if (obj.has("Capacity")) restaurant.capaciteit = obj.getInt("Capacity");
-                return restaurant;
-            case "Cinema":
-                return new Bioscoop();
-            case "Fitness":
-                return new Fitnesruimte();
-            default:
-                return new Ruimte();
-        }
-    }
-
-    // parse "x, y" string naar int array [x, y]
     private int[] parsePositie(String positie) {
         String[] delen = positie.split(",");
         return new int[]{Integer.parseInt(delen[0].trim()), Integer.parseInt(delen[1].trim())};
     }
 
-    // parse "breedte, hoogte" string naar int array [breedte, hoogte]
     private int[] parseDimensie(String dimensie) {
         String[] delen = dimensie.split(",");
         return new int[]{Integer.parseInt(delen[0].trim()), Integer.parseInt(delen[1].trim())};

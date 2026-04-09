@@ -5,7 +5,7 @@ import Model.Ruimte;
 import Model.Kamer;
 import Model.Restaurant;
 import Model.Bioscoop;
-import Model.Fitnesruimte;
+import Model.Fitnessruimte;
 import Model.ModelListener;
 
 import javax.swing.*;
@@ -14,7 +14,7 @@ import java.awt.*;
 // View klasse: tekent het hotel grid op het scherm
 // Implementeert ModelListener zodat het automatisch hertekent als het Model verandert
 // Dit is het Observer pattern: Hotel notificeert HotelPanel via modelGewijzigd()
-public class HotelPanel extends JPanel implements ModelListener {
+public class LayoutView extends JPanel implements ModelListener {
 
     // het hotel model waarvan de data gelezen wordt
     Hotel hotel;
@@ -23,7 +23,7 @@ public class HotelPanel extends JPanel implements ModelListener {
     static int tileSize = 64;
 
     // constructor: registreer dit panel als observer bij het hotel
-    public HotelPanel(Hotel hotel) {
+    public LayoutView(Hotel hotel) {
         this.hotel = hotel;
         hotel.voegListenerToe(this);
     }
@@ -67,7 +67,7 @@ public class HotelPanel extends JPanel implements ModelListener {
                 if (r instanceof Kamer) g.setColor(new Color(70, 130, 180));
                 else if (r instanceof Restaurant) g.setColor(Color.ORANGE);
                 else if (r instanceof Bioscoop) g.setColor(Color.RED);
-                else if (r instanceof Fitnesruimte) g.setColor(Color.GREEN);
+                else if (r instanceof Fitnessruimte) g.setColor(Color.GREEN);
                 else g.setColor(Color.LIGHT_GRAY);
 
                 // verschuif alles 1 vakje naar rechts zodat de lift links past

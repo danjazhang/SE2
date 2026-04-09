@@ -1,12 +1,8 @@
 package Model;
 
-import View.EventLog;
-import hotelevents.HotelEvent;
-import hotelevents.HotelEventListener;
-
 // Stelt de lobby voor in het hotel
 // Erft van Ruimte en reageert op check-in en check-out events
-public class Lobby extends Ruimte implements HotelEventListener {
+public class Lobby extends Ruimte {
 
     // positie van de balie in de lobby
     private int balieX;
@@ -24,18 +20,4 @@ public class Lobby extends Ruimte implements HotelEventListener {
 
     public int getBalieX() { return balieX; }
     public int getBalieY() { return balieY; }
-
-    // reageer op check-in en check-out events
-    @Override
-    public void notify(HotelEvent evt) {
-        switch (evt.getEventType()) {
-            case CHECK_IN:
-                EventLog.log("[" + evt.getTime() + "] Lobby: gast " + evt.getGuestId() + " checkt in");
-                break;
-            case CHECK_OUT:
-                EventLog.log("[" + evt.getTime() + "] Lobby: gast " + evt.getGuestId() + " checkt uit");
-                break;
-            default: break;
-        }
-    }
 }

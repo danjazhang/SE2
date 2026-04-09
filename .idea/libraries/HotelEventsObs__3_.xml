@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="HotelEventsObs (3)">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/hotelsim/src/HotelEventsObs.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
