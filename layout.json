@@ -133,7 +133,7 @@
 		"Classification": "4 Star",
 		"AreaType": "Room",
 		"Position": "1, 6",
-		"Dimension": "2, 1"
+		"Dimension": "1, 1"
 	},
 	{
 		"Classification": "3 Star",
@@ -157,19 +157,19 @@
 		"Classification": "5 Star",
 		"AreaType": "Room",
 		"Position": "1, 7",
-		"Dimension": "2, 2"
+		"Dimension": "1, 1"
 	},
 	{
 		"Classification": "4 Star",
 		"AreaType": "Room",
 		"Position": "3, 7",
-		"Dimension": "2, 2"
+		"Dimension": "1, 1"
 	},
 	{
 		"Classification": "4 Star",
 		"AreaType": "Room",
 		"Position": "5, 7",
-		"Dimension": "2, 1"
+		"Dimension": "1, 1"
 	}
 
 ]

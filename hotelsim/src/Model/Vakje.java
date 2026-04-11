@@ -36,3 +36,5 @@ public class Vakje {
     // geef een kopie van de personenlijst terug
     public List<Persoon> krijgPersonen() { return new ArrayList<>(personen); }
 }
+
+

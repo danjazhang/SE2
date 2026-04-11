@@ -1,23 +1,8 @@
-/*package Controller;
+/*
 
-import View.HotelFrame;
 
-public class Main {
+ // Main klasse: startpunt van de applicatie
 
-    public static void main(String[] args) {
-
-        // controller maken (start van systeem)
-        HotelController controller = new HotelController();
-
-        // view openen met data van controller
-        new HotelFrame(controller);
-    }
-}
-*/
-
-/**
- * Main klasse: startpunt van de applicatie
- */
 
 package Controller;
 
@@ -48,5 +33,39 @@ public class Main {
        new HotelFrame(hotelController);
         // start
         eventController.startSimulatie();
+    }
+} */
+package Controller;
+
+import View.HotelFrame;
+import Model.Hotel;
+import hotelevents.HotelEventManager;
+import Model.Lobby;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        //  manager maken DEZE MANAGER sturt alle events naar de juiste ruimtes
+        HotelEventManager manager = new HotelEventManager();
+
+        // geef manager aan het control zodat zij events kunnen beheren en doorsturen
+        HotelController hotelController = new HotelController(manager);
+
+        // event controller
+        EventController eventController = new EventController(manager);
+
+        // hotel toevoegen
+        Hotel hotel = hotelController.getHotel();
+
+        // register
+       /* eventController.registreerHotel(hotel);
+        eventController.registreerRuimtes(hotel);
+        eventController.registreerLobbyManueel(); */
+ //eventController.registreerLobby(hotel);
+        // GUI hotel visueel te tonen
+        new HotelFrame(hotelController);
+
+        // simulatie start pas wanneer gebruiker op Start klikt
     }
 }

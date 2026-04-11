@@ -2,7 +2,7 @@ package Model;
 
 import hotelevents.HotelEventManager;
 
-
+import Model.Lobby;
 import View.EventLog;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventListener;
@@ -25,7 +25,7 @@ public class Hotel implements HotelEventListener {
 
     // de huidige layout van het hotel
     public Layout layout;
-
+public Lobby lobby;
     // lijst van alle ruimtes in het hotel
     public List<Ruimte> ruimtes;
 
@@ -53,6 +53,8 @@ public class Hotel implements HotelEventListener {
     public Hotel() {
         ruimtes = new ArrayList<>();
         personen = new ArrayList<>();
+        this.lobby = new Lobby (0,0,10,10,1,1);
+        ruimtes.add(lobby);
     }
 
     // de parser die het JSON bestand inleest en de hotel data vult
@@ -95,4 +97,5 @@ public class Hotel implements HotelEventListener {
                 break;
         }
     }
+
 }

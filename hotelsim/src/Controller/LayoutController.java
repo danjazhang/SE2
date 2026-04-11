@@ -2,6 +2,9 @@ package Controller;
 
 import Model.Hotel;
 import Model.HotelManager;
+/* layoutcontroller laadt het hotel vanuit JSON en beheert de layouts via de hotelmanager
+zo zorgt ervoor dat een hotel correct wordt ingeladen vanuit JSON
+ */
 
 public class LayoutController {
 

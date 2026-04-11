@@ -10,10 +10,12 @@ import Model.ModelListener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashSet;
+import java.util.Set;
 
-// View klasse: tekent het hotel grid op het scherm
-// Implementeert ModelListener zodat het automatisch hertekent als het Model verandert
-// Dit is het Observer pattern: Hotel notificeert HotelPanel via modelGewijzigd()
+// Tekent het hotel op het scherm.
+// De panel schaalt mee met het venster en tekent elke ruimte als één geheel,
+// zodat kleuren, randen en kamernummers overzichtelijk blijven.
 public class HotelPanel extends JPanel implements ModelListener {
 
     // het hotel model waarvan de data gelezen wordt
@@ -50,6 +52,7 @@ public class HotelPanel extends JPanel implements ModelListener {
     protected void paintComponent(Graphics g) {
         // teken de achtergrond leeg, altijd eerst aanroepen
         super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
 
         // als er geen layout is, toon een melding
         if (hotel.layout == null) {
@@ -57,30 +60,28 @@ public class HotelPanel extends JPanel implements ModelListener {
             return;
         }
 
-        // loop over elk vakje in het grid
+        tileSize = berekenTileSize();
+        int hotelBreedtePixels = (hotel.breedte + 2) * tileSize;
+        int hotelHoogtePixels = (hotel.hoogte + 1) * tileSize;
+        int offsetX = Math.max(0, (getWidth() - hotelBreedtePixels) / 2);
+        int offsetY = Math.max(0, (getHeight() - hotelHoogtePixels) / 2);
+
+        g2.translate(offsetX, offsetY);
+
+        Set<Ruimte> getekendeRuimtes = new HashSet<>();
+
+        // verzamel elke ruimte slechts één keer zodat kleuren en randen niet overlappen
         for (int x = 1; x <= hotel.breedte; x++) {
             for (int y = 1; y <= hotel.hoogte; y++) {
                 Ruimte r = hotel.krijgRuimteOp(x, y);
                 if (r == null) continue;
-
-                // kies kleur op basis van ruimtetype
-                if (r instanceof Kamer) g.setColor(new Color(70, 130, 180));
-                else if (r instanceof Restaurant) g.setColor(Color.ORANGE);
-                else if (r instanceof Bioscoop) g.setColor(Color.RED);
-                else if (r instanceof Fitnessruimte) g.setColor(Color.GREEN);
-                else g.setColor(Color.LIGHT_GRAY);
-
-                // verschuif alles 1 vakje naar rechts zodat de lift links past
-                g.fillRect(x * tileSize, (y - 1) * tileSize, tileSize, tileSize);
-                g.setColor(Color.BLACK);
-                g.drawRect(x * tileSize, (y - 1) * tileSize, tileSize, tileSize);
-
-                // teken de naam van de ruimte op het vakje
-                String naam = r.getClass().getSimpleName();
-                g.setColor(Color.BLACK);
-                g.setFont(new Font("Arial", Font.BOLD, 12));
-                g.drawString(naam, x * tileSize + 4, (y - 1) * tileSize + 16);
+                getekendeRuimtes.add(r);
             }
+        }
+
+        // teken daarna elke ruimte als één rechthoek
+        for (Ruimte ruimte : getekendeRuimtes) {
+            tekenRuimte(g2, ruimte);
         }
 
         // teken de lift helemaal links in cyaan
@@ -101,10 +102,86 @@ public class HotelPanel extends JPanel implements ModelListener {
 
         // teken de lobby onderin, even breed als het hotel
         int lobbyY = hotel.hoogte * tileSize;
-        g.setColor(Color.YELLOW);
+        g.setColor(Color.GREEN);
         g.fillRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
         g.setColor(Color.BLACK);
         g.drawRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
         g.drawString("Lobby", tileSize + 4, lobbyY + 16);
+
+        g2.translate(-offsetX, -offsetY);
     }
+
+    private int berekenTileSize() {
+        int kolommen = hotel.breedte + 2;
+        int rijen = hotel.hoogte + 1;
+        int breedteOpBasisVanScherm = Math.max(1, getWidth() / Math.max(1, kolommen));
+        int hoogteOpBasisVanScherm = Math.max(1, getHeight() / Math.max(1, rijen));
+        return Math.max(32, Math.min(breedteOpBasisVanScherm, hoogteOpBasisVanScherm));
+    }
+
+    // Bepaalt de kleur per ruimtetype.
+    private Color krijgRuimteKleur(Ruimte ruimte) {
+        if (ruimte instanceof Fitnessruimte) {
+            return new Color(255, 165, 0);
+        }
+        if (ruimte instanceof Restaurant) {
+            return Color.YELLOW;
+        }
+        if (ruimte instanceof Kamer) {
+            return new Color(70, 130, 180);
+        }
+        return Color.LIGHT_GRAY;
+    }
+
+    // tekent één ruimte volledig in één keer om overlappende vakjes te vermijden
+    private void tekenRuimte(Graphics2D g2, Ruimte ruimte) {
+        int startX = ruimte.getX() * tileSize;
+        int startY = (ruimte.getY() - 1) * tileSize;
+        int breedte = ruimte.getBreedte() * tileSize;
+        int hoogte = ruimte.getHoogte() * tileSize;
+
+        g2.setColor(krijgRuimteKleur(ruimte));
+        g2.fillRect(startX, startY, breedte, hoogte);
+
+        g2.setColor(Color.BLACK);
+        g2.drawRect(startX, startY, breedte, hoogte);
+
+        Shape oudeClip = g2.getClip();
+        g2.setClip(startX + 1, startY + 1, Math.max(1, breedte - 2), Math.max(1, hoogte - 2));
+
+        if (ruimte instanceof Kamer) {
+            Kamer kamer = (Kamer) ruimte;
+            if (hoogte <= tileSize) {
+                tekenGecentreerdeTekst(g2, "K" + kamer.getKamerNummer(), startX, startY + 20, breedte);
+            } else {
+                tekenGecentreerdeTekst(g2, krijgRuimteLabel(ruimte), startX, startY + 20, breedte);
+                tekenGecentreerdeTekst(g2, "K" + kamer.getKamerNummer(), startX, startY + 38, breedte);
+            }
+        } else {
+            tekenGecentreerdeTekst(g2, krijgRuimteLabel(ruimte), startX, startY + 20, breedte);
+        }
+
+        g2.setClip(oudeClip);
+    }
+
+    // Geeft het label terug dat in de ruimte wordt getoond.
+    private String krijgRuimteLabel(Ruimte ruimte) {
+        if (ruimte instanceof Fitnessruimte) {
+            return "Fitnessruimte";
+        }
+        if (ruimte instanceof Restaurant) {
+            return "Restaurant";
+        }
+        return ruimte.getClass().getSimpleName();
+    }
+
+    // Zet tekst horizontaal in het midden van de ruimte.
+    private void tekenGecentreerdeTekst(Graphics2D g2, String tekst, int x, int y, int breedte) {
+        Font font = new Font("Arial", Font.BOLD, 12);
+        g2.setFont(font);
+        FontMetrics metrics = g2.getFontMetrics(font);
+        int tekstX = x + Math.max(4, (breedte - metrics.stringWidth(tekst)) / 2);
+        g2.drawString(tekst, tekstX, y);
+    }
+
 }

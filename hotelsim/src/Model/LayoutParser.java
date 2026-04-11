@@ -53,8 +53,8 @@ public class LayoutParser {
                 Ruimte ruimte = maakRuimte(areaType, obj);
 
 
-                ruimte.posX = pos[0];
-                ruimte.posY = pos[1];
+               ruimte.posX = pos[0];
+               ruimte.posY = pos[1];
                 ruimte.breedte = dim[0];
                 ruimte.hoogte = dim[1];
 
@@ -86,6 +86,8 @@ public class LayoutParser {
                 Restaurant restaurant = new Restaurant();
                 if (obj.has("Capacity")) restaurant.capaciteit = obj.getInt("Capacity");
                 return restaurant;
+            case "Lobby":
+               return new Lobby(0,0,10,10,1,1);
             case "Cinema":
                 return new Bioscoop();
             case "Fitness":

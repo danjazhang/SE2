@@ -1,4 +1,4 @@
-package Model;
+/*package Model;
 
 import View.EventLog;
 import hotelevents.HotelEvent;
@@ -32,6 +32,49 @@ public class Restaurant extends Ruimte implements HotelEventListener {
     public void notify(HotelEvent evt) {
         if (evt.getEventType() == HotelEventType.NEED_FOOD) {
             EventLog.log("[" + evt.getTime() + "] Restaurant: gast " + evt.getGuestId() + " bestelt eten");
+        }
+    }
+}
+*/
+package Model;
+
+import View.EventLog;
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventListener;
+import hotelevents.HotelEventType;
+
+public class Restaurant extends Ruimte implements HotelEventListener {
+
+    public int capaciteit;
+    public Gast gasten;
+
+    public Restaurant() {}
+
+    // 🍽️ guest restaurant’a girer
+    public void betreedRestaurant(int guestId) {
+       // EventLog.log("Gast " + guestId + " betreedt restaurant");
+    }
+
+    // 🚪 guest restaurant’tan çıkar (şimdilik manuel / opsiyonel)
+    public void verlaatRestaurant(int guestId) {
+        EventLog.log("Gast " + guestId + " verlaat restaurant");
+    }
+
+    public boolean isVol() {
+        return false;
+    }
+
+    @Override
+    public void notify(HotelEvent evt) {
+
+        // 🍔 guest yemek ister → restaurant’a gelir
+        if (evt.getEventType() == HotelEventType.NEED_FOOD) {
+
+            EventLog.log("[" + evt.getTime() + "] Restaurant: gast "
+                    + evt.getGuestId() + " bestelt eten");
+
+            // giriş aksiyonu
+            betreedRestaurant(evt.getGuestId());
         }
     }
 }

@@ -10,6 +10,7 @@ public class KamerTest {
         Kamer k = new Kamer();
         assertTrue(k.schoon);
         assertNull(k.Gast);
+        assertTrue(k.kamerNummer > 0);
     }
 
     // sterren beginnen op 0 want ze worden niet in de constructor gezet
@@ -50,13 +51,24 @@ public class KamerTest {
         Gast g = new Gast(3);
         // checkIn koppelt de gast aan de kamer, mag niet crashen
         assertDoesNotThrow(() -> k.checkIn(g));
+        assertEquals(g, k.Gast);
+        assertEquals(k, g.kamer);
     }
 
     // checkOut mag niet crashen
     @Test
     void testCheckOutCrashetNiet() {
         Kamer k = new Kamer();
+        k.checkIn(new Gast(2));
         // checkOut verwijdert de gast uit de kamer, mag niet crashen
         assertDoesNotThrow(() -> k.checkOut());
+        assertNull(k.Gast);
+    }
+
+    @Test
+    void testKamerNummersZijnUniek() {
+        Kamer eerste = new Kamer();
+        Kamer tweede = new Kamer();
+        assertNotEquals(eerste.kamerNummer, tweede.kamerNummer);
     }
 }

@@ -10,6 +10,7 @@ public class GastTest {
         Gast gast = new Gast(3);
         assertEquals(3, gast.gewensteSterren);
         assertNull(gast.kamer);
+        assertNull(gast.onthoudenKamerNummer);
     }
 
     // twee gasten met verschillende sterren mogen niet dezelfde waarde hebben
@@ -28,6 +29,7 @@ public class GastTest {
         Kamer kamer = new Kamer();
         gast.checkIn(kamer);
         assertEquals(kamer, gast.kamer);
+        assertEquals(kamer.kamerNummer, gast.onthoudenKamerNummer);
     }
 
     // bij een tweede checkIn moet de gast de nieuwe kamer hebben, niet de oude
@@ -57,6 +59,8 @@ public class GastTest {
         gast.checkIn(kamer);
         // checkOut verwijdert de koppeling met de kamer, mag niet crashen
         assertDoesNotThrow(() -> gast.checkOut());
+        assertNull(gast.kamer);
+        assertEquals(kamer.kamerNummer, gast.onthoudenKamerNummer);
     }
 
     // gaNaarActiviteit mag niet crashen

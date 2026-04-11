@@ -1,5 +1,6 @@
 package Controller;
 
+import Model.Lobby;
 import hotelevents.HotelEventManager;
 import hotelevents.HotelEventListener;
 import Model.Hotel;
@@ -31,6 +32,16 @@ public class EventController {
     /*
      * Registreer alle ruimtes die luisteren naar events
      */
+   // public void registreerLobbyManueel(Hotel hotel) {
+
+
+        /*if (hotel.lobby instanceof HotelEventListener) {
+            manager.register((HotelEventListener) hotel.lobby);
+        } */
+  //  }
+   /* public void registreerLobby(Hotel hotel) {
+        manager.register(hotel.lobby);
+    }
     public void registreerRuimtes(Hotel hotel) {
         for (Ruimte r : hotel.ruimtes) {
             // Alleen ruimtes die HotelEventListener implementeren
@@ -38,12 +49,13 @@ public class EventController {
                 manager.register((HotelEventListener) r);
             }
         }
-    }
+    } */
 
     /**
      * Start de simulatie (events beginnen te lopen)
      */
     public void startSimulatie() {
-        manager.start(20);
+        manager.start(1);
     }
+
 }

@@ -10,6 +10,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HotelFrame extends JFrame {
 
@@ -18,6 +20,7 @@ public class HotelFrame extends JFrame {
     private HotelController controller;
     private HotelEventManager manager;
     private JComboBox<String> layoutSelector;
+    private List<Integer> layoutIds;
 
     public HotelFrame(HotelController controller) {
 
@@ -37,10 +40,9 @@ public class HotelFrame extends JFrame {
         JButton stopButton = new JButton("Stop");
 
         layoutSelector = new JComboBox<>();
+        layoutIds = new ArrayList<>();
 
-        // =========================
-        // IMPORT BUTTON
-        // =========================
+        // Laad een layout in en voeg die meteen toe aan de keuzelijst.
         importButton.addActionListener((ActionEvent e) -> {
 
             JFileChooser chooser = new JFileChooser();
@@ -64,28 +66,28 @@ public class HotelFrame extends JFrame {
                 this.hotel = nieuwHotel;
                 panel.setHotel(nieuwHotel);
 
+                layoutIds.add(controller.getLaatsteHotelId());
                 layoutSelector.addItem(file.getName());
+                layoutSelector.setSelectedIndex(layoutSelector.getItemCount() - 1);
             }
         });
 
-        // =========================
-        // DROPDOWN
-        // =========================
+        // De dropdown toont alle geladen layouts.
+        // De echte ids worden apart bewaard, zodat wisselen stabiel blijft.
         layoutSelector.addActionListener((ActionEvent e) -> {
 
             int index = layoutSelector.getSelectedIndex();
             if (index < 0) return;
+            if (index >= layoutIds.size()) return;
 
-            Hotel geselecteerd = controller.getHotelByIndex(index);
+            Hotel geselecteerd = controller.getHotelById(layoutIds.get(index));
             if (geselecteerd == null) return;
 
             this.hotel = geselecteerd;
             panel.setHotel(geselecteerd);
         });
 
-        // =========================
-        // START BUTTON
-        // =========================
+        // Start de simulatie alleen als er een layout geladen is.
         startButton.addActionListener((ActionEvent e) -> {
 
             if (hotel == null || hotel.layout == null) {
@@ -97,9 +99,7 @@ public class HotelFrame extends JFrame {
             manager.start(0);
         });
 
-        // =========================
-        // PAUZE
-        // =========================
+        // Pauze wisselt tussen pauzeren en hervatten.
         pauseButton.addActionListener((ActionEvent e) -> {
 
             manager.pauze();
@@ -111,16 +111,12 @@ public class HotelFrame extends JFrame {
             }
         });
 
-        // =========================
-        // STOP
-        // =========================
+        // Stop zet de simulatie volledig stil.
         stopButton.addActionListener((ActionEvent e) -> {
             manager.stop();
         });
 
-        // =========================
-        // UI
-        // =========================
+        // Opbouw van het venster: knoppen bovenaan, hotel in het midden en log links.
         JPanel top = new JPanel();
         top.add(importButton);
         top.add(layoutSelector);
@@ -131,8 +127,11 @@ public class HotelFrame extends JFrame {
         add(top, BorderLayout.NORTH);
         add(new JScrollPane(panel), BorderLayout.CENTER);
 
-        EventLog.getLogArea().setPreferredSize(new Dimension(200, 0));
-        add(new JScrollPane(EventLog.getLogArea()), BorderLayout.WEST);
+        JScrollPane eventScrollPane = new JScrollPane(EventLog.getLogArea());
+        eventScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        eventScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        eventScrollPane.setPreferredSize(new Dimension(240, 0));
+        add(eventScrollPane, BorderLayout.WEST);
 
         setSize(730, 650);
         setLocationRelativeTo(null);
