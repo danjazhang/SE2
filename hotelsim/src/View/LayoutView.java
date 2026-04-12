@@ -1,12 +1,6 @@
 package View;
 
-import Model.Hotel;
-import Model.Ruimte;
-import Model.Kamer;
-import Model.Restaurant;
-import Model.Bioscoop;
-import Model.Fitnessruimte;
-import Model.ModelListener;
+import Model.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -129,5 +123,24 @@ public class LayoutView extends JPanel implements ModelListener {
         g.setColor(Color.BLACK);
         g.drawRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
         g.drawString("Lobby", tileSize + 4, lobbyY + 16);
+
+        // teken personen
+        //doorloop alle personen in hotel
+        for (Persoon p : hotel.personen) {
+            //stop als de persoon geen positie heeft
+            if (p.huidigVakje == null) continue;
+            //bereken de pixel positie
+            //x is al verschoven dus lift dus heeft geen -1
+            int px = p.huidigVakje.x * tileSize + tileSize / 4;
+            int py = (p.huidigVakje.y - 1) * tileSize + tileSize / 4;
+            //gasten wit tekenen en schoonmaker grijs
+            if (p instanceof Gast) g.setColor(Color.WHITE);
+            else g.setColor(Color.DARK_GRAY); // schoonmaker
+            //gevulde cirkel van halve vakje grootte tekenen op berekende positie
+            g.fillOval(px, py, tileSize / 2, tileSize / 2);
+            //teken zwarte rand om cirkel
+            g.setColor(Color.BLACK);
+            g.drawOval(px, py, tileSize / 2, tileSize / 2);
+        }
     }
 }

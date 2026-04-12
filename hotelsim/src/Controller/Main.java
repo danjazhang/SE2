@@ -27,7 +27,7 @@ public class Main {
         eventController.registreer();
 
         //maak simulatiecontroller aan
-        simulatieController = new SimulatieController(eventManager, eventController);
+        simulatieController = new SimulatieController(eventManager, eventController, hotelController);
 
         //open het venster
        hotelView = new HotelView(hotelController, logView, eventController, simulatieController);
