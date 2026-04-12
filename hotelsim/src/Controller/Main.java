@@ -25,6 +25,9 @@ public class Main {
         eventController.setLogger(logView);
         eventController.setHotelController(hotelController);
         eventController.registreer();
+        hotelController.setEventController(eventController);
+        hotelController.setLogger(logView);
+
 
         //maak simulatiecontroller aan
         simulatieController = new SimulatieController(eventManager, eventController, hotelController);

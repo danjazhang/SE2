@@ -1,13 +1,7 @@
 package Controller;
 
+import Model.*;
 import org.json.JSONObject;
-import Model.RuimteFactory;
-import Model.Hotel;
-import Model.HotelManager;
-import Model.Layout;
-import Model.LayoutParser;
-import Model.ParseResultaat;
-import Model.Ruimte;
 
 // Verantwoordelijkheid: layouts laden en opslaan
 public class LayoutController {
@@ -49,6 +43,18 @@ public class LayoutController {
         //plaats de ruimte op de juiste positie in het grid
         nieuwHotel.layout.plaatsRuimte(r);
     }
+
+    // na de ruimtes loop, voor het opslaan
+    // maak lift aan links
+    nieuwHotel.lift = new Lift();
+
+    // maak trap aan rechts
+    nieuwHotel.trap = new Trap(2);
+
+    // maak lobby aan onderin
+    Lobby lobby = new Lobby(1, nieuwHotel.hoogte + 1, nieuwHotel.breedte, 1, 1, nieuwHotel.hoogte + 1, nieuwHotel, null);
+    nieuwHotel.lobby = lobby;
+    nieuwHotel.ruimtes.add(lobby);
 
     //sla de layout op in hotelmanager met bestandsnaam als naam
     int id = hotelManager.addLayout(bestandsnaam, nieuwHotel.layout);

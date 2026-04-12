@@ -10,6 +10,10 @@ public class HotelController {
     //beheert het laden van layouts
     private LayoutController layoutController;
 
+    private EventController eventController;
+
+    private ILogger logger;
+
     public HotelController() {
         //maak layoutcontroller
         layoutController = new LayoutController();
@@ -29,7 +33,18 @@ public class HotelController {
     public boolean heeftLayout() {
         return hotel != null && hotel.layout != null;
     }
+
+    public void setLogger(ILogger logger){
+        this.logger = logger;
+    }
+    public void setEventController(EventController eventController){
+        this.eventController = eventController;
+    }
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
+        if (hotel.lobby != null && eventController != null){
+            hotel.lobby.setLogger(logger);
+            eventController.registreerListener(hotel.lobby);
+        }
     }
 }

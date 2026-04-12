@@ -26,9 +26,10 @@ public class Hotel {
     // lijst van observers (View en Controller) die genotificeerd worden bij wijzigingen
     private List<ModelListener> listeners = new ArrayList<>();
 
-    // lift en trap referenties
-    Lift lift;
-    Trap trap;
+    
+    public Lift lift;
+    public Trap trap;
+    public Lobby lobby;
 
     // constructor: maak lege lijsten aan
     public Hotel() {
