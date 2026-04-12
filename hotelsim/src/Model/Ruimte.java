@@ -32,7 +32,9 @@ public class Ruimte {
     }
 
     // lege constructor voor subklassen
-    public Ruimte() {}
+    public Ruimte() {
+        this.aanwezigen = new ArrayList<>();
+    }
 
     public void setPositie(int x, int y) { this.posX = x; this.posY = y; }
     public void setAfmetingen(int b, int h) { this.breedte = b; this.hoogte = h; }
@@ -46,6 +48,11 @@ public class Ruimte {
 
     // verwijder een persoon uit de ruimte
     public void verlaat(Persoon p) { aanwezigen.remove(p); }
+
+    //geef alle aanwezigen terug
+    public List<Persoon> getAanwezigen(){
+        return new ArrayList<>(aanwezigen);
+    }
 
     // sla de ingang positie op
     public void setIngang(int x, int y) { this.ingangX = x; this.ingangY = y; }

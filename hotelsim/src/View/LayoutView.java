@@ -57,11 +57,19 @@ public class LayoutView extends JPanel implements ModelListener {
             return;
         }
 
+        //bijhouden welke ruimtes al getekend zijn
+        //hashset slaat unieke objecten op, hetzelfde object kan er maar 1 keer in zitten
+        java.util.Set<Ruimte> getekend = new java.util.HashSet<>();
+
         // loop over elk vakje in het grid
         for (int x = 1; x <= hotel.breedte; x++) {
             for (int y = 1; y <= hotel.hoogte; y++) {
                 Ruimte r = hotel.krijgRuimteOp(x, y);
                 if (r == null) continue;
+                //al getekend, sla over
+                if (getekend.contains(r)) continue;
+                //voeg ruimte toe aan hashset
+                getekend.add(r);
 
                 // kies kleur op basis van ruimtetype
                 if (r instanceof Kamer) g.setColor(new Color(70, 130, 180));
@@ -70,16 +78,31 @@ public class LayoutView extends JPanel implements ModelListener {
                 else if (r instanceof Fitnessruimte) g.setColor(Color.GREEN);
                 else g.setColor(Color.LIGHT_GRAY);
 
+                // teken het hele blok in één keer op basis van positie en afmetingen
+                int tekenX = r.posX * tileSize;
                 // verschuif alles 1 vakje naar rechts zodat de lift links past
-                g.fillRect(x * tileSize, (y - 1) * tileSize, tileSize, tileSize);
+                int tekenY = (r.posY - 1) * tileSize;
+                int tekenB = r.breedte * tileSize;
+                int tekenH = r.hoogte * tileSize;
+
+                g.fillRect(tekenX, tekenY, tekenB, tekenH);
                 g.setColor(Color.BLACK);
-                g.drawRect(x * tileSize, (y - 1) * tileSize, tileSize, tileSize);
+                //1 rand om het hele blok
+                g.drawRect(tekenX, tekenY, tekenB, tekenH);
 
                 // teken de naam van de ruimte op het vakje
                 String naam = r.getClass().getSimpleName();
                 g.setColor(Color.BLACK);
                 g.setFont(new Font("Arial", Font.BOLD, 12));
-                g.drawString(naam, x * tileSize + 4, (y - 1) * tileSize + 16);
+                g.drawString(naam, tekenX + 4, tekenY + 16);
+
+                //teken kamernummer als het een kamer is
+                if (r instanceof Kamer){
+                    //((Kamer) r) zet r van type ruimte naar kamer
+                    //String.valueof zet int naar string
+                    g.drawString(String.valueOf(((Kamer) r).getKamernummer()), tekenX + 4, tekenY + 30);
+                    
+                }
             }
         }
 

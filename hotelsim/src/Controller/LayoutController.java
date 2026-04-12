@@ -1,7 +1,7 @@
 package Controller;
 
 import org.json.JSONObject;
-import Model.RuimteMaker;
+import Model.RuimteFactory;
 import Model.Hotel;
 import Model.HotelManager;
 import Model.Layout;
@@ -29,12 +29,14 @@ public class LayoutController {
     //maak grid op basis van bovenstaande afmetingen
     nieuwHotel.layout = new Layout(resultaat.breedte, resultaat.hoogte);
 
-    //maak ruimtes aan via ruimtemaker en voeg toe aan hotel en grid
+    //maak ruimtes aan via ruimtefactory en voeg toe aan hotel en grid
+
+    RuimteFactory factory = new RuimteFactory();
 
     //loopt door alle jsonobjecten
     for (JSONObject obj : resultaat.ruimteData) {
         //maak de juiste ruimte subklasse aan
-        Ruimte r = new RuimteMaker().maakRuimte(obj.getString("AreaType"), obj);
+        Ruimte r = factory.maakRuimte(obj.getString("AreaType"), obj);
         //waardes zijn allemaal opgeslagen in jsonobject 
         //set de x en y positie 
         r.posX = obj.getInt("_posX");
