@@ -2,7 +2,9 @@ package Model;
 
 import org.json.JSONObject;
 
-public class RuimteMaker {
+public class RuimteFactory {
+
+    private int volgendKamernummer = 101;
 
     // maakt de juiste subklasse aan op basis van het AreaType uit de JSON
     public Ruimte maakRuimte(String areaType, JSONObject obj) {
@@ -11,6 +13,8 @@ public class RuimteMaker {
                 Kamer kamer = new Kamer();
                 // haalt het getal uit bv "5 sterren"
                 kamer.sterren = Integer.parseInt(obj.getString("Classification").split(" ")[0]);
+                //maakt kamer nummer
+                kamer.kamernummer = volgendKamernummer++;
                 return kamer;
             case "Restaurant":
                 Restaurant restaurant = new Restaurant();

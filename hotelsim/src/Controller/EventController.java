@@ -1,10 +1,10 @@
 package Controller;
 
+import Model.*;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventManager;
 import hotelevents.HotelEventListener;
-import Model.ILogger;
-import Model.Persoon;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -23,11 +23,26 @@ public class EventController implements HotelEventListener {
     // personen die genotificeerd worden
     private List<Persoon> personen = new ArrayList<>();
 
+     //lijst van listeners
+    private List<IEventListener> listeners = new ArrayList<>();
+
     // constructor
     public EventController(HotelEventManager eventManager) {
         this.eventManager = eventManager;
     }
 
+    //voeg een listener toe
+    public void registreerListener(IEventListener listener){
+        listeners.add(listener);
+    }
+
+    //stuur event door naar listeners
+    public void stuurNaarListeners(Model.InternEvent event) {
+        for (IEventListener listener : listeners)  {
+            listener.onEvent(event);
+        }
+    }
+    
     // stel de hotelcontroller in
     public void setHotelController(HotelController hotelController) {
         this.hotelController = hotelController;
@@ -55,9 +70,11 @@ public class EventController implements HotelEventListener {
 
         switch (evt.getEventType()) {
             case CHECK_IN:
+                stuurNaarListeners(new CheckInEvent(evt.getTime(), evt.getGuestId()));
                 if (logger != null) logger.log("[" + evt.getTime() + "] Lobby: gast " + evt.getGuestId() + " checkt in");
                 break;
             case CHECK_OUT:
+                stuurNaarListeners(new CheckOutEvent(evt.getTime(), evt.getGuestId()));
                 if (logger != null) logger.log("[" + evt.getTime() + "] Lobby: gast " + evt.getGuestId() + " checkt uit");
                 break;
             case GOTO_CINEMA:

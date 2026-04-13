@@ -17,10 +17,18 @@ public class Schoonmaker extends Persoon {
     }
 
     // maak een kamer schoon
-    public void maakKamerSchoon(Kamer k) {}
+    public void maakKamerSchoon(Kamer k) {
+        this.kamer = k;
+        this.bezig = true;
+        k.schoonmaken();
+        this.bezig = false;
+        this.kamer = null;
+    }
 
     // handel een noodsituatie af
-    public void handelEmergency(Kamer k) {}
+    public void handelEmergency(Kamer k) {
+        maakKamerSchoon(k);
+    }
 
     // ga naar de optimale positie in het hotel
     public void gaNaarOptimalePositie() {}

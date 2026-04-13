@@ -1,12 +1,6 @@
 package View;
 
-import Model.Hotel;
-import Model.Ruimte;
-import Model.Kamer;
-import Model.Restaurant;
-import Model.Bioscoop;
-import Model.Fitnessruimte;
-import Model.ModelListener;
+import Model.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -57,11 +51,19 @@ public class LayoutView extends JPanel implements ModelListener {
             return;
         }
 
+        //bijhouden welke ruimtes al getekend zijn
+        //hashset slaat unieke objecten op, hetzelfde object kan er maar 1 keer in zitten
+        java.util.Set<Ruimte> getekend = new java.util.HashSet<>();
+
         // loop over elk vakje in het grid
         for (int x = 1; x <= hotel.breedte; x++) {
             for (int y = 1; y <= hotel.hoogte; y++) {
                 Ruimte r = hotel.krijgRuimteOp(x, y);
                 if (r == null) continue;
+                //al getekend, sla over
+                if (getekend.contains(r)) continue;
+                //voeg ruimte toe aan hashset
+                getekend.add(r);
 
                 // kies kleur op basis van ruimtetype
                 if (r instanceof Kamer) g.setColor(new Color(70, 130, 180));
@@ -70,41 +72,89 @@ public class LayoutView extends JPanel implements ModelListener {
                 else if (r instanceof Fitnessruimte) g.setColor(Color.GREEN);
                 else g.setColor(Color.LIGHT_GRAY);
 
+                // teken het hele blok in één keer op basis van positie en afmetingen
+                int tekenX = r.posX * tileSize;
                 // verschuif alles 1 vakje naar rechts zodat de lift links past
-                g.fillRect(x * tileSize, (y - 1) * tileSize, tileSize, tileSize);
+                int tekenY = (r.posY - 1) * tileSize;
+                int tekenB = r.breedte * tileSize;
+                int tekenH = r.hoogte * tileSize;
+
+                g.fillRect(tekenX, tekenY, tekenB, tekenH);
                 g.setColor(Color.BLACK);
-                g.drawRect(x * tileSize, (y - 1) * tileSize, tileSize, tileSize);
+                //1 rand om het hele blok
+                g.drawRect(tekenX, tekenY, tekenB, tekenH);
 
                 // teken de naam van de ruimte op het vakje
                 String naam = r.getClass().getSimpleName();
                 g.setColor(Color.BLACK);
                 g.setFont(new Font("Arial", Font.BOLD, 12));
-                g.drawString(naam, x * tileSize + 4, (y - 1) * tileSize + 16);
+                g.drawString(naam, tekenX + 4, tekenY + 16);
+
+                //teken kamernummer als het een kamer is
+                if (r instanceof Kamer){
+                    //((Kamer) r) zet r van type ruimte naar kamer
+                    //String.valueof zet int naar string
+                    g.drawString(String.valueOf(((Kamer) r).getKamernummer()), tekenX + 4, tekenY + 30);
+                    
+                }
             }
         }
 
         // teken de lift helemaal links in cyaan
-        g.setColor(Color.CYAN);
-        g.fillRect(0, 0, tileSize, (hotel.hoogte + 1) * tileSize);
-        g.setColor(Color.BLACK);
-        g.drawRect(0, 0, tileSize, (hotel.hoogte + 1) * tileSize);
-        g.setFont(new Font("Arial", Font.BOLD, 12));
-        g.drawString("Lift", 4, 16);
+        if (hotel.lift != null){
+            g.setColor(Color.CYAN);
+            g.fillRect(0, 0, tileSize, (hotel.hoogte + 1) * tileSize);
+            g.setColor(Color.BLACK);
+            g.drawRect(0, 0, tileSize, (hotel.hoogte + 1) * tileSize);
+            g.setFont(new Font("Arial", Font.BOLD, 12));
+            g.drawString("Lift", 4, 16);
+        }
 
         // teken de trap helemaal rechts in magenta
-        int trapX = (hotel.breedte + 1) * tileSize;
-        g.setColor(Color.MAGENTA);
-        g.fillRect(trapX, 0, tileSize, (hotel.hoogte + 1) * tileSize);
-        g.setColor(Color.BLACK);
-        g.drawRect(trapX, 0, tileSize, (hotel.hoogte + 1) * tileSize);
-        g.drawString("Trap", trapX + 4, 16);
+        if (hotel.trap != null){
+            int trapX = (hotel.breedte + 1) * tileSize;
+            g.setColor(Color.MAGENTA);
+            g.fillRect(trapX, 0, tileSize, (hotel.hoogte + 1) * tileSize);
+            g.setColor(Color.BLACK);
+            g.drawRect(trapX, 0, tileSize, (hotel.hoogte + 1) * tileSize);
+            g.drawString("Trap", trapX + 4, 16);
+        }
 
         // teken de lobby onderin, even breed als het hotel
-        int lobbyY = hotel.hoogte * tileSize;
-        g.setColor(Color.YELLOW);
-        g.fillRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
-        g.setColor(Color.BLACK);
-        g.drawRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
-        g.drawString("Lobby", tileSize + 4, lobbyY + 16);
+        if (hotel.lobby != null){
+            int lobbyY = hotel.hoogte * tileSize;
+            g.setColor(Color.YELLOW);
+            g.fillRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
+            g.setColor(Color.BLACK);
+            g.drawRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
+            g.drawString("Lobby", tileSize + 4, lobbyY + 16);
+        }
+
+        // teken personen
+        //doorloop alle personen in hotel
+        for (Persoon p : hotel.personen) {
+            //stop als de persoon geen positie heeft
+            if (p.huidigVakje == null) continue;
+            //bereken de pixel positie
+            //x is al verschoven dus lift dus heeft geen -1
+            int px = p.huidigVakje.x * tileSize + tileSize / 4;
+            int py = (p.huidigVakje.y - 1) * tileSize + tileSize / 4;
+            
+            //gasten wit tekenen en schoonmaker grijs
+            if (p instanceof Gast) g.setColor(Color.WHITE);
+            else g.setColor(Color.DARK_GRAY); // schoonmaker
+            //gevulde cirkel van halve vakje grootte tekenen op berekende positie
+            g.fillOval(px, py, tileSize / 2, tileSize / 2);
+            //teken zwarte rand om cirkel
+            g.setColor(Color.BLACK);
+            g.drawOval(px, py, tileSize / 2, tileSize / 2);
+
+            // teken gastId op de cirkel
+            if (p instanceof Gast) {
+                g.setColor(Color.BLACK);
+                g.setFont(new Font("Arial", Font.BOLD, 10));
+                g.drawString(String.valueOf(((Gast) p).gastId), px + tileSize / 8, py + tileSize / 3);
+            }
+        }
     }
 }
