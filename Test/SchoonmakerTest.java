@@ -4,7 +4,6 @@ import Model.*;
 
 public class SchoonmakerTest {
 
-    // een nieuwe schoonmaker is niet bezig en heeft geen kamer
     @Test
     void testConstructor() {
         Schoonmaker s = new Schoonmaker();
@@ -12,7 +11,6 @@ public class SchoonmakerTest {
         assertNull(s.kamer);
     }
 
-    // bezig mag handmatig op true gezet worden
     @Test
     void testZetBezig() {
         Schoonmaker s = new Schoonmaker();
@@ -20,7 +18,6 @@ public class SchoonmakerTest {
         assertTrue(s.bezig);
     }
 
-    // kamer mag handmatig gekoppeld worden aan de schoonmaker
     @Test
     void testKoppelKamer() {
         Schoonmaker s = new Schoonmaker();
@@ -29,11 +26,37 @@ public class SchoonmakerTest {
         assertEquals(k, s.kamer);
     }
 
-    // schoonmaker is een Persoon, dus huidigVakje begint op null
     @Test
     void testErftVanPersoon() {
         Schoonmaker s = new Schoonmaker();
         assertNull(s.huidigVakje);
         assertNull(s.doelVakje);
+    }
+
+    @Test
+    void testMaakKamerSchoon() {
+        Schoonmaker s = new Schoonmaker();
+        Kamer k = new Kamer();
+        k.schoon = false;
+        s.maakKamerSchoon(k);
+        assertTrue(k.schoon);
+        // na schoonmaken is schoonmaker niet meer bezig
+        assertFalse(s.bezig);
+        assertNull(s.kamer);
+    }
+
+    @Test
+    void testHandelEmergency() {
+        Schoonmaker s = new Schoonmaker();
+        Kamer k = new Kamer();
+        k.schoon = false;
+        s.handelEmergency(k);
+        assertTrue(k.schoon);
+    }
+
+    @Test
+    void testGaNaarOptimalePositieCrashetNiet() {
+        Schoonmaker s = new Schoonmaker();
+        assertDoesNotThrow(() -> s.gaNaarOptimalePositie());
     }
 }

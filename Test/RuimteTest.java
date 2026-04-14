@@ -4,9 +4,8 @@ import Model.*;
 
 public class RuimteTest {
 
-    // alle int-velden beginnen op 0 na aanmaken
     @Test
-    void testConstructor() {
+    void testConstructorLeeg() {
         Ruimte r = new Ruimte();
         assertEquals(0, r.posX);
         assertEquals(0, r.posY);
@@ -14,7 +13,15 @@ public class RuimteTest {
         assertEquals(0, r.hoogte);
     }
 
-    // ingang kan gezet worden en wordt correct teruggegeven
+    @Test
+    void testConstructorMetPositie() {
+        Ruimte r = new Ruimte(1, 2, 3, 4);
+        assertEquals(1, r.posX);
+        assertEquals(2, r.posY);
+        assertEquals(3, r.breedte);
+        assertEquals(4, r.hoogte);
+    }
+
     @Test
     void testSetEnKrijgIngang() {
         Ruimte r = new Ruimte();
@@ -24,13 +31,20 @@ public class RuimteTest {
         assertEquals(3, ingang[1]);
     }
 
-    // type veld begint leeg en kan gezet worden
     @Test
-    void testType() {
+    void testSetPositie() {
         Ruimte r = new Ruimte();
-        assertEquals("", r.type);
-        r.type = "Lift";
-        assertEquals("Lift", r.type);
+        r.setPositie(5, 6);
+        assertEquals(5, r.getX());
+        assertEquals(6, r.getY());
+    }
+
+    @Test
+    void testSetAfmetingen() {
+        Ruimte r = new Ruimte();
+        r.setAfmetingen(3, 4);
+        assertEquals(3, r.getBreedte());
+        assertEquals(4, r.getHoogte());
     }
 
     @Test
@@ -38,6 +52,18 @@ public class RuimteTest {
         Ruimte r = new Ruimte(1, 1, 2, 2);
         Persoon p = new Persoon();
         r.betreed(p);
+        assertEquals(1, r.getAanwezigen().size());
         r.verlaat(p);
+        assertEquals(0, r.getAanwezigen().size());
+    }
+
+    @Test
+    void testGetAanwezigenIsKopie() {
+        Ruimte r = new Ruimte();
+        Persoon p = new Persoon();
+        r.betreed(p);
+        // kopie aanpassen mag de originele lijst niet veranderen
+        r.getAanwezigen().clear();
+        assertEquals(1, r.getAanwezigen().size());
     }
 }

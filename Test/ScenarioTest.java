@@ -1,52 +1,49 @@
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import Model.*;
+import Controller.*;
 
+// Test de LayoutController en HotelManager als vervanging voor niet-bestaande Scenario klasse
 public class ScenarioTest {
 
-    // een nieuw scenario moet een lege lijst hebben
     @Test
-    void testConstructorLeeg() {
-        Scenario scenario = new Scenario();
-        assertTrue(scenario.gebeurtenissen.isEmpty());
+    void testLayoutControllerMaakHandmatigeLayout() {
+        HotelController hc = new HotelController();
+        int id = hc.getLayoutController().maakHandmatigeLayout("test", 5, 5);
+        assertNotEquals(-1, id);
+        assertNotNull(hc.getLayoutController().getHotel(id));
     }
 
-    // na toevoegen moet de lijst één gebeurtenis bevatten
     @Test
-    void testVoegGebeurtenisToe() {
-        Scenario scenario = new Scenario();
-        Gebeurtenis g = new Gebeurtenis(5, "checkin");
-        scenario.voegGebeurtenisToe(g);
-        assertEquals(1, scenario.gebeurtenissen.size());
+    void testHandmatigeLayoutHeeftJuisteAfmetingen() {
+        HotelController hc = new HotelController();
+        int id = hc.getLayoutController().maakHandmatigeLayout("test", 4, 6);
+        Hotel hotel = hc.getLayoutController().getHotel(id);
+        assertEquals(4, hotel.breedte);
+        assertEquals(6, hotel.hoogte);
     }
 
-    // krijgGebeurtenissen moet alleen de gebeurtenis op het juiste tijdstip teruggeven
     @Test
-    void testKrijgGebeurtenissenOpTijd() {
-        Scenario scenario = new Scenario();
-        scenario.voegGebeurtenisToe(new Gebeurtenis(10, "checkin"));
-        scenario.voegGebeurtenisToe(new Gebeurtenis(20, "schoonmaak"));
-
-        assertEquals(1, scenario.krijgGebeurtenissen(10).size());
-        assertEquals("checkin", scenario.krijgGebeurtenissen(10).get(0).type);
+    void testMeerdereLayoutsLaden() {
+        HotelController hc = new HotelController();
+        int id1 = hc.getLayoutController().laadVanBestand("layout.json", "layout1");
+        int id2 = hc.getLayoutController().laadVanBestand("layout.json", "layout2");
+        assertNotEquals(id1, id2);
+        assertNotNull(hc.getLayoutController().getHotel(id1));
+        assertNotNull(hc.getLayoutController().getHotel(id2));
     }
 
-    // bij een tijdstip zonder gebeurtenissen moet de lijst leeg zijn
     @Test
-    void testKrijgGebeurtenissenLeegOpOnbekendTijd() {
-        Scenario scenario = new Scenario();
-        scenario.voegGebeurtenisToe(new Gebeurtenis(10, "checkin"));
-
-        assertTrue(scenario.krijgGebeurtenissen(99).isEmpty());
+    void testHotelManagerGetHotelManager() {
+        HotelController hc = new HotelController();
+        assertNotNull(hc.getLayoutController().getHotelManager());
     }
 
-    // meerdere gebeurtenissen op hetzelfde tijdstip moeten allemaal teruggegeven worden
     @Test
-    void testMeerdereGebeurtenissenOpZelfdeTijd() {
-        Scenario scenario = new Scenario();
-        scenario.voegGebeurtenisToe(new Gebeurtenis(5, "checkin"));
-        scenario.voegGebeurtenisToe(new Gebeurtenis(5, "schoonmaak"));
-
-        assertEquals(2, scenario.krijgGebeurtenissen(5).size());
+    void testHandmatigeLayoutHeeftLegeLijstRuimtes() {
+        HotelController hc = new HotelController();
+        int id = hc.getLayoutController().maakHandmatigeLayout("leeg", 3, 3);
+        Hotel hotel = hc.getLayoutController().getHotel(id);
+        assertTrue(hotel.ruimtes.isEmpty());
     }
 }

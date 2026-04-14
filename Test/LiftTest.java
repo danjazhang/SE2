@@ -4,7 +4,6 @@ import Model.*;
 
 public class LiftTest {
 
-    // lift begint op verdieping 0 met een lege verzoeklijst
     @Test
     void testConstructor() {
         Lift l = new Lift();
@@ -13,7 +12,6 @@ public class LiftTest {
         assertTrue(l.getVerzoeken().isEmpty());
     }
 
-    // verdieping gaat omhoog na gaOmhoog()
     @Test
     void testGaOmhoog() {
         Lift l = new Lift();
@@ -21,7 +19,6 @@ public class LiftTest {
         assertEquals(1, l.getHuidigeVerdieping());
     }
 
-    // verdieping gaat omlaag na gaOmlaag()
     @Test
     void testGaOmlaag() {
         Lift l = new Lift();
@@ -30,7 +27,6 @@ public class LiftTest {
         assertEquals(0, l.getHuidigeVerdieping());
     }
 
-    // verzoek wordt toegevoegd aan de lijst
     @Test
     void testVoegVerzoekToe() {
         Lift l = new Lift();
@@ -39,13 +35,27 @@ public class LiftTest {
         assertEquals(3, l.getVerzoeken().get(0));
     }
 
-    // hetzelfde verzoek mag maar één keer in de lijst staan
     @Test
     void testDubbelVerzoekWordtNietToegevoegd() {
         Lift l = new Lift();
         l.voegVerzoekToe(3);
         l.voegVerzoekToe(3);
-        // verzoek 3 staat maar één keer in de lijst
         assertEquals(1, l.getVerzoeken().size());
+    }
+
+    @Test
+    void testOpenEnSluitDeur() {
+        Lift l = new Lift();
+        assertDoesNotThrow(() -> l.openDeur());
+        assertDoesNotThrow(() -> l.sluitDeur());
+    }
+
+    @Test
+    void testMeerdereVerzoeken() {
+        Lift l = new Lift();
+        l.voegVerzoekToe(1);
+        l.voegVerzoekToe(2);
+        l.voegVerzoekToe(3);
+        assertEquals(3, l.getVerzoeken().size());
     }
 }

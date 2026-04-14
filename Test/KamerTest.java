@@ -4,22 +4,19 @@ import Model.*;
 
 public class KamerTest {
 
-    // een nieuwe kamer is schoon en heeft geen gast
     @Test
     void testConstructor() {
         Kamer k = new Kamer();
         assertTrue(k.schoon);
-        assertNull(k.Gast);
+        assertEquals(0, k.sterren);
     }
 
-    // sterren beginnen op 0 want ze worden niet in de constructor gezet
     @Test
     void testSterrenStandaard() {
         Kamer k = new Kamer();
         assertEquals(0, k.sterren);
     }
 
-    // kamer erft van Ruimte, posX en posY beginnen op 0
     @Test
     void testErftVanRuimte() {
         Kamer k = new Kamer();
@@ -27,7 +24,6 @@ public class KamerTest {
         assertEquals(0, k.posY);
     }
 
-    // sterren kunnen handmatig gezet worden
     @Test
     void testZetSterren() {
         Kamer k = new Kamer();
@@ -35,7 +31,6 @@ public class KamerTest {
         assertEquals(4, k.sterren);
     }
 
-    // schoon kan op false gezet worden
     @Test
     void testZetSchoonOpFalse() {
         Kamer k = new Kamer();
@@ -43,20 +38,87 @@ public class KamerTest {
         assertFalse(k.schoon);
     }
 
-    // checkIn mag niet crashen bij een geldige gast
     @Test
-    void testCheckInCrashetNiet() {
+    void testKoppelGast() {
         Kamer k = new Kamer();
-        Gast g = new Gast(3);
-        // checkIn koppelt de gast aan de kamer, mag niet crashen
-        assertDoesNotThrow(() -> k.checkIn(g));
+        Gast g = new Gast(1, 3);
+        k.koppelGast(g);
+        assertTrue(k.isBezet());
+        assertEquals(k, g.kamer);
     }
 
-    // checkOut mag niet crashen
     @Test
-    void testCheckOutCrashetNiet() {
+    void testOntkoppelGast() {
         Kamer k = new Kamer();
-        // checkOut verwijdert de gast uit de kamer, mag niet crashen
-        assertDoesNotThrow(() -> k.checkOut());
+        Gast g = new Gast(1, 3);
+        k.koppelGast(g);
+        k.ontkoppelGast(g);
+        assertFalse(k.isBezet());
+        assertNull(g.kamer);
+        assertFalse(k.schoon);
+    }
+
+    @Test
+    void testOntkoppelGastDieNietIngechecktIs() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 3);
+        // mag niet crashen als gast niet ingecheckt is
+        assertDoesNotThrow(() -> k.ontkoppelGast(g));
+    }
+
+    @Test
+    void testGastKomtBinnenEnVerlaat() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 3);
+        k.koppelGast(g);
+        k.gastKomtBinnen(g);
+        assertTrue(k.isGastAanwezig(g));
+        k.gastVerlaatKamer(g);
+        assertFalse(k.isGastAanwezig(g));
+    }
+
+    @Test
+    void testGastKomtBinnenZonderCheckIn() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 3);
+        // mag niet crashen als gast niet ingecheckt is
+        assertDoesNotThrow(() -> k.gastKomtBinnen(g));
+        assertFalse(k.isGastAanwezig(g));
+    }
+
+    @Test
+    void testSchoonmaken() {
+        Kamer k = new Kamer();
+        k.schoon = false;
+        k.schoonmaken();
+        assertTrue(k.isSchoon());
+    }
+
+    @Test
+    void testGetIngecheckteGasten() {
+        Kamer k = new Kamer();
+        Gast g1 = new Gast(1, 3);
+        Gast g2 = new Gast(2, 4);
+        k.koppelGast(g1);
+        k.koppelGast(g2);
+        assertEquals(2, k.getIngecheckteGasten().size());
+    }
+
+    @Test
+    void testGetKamernummer() {
+        Kamer k = new Kamer();
+        k.kamernummer = 101;
+        assertEquals(101, k.getKamernummer());
+    }
+
+    @Test
+    void testOntkoppelGastDieNogBinnenIs() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 3);
+        k.koppelGast(g);
+        k.gastKomtBinnen(g);
+        // ontkoppelen terwijl gast fysiek aanwezig is
+        k.ontkoppelGast(g);
+        assertFalse(k.isBezet());
     }
 }
