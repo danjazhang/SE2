@@ -5,6 +5,8 @@ import Model.Persoon;
 import hotelevents.HotelEventManager;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 // Verantwoordelijkheid: simulatie starten, pauzeren en stoppen
@@ -38,6 +40,9 @@ public class SimulatieController {
         Hotel hotel = hotelController.getHotel();
         //stop als hotel niet bestaat
         if (hotel == null) return;
+    
+        // kopie zodat toevoegen van nieuwe personen geen crash geeft
+        List<Persoon> kopie = new ArrayList<>(hotel.personen);
         //loop door alle personen van in het hotel
         for ( Persoon p : hotel.personen) {
             p.beweeg();

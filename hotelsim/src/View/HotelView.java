@@ -141,7 +141,7 @@ public class HotelView extends JFrame {
         add(new JScrollPane(eventLogView.getLogArea()), BorderLayout.WEST);
 
         //venster grootte
-        setSize(730, 650);
+        setSize(800, 660);
         //venster in het midden van de scherm
         setLocationRelativeTo(null);
         //maak venster zichtbaar

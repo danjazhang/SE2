@@ -1,6 +1,6 @@
-
-package Controller;
-
+import Controller.EventController;
+import Controller.HotelController;
+import Controller.SimulatieController;
 import View.HotelView;
 import hotelevents.HotelEventManager;
 import View.EventLogView;

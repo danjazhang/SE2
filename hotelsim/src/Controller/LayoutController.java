@@ -18,10 +18,15 @@ public class LayoutController {
 
     //maak nieuwe hotel
     Hotel nieuwHotel = new Hotel();
-    nieuwHotel.breedte = resultaat.breedte;
-    nieuwHotel.hoogte = resultaat.hoogte;
+
+    //grid groter maken voor lift trap en lobby
+    int gridBreedte = resultaat.breedte +3;
+    int gridHoogte = resultaat.hoogte+1;
+
+    nieuwHotel.breedte = gridBreedte;
+    nieuwHotel.hoogte = gridHoogte;
     //maak grid op basis van bovenstaande afmetingen
-    nieuwHotel.layout = new Layout(resultaat.breedte, resultaat.hoogte);
+    nieuwHotel.layout = new Layout(gridBreedte, gridHoogte);
 
     //maak ruimtes aan via ruimtefactory en voeg toe aan hotel en grid
 
@@ -33,7 +38,7 @@ public class LayoutController {
         Ruimte r = factory.maakRuimte(obj.getString("AreaType"), obj);
         //waardes zijn allemaal opgeslagen in jsonobject 
         //set de x en y positie 
-        r.posX = obj.getInt("_posX");
+        r.posX = obj.getInt("_posX") +1; // ruimte voor lift
         r.posY = obj.getInt("_posY");
         //set de breedte en hoogte
         r.breedte = obj.getInt("_breedte");
@@ -46,15 +51,30 @@ public class LayoutController {
 
     // na de ruimtes loop, voor het opslaan
     // maak lift aan links
-    nieuwHotel.lift = new Lift();
+    Lift lift = new Lift();
+    lift.posX = 1;
+    lift.posY= 1;
+    lift.breedte = 1;
+    lift.hoogte = gridHoogte;
+    nieuwHotel.lift = lift;
+    nieuwHotel.ruimtes.add(lift);
+    nieuwHotel.layout.plaatsRuimte(lift);
 
     // maak trap aan rechts
-    nieuwHotel.trap = new Trap(2);
+    Trap trap = new Trap(3);
+    trap.posX = gridBreedte -1;
+    trap.posY = 1;
+    trap.breedte = 2;
+    trap.hoogte = gridHoogte;
+    nieuwHotel.trap = trap;
+    nieuwHotel.ruimtes.add(trap);
+    nieuwHotel.layout.plaatsRuimte(trap);
 
     // maak lobby aan onderin
-    Lobby lobby = new Lobby(1, nieuwHotel.hoogte + 1, nieuwHotel.breedte, 1, 1, nieuwHotel.hoogte + 1, nieuwHotel, null);
+    Lobby lobby = new Lobby(2, gridHoogte, gridBreedte, 1, gridBreedte/2,gridHoogte, nieuwHotel, null);
     nieuwHotel.lobby = lobby;
     nieuwHotel.ruimtes.add(lobby);
+    nieuwHotel.layout.plaatsRuimte(lobby);
 
     //sla de layout op in hotelmanager met bestandsnaam als naam
     int id = hotelManager.addLayout(bestandsnaam, nieuwHotel.layout);

@@ -5,7 +5,7 @@ import java.util.List;
 
 // Stelt de lift voor in het hotel
 // Beheert de huidige verdieping, passagiers en verzoeken
-public class Lift {
+public class Lift extends Ruimte{
 
     // de verdieping waar de lift zich momenteel bevindt
     private int huidigeVerdieping;
@@ -21,7 +21,7 @@ public class Lift {
 
     // constructor: lift begint op verdieping 0 met lege lijsten
     public Lift() {
-        this.huidigeVerdieping = 0;
+        this.huidigeVerdieping = 1;
         this.passagiers = new ArrayList<>();
         this.verzoeken = new ArrayList<>();
         this.deurOpen = false;

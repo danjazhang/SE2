@@ -1,5 +1,8 @@
 package Model;
 
+import java.util.Queue;
+import java.util.LinkedList;
+
 // Basisklasse voor alle personen in het hotel
 // Gast en Schoonmaker erven van deze klasse
 public class Persoon {
@@ -13,6 +16,8 @@ public class Persoon {
     //layout zodat persoon vakjes kan opzoeken
     public Layout layout;
 
+    private Queue<Vakje> tussendoelen = new LinkedList<>();
+
     // constructor: persoon begint zonder positie
     public Persoon() {
         this.huidigVakje = null;
@@ -20,7 +25,17 @@ public class Persoon {
     }
 
     // stel het doelVakje in
-    public void zetDoel(Vakje v) { this.doelVakje = v; }
+    public void zetDoel(Vakje v) { 
+        this.doelVakje = v; 
+        }
+
+    public void voegTussendoelToe(Vakje v){
+        tussendoelen.add(v);
+
+        if (doelVakje == null){
+            doelVakje = tussendoelen.poll();
+        }
+    }
 
     //zet persoon op een startvakje
     public void zetStartPositie(Vakje v) {
@@ -31,10 +46,16 @@ public class Persoon {
 
     // beweeg de persoon 1 stap richting het doelVakje
     public void beweeg() {
-        //als doelvakje of huidige vakje leeg is dan stopt de methode
-        if (doelVakje == null || huidigVakje == null) return;
-        // persoon staat al op doelvakje, methode stopt
-        if (huidigVakje == doelVakje) return;
+        //als doelvakje of tussendoel leeg is dan stopt de methode
+        if (doelVakje == null && tussendoelen.isEmpty()) return;
+        // persoon staat nergens
+        if (huidigVakje == null) return;
+
+        if (huidigVakje == doelVakje && !tussendoelen.isEmpty()) {
+        doelVakje = tussendoelen.poll();
+        }
+
+        if (doelVakje == null || huidigVakje == doelVakje) return;
 
         //haal x en y coordinaten om mee te rekenen
         int huidigX = huidigVakje.x;

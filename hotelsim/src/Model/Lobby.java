@@ -1,5 +1,7 @@
 package Model;
 
+import java.util.List;
+
 public class Lobby extends Ruimte implements IEventListener {
 
     //positie van
@@ -30,27 +32,35 @@ public class Lobby extends Ruimte implements IEventListener {
     private void behandelCheckIn(CheckInEvent event) {
         //haal gastid op van event
         int gastId = event.getGastId();
-        //maak nieuwe gast met dat id en 1 ster voorkeur
-        //1 ster is tijdelijke voorkeur
-        //er moet een getter komen voor de sterren uit de library
-        Gast gast = new Gast(gastId, 1);
-        //geef gast layout
-        gast.layout = hotel.layout;
-        //zet gast op de balie als startpunt
-        Vakje startVakje = hotel.layout.krijgVakje(1, hotel.hoogte);
-        if (startVakje != null) gast.zetStartPositie(startVakje);
+        //factory maakt gast
+        //zet gast op balie als startpunt
+        Vakje startVakje = hotel.layout.krijgVakje(balieX, hotel.hoogte);
+        PersonenFactory personenFactory = new PersonenFactory();
+        Gast gast = personenFactory.maakGast(gastId, 1, hotel.layout, startVakje);
+
         //voeg persoon toe aan personenlijst in hotel
         hotel.voegPersoonToe(gast);
+
         //zoek een vrije schone kamer
         Kamer kamer = vindVrijeKamer();
         if (kamer != null) {
             //koppel de gast aan kamer
             gast.checkIn(kamer);
+
             //stel kamer als doel
-            gast.zetDoel(hotel.layout.krijgVakje(kamer.posX, kamer.posY));
+            Vakje doel = hotel.layout.krijgVakje(kamer.posX, kamer.posY);
+            if (startVakje != null && doel != null){
+                Pathfinder pathfinder = new Pathfinder(hotel);
+                List<Vakje> route = pathfinder.berekenRoute(startVakje, doel);
+                
+                gast.zetDoel(route.get(0));
+                for (int i = 1; i< route.size(); i++){
+                    gast.voegTussendoelToe(route.get(i));
+                }
+            }
         }
         //toon het event in de eventlog visueel
-        if (logger != null) logger.log("[" + event.getTijd() + "] Lobby: gast " + gastId + " checkt in");
+        //if (logger != null) logger.log("[" + event.getTijd() + "] Lobby: gast " + gastId + " checkt in");
     }
 
     private void behandelCheckOut(CheckOutEvent event) {
@@ -72,7 +82,7 @@ public class Lobby extends Ruimte implements IEventListener {
             }
         }
         //toon checkouut bericht
-        if (logger != null) logger.log("[" + event.getTijd() + "] Lobby: gast " + gastId + " checkt uit");
+        //if (logger != null) logger.log("[" + event.getTijd() + "] Lobby: gast " + gastId + " checkt uit");
     }
 
     private Kamer vindVrijeKamer() {
