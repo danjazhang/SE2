@@ -1,8 +1,8 @@
 package Model;
 
-// Abstracte basisklasse voor alle interne events in het hotel
-// Dit zijn ONZE eigen events, niet die van de library
-// De EventController maakt deze aan op basis van library events en stuurt ze door
+// Abstracte basisklasse voor alle interne eind events in het hotel
+// De eind events zoals FilmEindEvent erven van deze klasse
+// Ze worden aangemaakt door de ruimtes zelf als de eindtijd bereikt is
 public abstract class InternEvent {
 
     // tijdstip waarop het event plaatsvindt

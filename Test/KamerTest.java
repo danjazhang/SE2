@@ -9,7 +9,8 @@ public class KamerTest {
     void testConstructor() {
         Kamer k = new Kamer();
         assertTrue(k.schoon);
-        assertNull(k.Gast);
+        // veld heet gast met kleine letter
+        assertNull(k.gast);
     }
 
     // sterren beginnen op 0 want ze worden niet in de constructor gezet
@@ -48,7 +49,6 @@ public class KamerTest {
     void testCheckInCrashetNiet() {
         Kamer k = new Kamer();
         Gast g = new Gast(3);
-        // checkIn koppelt de gast aan de kamer, mag niet crashen
         assertDoesNotThrow(() -> k.checkIn(g));
     }
 
@@ -56,7 +56,6 @@ public class KamerTest {
     @Test
     void testCheckOutCrashetNiet() {
         Kamer k = new Kamer();
-        // checkOut verwijdert de gast uit de kamer, mag niet crashen
         assertDoesNotThrow(() -> k.checkOut());
     }
 }
