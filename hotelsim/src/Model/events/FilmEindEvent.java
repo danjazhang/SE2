@@ -1,4 +1,6 @@
-package Model;
+package Model.events;
+
+import Model.InternEvent;
 
 // Intern eind event dat aangemaakt wordt door de Bioscoop
 // als de film eindigt na een bepaald aantal ticks na START_CINEMA

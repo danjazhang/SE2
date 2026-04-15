@@ -31,23 +31,6 @@ public class Main {
         hotelController.setEventController(eventController);
         hotelController.setLogger(logView);
 
-
-        // maak alle ruimtes en personen aan met de logger
-        // zo kunnen ze zelf naar de GUI loggen
-        Lobby lobby = new Lobby(0, 0, 10, 10, 1, 1, logView);
-        Bioscoop bioscoop = new Bioscoop(logView);
-        Restaurant restaurant = new Restaurant(logView);
-        Fitnessruimte fitnessruimte = new Fitnessruimte(logView);
-        Schoonmaker schoonmaker = new Schoonmaker(logView);
-
-        // registreer alle listeners bij de EventController
-        // elke ruimte of persoon verwerkt zijn eigen events zelf
-        eventController.registreerListener(lobby);
-        eventController.registreerListener(bioscoop);
-        eventController.registreerListener(restaurant);
-        eventController.registreerListener(fitnessruimte);
-        eventController.registreerListener(schoonmaker);
-
         //maak simulatiecontroller aan
         simulatieController = new SimulatieController(eventManager, eventController, hotelController);
 

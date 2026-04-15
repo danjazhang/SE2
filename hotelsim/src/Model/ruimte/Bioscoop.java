@@ -1,6 +1,9 @@
 package Model.ruimte;
 
+import Model.IEventListener;
+import Model.ILogger;
 import Model.persoon.Gast;
+import Model.events.FilmEindEvent;
 
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;

@@ -1,5 +1,8 @@
 package Model.ruimte;
 
+import Model.events.FitnessEindEvent;
+import Model.IEventListener;
+import Model.ILogger;
 import Model.persoon.Gast;
 
 import hotelevents.HotelEvent;

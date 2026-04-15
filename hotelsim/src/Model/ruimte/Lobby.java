@@ -1,10 +1,14 @@
 package Model.ruimte;
 
 import Model.*;
+import Model.IEventListener;
+import Model.ILogger;
 import Model.layout.Vakje;
 import Model.persoon.Gast;
 import Model.persoon.Persoon;
 import Model.persoon.Schoonmaker;
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventType;
 
 import java.util.List;
 
@@ -26,18 +30,17 @@ public class Lobby extends Ruimte implements IEventListener {
 
     @Override
     //onEvent wordt aangeroepen bij elk event
-    public void onEvent(InternEvent event) {
+    public void onEvent(HotelEvent event) {
         //check of het een checkin of checkout event is en roep de juiste methode aan
-        if (event instanceof CheckInEvent) {
-            behandelCheckIn((CheckInEvent) event);
-        } else if (event instanceof CheckOutEvent) {
-            behandelCheckOut((CheckOutEvent) event);
+        if (event.getEventType() == HotelEventType.CHECK_IN){
+            behandelCheckIn(event.getGuestId(), event.getTime());
+        } else if (event.getEventType()== HotelEventType.CHECK_OUT){
+            behandelCheckOut(event.getGuestId(), event.getTime());
         }
     }
 
-    private void behandelCheckIn(CheckInEvent event) {
-        //haal gastid op van event
-        int gastId = event.getGastId();
+    private void behandelCheckIn(int gastId, int tijd) {
+        System.out.println("logger in behandelCheckIn: " + logger);
         //factory maakt gast
         //zet gast op balie als startpunt
         Vakje startVakje = hotel.layout.krijgVakje(balieX, hotel.hoogte);
@@ -65,11 +68,10 @@ public class Lobby extends Ruimte implements IEventListener {
                 }
             }
         }
+        if (logger != null) logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt in");
     }
 
-    private void behandelCheckOut(CheckOutEvent event) {
-        //loop door alle personen en zoek de gast met het juiste id
-        int gastId = event.getGastId();
+    private void behandelCheckOut(int gastId, int tijd) {
         for (Persoon p : hotel.personen) {
             if (p instanceof Gast && ((Gast) p).gastId == gastId) {
                 Gast gast = (Gast) p;
@@ -85,6 +87,7 @@ public class Lobby extends Ruimte implements IEventListener {
                 break;
             }
         }
+        if (logger != null) logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt uit");
     }
 
     private Kamer vindVrijeKamer() {

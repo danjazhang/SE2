@@ -1,33 +1,29 @@
-import Model.persoon.Gast;
 import Model.ruimte.Fitnessruimte;
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventType;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FitnessruimteTest {
 
-    // gastenlijst is leeg na aanmaken
-    @Test
-    void testConstructor() {
+    @Test void testConstructor() {
         Fitnessruimte f = new Fitnessruimte();
-        assertNotNull(f.gasten);
         assertTrue(f.gasten.isEmpty());
     }
 
-    // fitnesruimte erft van Ruimte, posX en posY beginnen op 0
-    @Test
-    void testErftVanRuimte() {
-        Fitnessruimte f = new Fitnessruimte();
-        assertEquals(0, f.posX);
-        assertEquals(0, f.posY);
+    @Test void testGotoFitnessCrashetNiet() {
+        assertDoesNotThrow(() -> new Fitnessruimte().onEvent(new HotelEvent(1, HotelEventType.GOTO_FITNESS, 1, -1)));
     }
 
-    // een gast kan aan de gastenlijst toegevoegd worden
-    @Test
-    void testVoegGastToe() {
-        Fitnessruimte f = new Fitnessruimte();
-        Gast g = new Gast(2);
-        f.gasten.add(g);
-        assertEquals(1, f.gasten.size());
-        assertEquals(g, f.gasten.get(0));
+    @Test void testGastKlaarNaSportduur() {
+        boolean[] logged = {false};
+        Fitnessruimte f = new Fitnessruimte(bericht -> logged[0] = true);
+        f.onEvent(new HotelEvent(1, HotelEventType.GOTO_FITNESS, 1, -1));
+        f.onEvent(new HotelEvent(21, HotelEventType.NONE, -1, -1));
+        assertTrue(logged[0]);
+    }
+
+    @Test void testNoneCrashetNiet() {
+        assertDoesNotThrow(() -> new Fitnessruimte().onEvent(new HotelEvent(1, HotelEventType.NONE, -1, -1)));
     }
 }

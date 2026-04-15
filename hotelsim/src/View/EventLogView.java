@@ -18,5 +18,6 @@ public class EventLogView implements ILogger {
         //append plakt tekst achteraan
         logArea.append(bericht + "\n");
         //om tekst te printen doe je EventLog.log("Tekst") ipv System.Out.println("Tekst")
+    System.out.println("log aangeroepen: " + bericht);
     }
 }

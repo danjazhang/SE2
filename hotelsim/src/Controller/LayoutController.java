@@ -16,6 +16,8 @@ public class LayoutController {
     // beheert alle geladen hotels
     private HotelManager hotelManager = new HotelManager();
 
+    private ILogger logger;
+
     // laad een nieuw hotel vanuit een JSON bestand
     public int laadVanBestand(String bestandspad, String bestandsnaam) {
         //lees het JSON bestand via de parser
@@ -37,7 +39,7 @@ public class LayoutController {
 
     //maak ruimtes aan via ruimtefactory en voeg toe aan hotel en grid
 
-    RuimteFactory factory = new RuimteFactory();
+    RuimteFactory factory = new RuimteFactory(logger);
 
     //loopt door alle jsonobjecten
     for (JSONObject obj : resultaat.ruimteData) {
@@ -78,7 +80,7 @@ public class LayoutController {
     nieuwHotel.layout.plaatsRuimte(trap);
 
     // maak lobby aan onderin
-    Lobby lobby = new Lobby(2, gridHoogte, gridBreedte -3, 1, gridBreedte/2,gridHoogte, nieuwHotel, null);
+    Lobby lobby = new Lobby(2, gridHoogte, gridBreedte -3, 1, gridBreedte/2,gridHoogte, nieuwHotel, logger);
     nieuwHotel.lobby = lobby;
     nieuwHotel.ruimtes.add(lobby);
     nieuwHotel.layout.plaatsRuimte(lobby);
@@ -106,6 +108,10 @@ public class LayoutController {
         //sla hotel op met zelfde id
         hotelManager.loadHotel(id, nieuwHotel);
         return id;
+    }
+
+    public void setLogger(ILogger logger){
+        this.logger = logger;
     }
 
     // geef een hotel terug op basis van id

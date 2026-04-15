@@ -1,4 +1,6 @@
-package Model;
+package Model.events;
+
+import Model.InternEvent;
 
 // Intern eind event dat aangemaakt wordt door het Restaurant
 // als een gast klaar is met eten na een bepaald aantal ticks na NEED_FOOD
