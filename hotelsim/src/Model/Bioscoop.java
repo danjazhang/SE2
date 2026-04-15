@@ -1,15 +1,16 @@
 package Model;
 
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventType;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 // Stelt de bioscoop voor in het hotel
 // Erft van Ruimte en implementeert IEventListener
-// De bioscoop reageert op START_CINEMA om filmEindTijd te berekenen
-// Via TickEvent checkt hij wanneer de film eindigt
-// GOTO_CINEMA en START_CINEMA worden al gelogd door de library
+// De bioscoop is verantwoordelijk voor film logica (single responsibility)
+// Bij GOTO_CINEMA logt hij dat een gast binnenkomt
+// Bij START_CINEMA slaat hij de eindtijd op
+// Bij NONE checkt hij elke tick of de film eindigt en maakt FilmEindEvent aan
 public class Bioscoop extends Ruimte implements IEventListener {
 
     // of er momenteel een film bezig is
@@ -24,12 +25,6 @@ public class Bioscoop extends Ruimte implements IEventListener {
     // het tijdstip waarop de huidige film eindigt
     private int filmEindTijd;
 
-    // wachtrij van gastnummers die wachten op de volgende film
-    private Queue<Integer> wachtrij;
-
-    // als de wachttijd meer dan dit aantal ticks is, gaat de gast weg
-    private static final int MAX_WACHTTIJD = 10;
-
     // een film duurt dit aantal ticks na START_CINEMA
     private static final int FILMDUUR = 40;
 
@@ -42,7 +37,6 @@ public class Bioscoop extends Ruimte implements IEventListener {
         this.filmBezig = false;
         this.filmDuur = 0;
         this.filmEindTijd = 0;
-        this.wachtrij = new LinkedList<>();
         this.logger = logger;
     }
 
@@ -52,29 +46,30 @@ public class Bioscoop extends Ruimte implements IEventListener {
         this.filmBezig = false;
         this.filmDuur = 0;
         this.filmEindTijd = 0;
-        this.wachtrij = new LinkedList<>();
     }
 
-    // wordt aangeroepen door EventController als er een intern event binnenkomt
+    // wordt aangeroepen door EventController als er een library event binnenkomt
     @Override
-    public void onEvent(InternEvent event) {
-
-        // START_CINEMA: film start officieel, bereken wanneer de film eindigt
-        // GOTO_CINEMA en START_CINEMA worden al gelogd door de library
-        if (event instanceof FilmStartEvent) {
-            int tijd = event.getTijd();
-            filmBezig = true;
-            filmEindTijd = tijd + FILMDUUR;
+    public void onEvent(HotelEvent event) {
+        // GOTO_CINEMA: een gast gaat naar de bioscoop, log dat
+        if (event.getEventType() == HotelEventType.GOTO_CINEMA) {
+            if (logger != null) logger.log("[" + event.getTime() + "] Bioscoop: gast " + event.getGuestId() + " komt binnen");
         }
-
-        // elke tick checkt de bioscoop of de film al voorbij is
-        else if (event instanceof TickEvent) {
-            int tijd = event.getTijd();
-
+        // START_CINEMA: film start officieel, sla eindtijd op en log film start
+        else if (event.getEventType() == HotelEventType.START_CINEMA) {
+            filmBezig = true;
+            filmEindTijd = event.getTime() + FILMDUUR;
+            if (logger != null) logger.log("[" + event.getTime() + "] Bioscoop: film start");
+        }
+        // NONE: elke tick checkt de bioscoop of de film al voorbij is
+        else if (event.getEventType() == HotelEventType.NONE) {
+            int tijd = event.getTime();
             // als de film bezig is en de eindtijd is bereikt
             if (filmBezig && tijd >= filmEindTijd) {
                 filmBezig = false;
-                if (logger != null) logger.log("[" + tijd + "] Bioscoop: film eindigt");
+                // maak een FilmEindEvent aan en log film eindigt
+                FilmEindEvent eindEvent = new FilmEindEvent(tijd, -1);
+                if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Bioscoop: film eindigt");
             }
         }
     }

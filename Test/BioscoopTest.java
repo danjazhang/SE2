@@ -1,8 +1,24 @@
+import Model.*;
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventType;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BioscoopTest {
+
+    // hulpklasse om logs op te vangen in de test
+    static class TestLogger implements ILogger {
+        List<String> logs = new ArrayList<>();
+        @Override
+        public void log(String bericht) { logs.add(bericht); }
+    }
+
+    // hulpklasse om een nep HotelEvent aan te maken
+    static HotelEvent maakEvent(HotelEventType type, int tijd, int gastId) {
+        return new HotelEvent(tijd, type, gastId, -1);
+    }
 
     // film is niet bezig, duur is 0 en gastenlijst is leeg na aanmaken
     @Test
@@ -22,21 +38,44 @@ public class BioscoopTest {
         assertEquals(0, b.posY);
     }
 
-    // filmBezig kan op true gezet worden
+    // filmBezig wordt true na GOTO_CINEMA event
     @Test
-    void testZetFilmBezig() {
-        Bioscoop b = new Bioscoop();
-        b.filmBezig = true;
-        assertTrue(b.filmBezig);
+    void testGotoCinemaWordtGelogd() {
+        TestLogger logger = new TestLogger();
+        Bioscoop b = new Bioscoop(logger);
+        b.onEvent(maakEvent(HotelEventType.GOTO_CINEMA, 100, 12));
+        assertTrue(logger.logs.get(0).contains("gast 12 komt binnen"));
     }
 
-    // een gast kan aan de gastenlijst toegevoegd worden
+    // filmBezig wordt true na START_CINEMA event
     @Test
-    void testVoegGastToe() {
-        Bioscoop b = new Bioscoop();
-        Gast g = new Gast(3);
-        b.gasten.add(g);
-        assertEquals(1, b.gasten.size());
-        assertEquals(g, b.gasten.get(0));
+    void testStartCinemaZetFilmBezig() {
+        TestLogger logger = new TestLogger();
+        Bioscoop b = new Bioscoop(logger);
+        b.onEvent(maakEvent(HotelEventType.START_CINEMA, 100, -1));
+        assertTrue(b.filmBezig);
+        assertTrue(logger.logs.get(0).contains("film start"));
+    }
+
+    // film eindigt na FILMDUUR ticks
+    @Test
+    void testFilmEindigt() {
+        TestLogger logger = new TestLogger();
+        Bioscoop b = new Bioscoop(logger);
+        b.onEvent(maakEvent(HotelEventType.START_CINEMA, 100, -1));
+        // stuur NONE events tot de film eindigt (FILMDUUR = 40)
+        b.onEvent(maakEvent(HotelEventType.NONE, 140, 0));
+        assertFalse(b.filmBezig);
+        assertTrue(logger.logs.stream().anyMatch(l -> l.contains("film eindigt")));
+    }
+
+    // film eindigt niet voor de eindtijd
+    @Test
+    void testFilmEindigtNietVroeg() {
+        TestLogger logger = new TestLogger();
+        Bioscoop b = new Bioscoop(logger);
+        b.onEvent(maakEvent(HotelEventType.START_CINEMA, 100, -1));
+        b.onEvent(maakEvent(HotelEventType.NONE, 130, 0));
+        assertTrue(b.filmBezig);
     }
 }

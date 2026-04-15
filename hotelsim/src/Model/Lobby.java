@@ -1,5 +1,8 @@
 package Model;
 
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventType;
+
 // Stelt de lobby voor in het hotel
 // Erft van Ruimte en implementeert IEventListener
 // De lobby is verantwoordelijk voor check-in en check-out logica (single responsibility)
@@ -20,17 +23,17 @@ public class Lobby extends Ruimte implements IEventListener {
         this.logger = logger;
     }
 
-    // wordt aangeroepen door EventController als er een intern event binnenkomt
-    // lobby reageert alleen op check-in en check-out, de rest negeert hij
+    // wordt aangeroepen door EventController als er een library event binnenkomt
+    // lobby reageert alleen op CHECK_IN en CHECK_OUT, de rest negeert hij
     @Override
-    public void onEvent(InternEvent event) {
+    public void onEvent(HotelEvent event) {
         // als het een check-in event is, log dat de gast incheckt
-        if (event instanceof CheckInEvent) {
-            if (logger != null) logger.log("[" + event.getTijd() + "] Lobby: gast " + event.getGastId() + " checkt in");
+        if (event.getEventType() == HotelEventType.CHECK_IN) {
+            if (logger != null) logger.log("[" + event.getTime() + "] Lobby: gast " + event.getGuestId() + " checkt in");
         }
         // als het een check-out event is, log dat de gast uitcheckt
-        else if (event instanceof CheckOutEvent) {
-            if (logger != null) logger.log("[" + event.getTijd() + "] Lobby: gast " + event.getGastId() + " checkt uit");
+        else if (event.getEventType() == HotelEventType.CHECK_OUT) {
+            if (logger != null) logger.log("[" + event.getTime() + "] Lobby: gast " + event.getGuestId() + " checkt uit");
         }
     }
 
@@ -40,4 +43,3 @@ public class Lobby extends Ruimte implements IEventListener {
     public int getBalieX() { return balieX; }
     public int getBalieY() { return balieY; }
 }
-

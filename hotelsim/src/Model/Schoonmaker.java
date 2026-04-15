@@ -1,8 +1,12 @@
 package Model;
 
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventType;
+
 // Stelt een schoonmaker voor in het hotel
 // Erft van Persoon en implementeert IEventListener
 // De schoonmaker is verantwoordelijk voor schoonmaak logica (single responsibility)
+// Bij CLEANING_EMERGENCY maakt hij een SchoonmaakEindEvent aan en logt de noodsituatie
 public class Schoonmaker extends Persoon implements IEventListener {
 
     // of de schoonmaker momenteel bezig is
@@ -27,13 +31,14 @@ public class Schoonmaker extends Persoon implements IEventListener {
         this.kamer = null;
     }
 
-    // wordt aangeroepen door EventController als er een intern event binnenkomt
-    // schoonmaker reageert alleen op schoonmaak events
+    // wordt aangeroepen door EventController als er een library event binnenkomt
+    // schoonmaker reageert alleen op CLEANING_EMERGENCY
     @Override
-    public void onEvent(InternEvent event) {
-        // als het een schoonmaak event is, log dat en zet bezig op true
-        if (event instanceof SchoonmaakEvent) {
-            if (logger != null) logger.log("[" + event.getTijd() + "] Schoonmaker: noodsituatie!");
+    public void onEvent(HotelEvent event) {
+        // als het een schoonmaak noodgeval is, maak een SchoonmaakEindEvent aan en log dat
+        if (event.getEventType() == HotelEventType.CLEANING_EMERGENCY) {
+            SchoonmaakEindEvent eindEvent = new SchoonmaakEindEvent(event.getTime(), event.getGuestId());
+            if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Schoonmaker: noodsituatie!");
             this.bezig = true;
         }
     }
@@ -55,4 +60,3 @@ public class Schoonmaker extends Persoon implements IEventListener {
     // ga naar de optimale positie in het hotel
     public void gaNaarOptimalePositie() {}
 }
-

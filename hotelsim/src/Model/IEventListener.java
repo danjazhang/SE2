@@ -1,12 +1,13 @@
 package Model;
 
-// Interface voor het observer pattern voor interne events
-// Werkt hetzelfde als ModelListener maar dan voor events
-// Elke klasse die wil reageren op interne events implementeert dit
+import hotelevents.HotelEvent;
+
+// Interface voor het observer pattern voor library events
+// Elke klasse die wil reageren op library events implementeert dit
+// De EventController stuurt library events door naar alle geregistreerde listeners
 public interface IEventListener {
 
-    // wordt aangeroepen door EventController als er een intern event binnenkomt
+    // wordt aangeroepen door EventController als er een library event binnenkomt
     // elke klasse beslist zelf of hij iets doet met het event
-    void onEvent(InternEvent event);
+    void onEvent(HotelEvent event);
 }
-
