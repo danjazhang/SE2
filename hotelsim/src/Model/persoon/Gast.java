@@ -1,4 +1,6 @@
-package Model;
+package Model.persoon;
+
+import Model.ruimte.Kamer;
 
 // Stelt een hotelgast voor
 // Erft van Persoon en heeft een gewenst aantal sterren en een kamer
@@ -20,20 +22,8 @@ public class Gast extends Persoon {
         this.kamer = null;
     }
 
-    // koppel de gast aan een kamer
-    public void checkIn(Kamer k) { 
-        k.koppelGast(this);
-        }
-
     // ga naar een activiteit in het hotel
     public void gaNaarActiviteit() {}
-
-    // ontkoppel gast van kamer
-    public void checkOut() {
-        if (kamer != null) {
-            kamer.ontkoppelGast(this);
-        }
-    }
 
     // ga fysiek de kamer binnen
     public void gaNaarkamer(){

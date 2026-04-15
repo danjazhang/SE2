@@ -1,5 +1,10 @@
 package Model;
 
+import Model.layout.Layout;
+import Model.layout.Vakje;
+import Model.persoon.Gast;
+import Model.persoon.Schoonmaker;
+
 // Verantwoordelijkheid: personen aanmaken
 public class PersonenFactory {
 

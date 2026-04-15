@@ -1,4 +1,6 @@
-package Model;
+package Model.persoon;
+
+import Model.ruimte.Kamer;
 
 // Stelt een schoonmaker voor in het hotel
 // Erft van Persoon en reageert op schoonmaak events

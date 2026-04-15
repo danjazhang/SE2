@@ -1,4 +1,6 @@
-package Model;
+package Model.layout;
+
+import Model.ruimte.Ruimte;
 
 // Stelt de plattegrond van het hotel voor als een 2D grid van vakjes
 // Elke positie in het grid bevat een Vakje met een verwijzing naar een Ruimte

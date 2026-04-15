@@ -1,6 +1,13 @@
 package Controller;
 
 import Model.*;
+import Model.layout.Layout;
+import Model.layout.LayoutParser;
+import Model.layout.ParseResultaat;
+import Model.ruimte.Lift;
+import Model.ruimte.Lobby;
+import Model.ruimte.Ruimte;
+import Model.ruimte.Trap;
 import org.json.JSONObject;
 
 // Verantwoordelijkheid: layouts laden en opslaan
@@ -71,7 +78,7 @@ public class LayoutController {
     nieuwHotel.layout.plaatsRuimte(trap);
 
     // maak lobby aan onderin
-    Lobby lobby = new Lobby(2, gridHoogte, gridBreedte, 1, gridBreedte/2,gridHoogte, nieuwHotel, null);
+    Lobby lobby = new Lobby(2, gridHoogte, gridBreedte -3, 1, gridBreedte/2,gridHoogte, nieuwHotel, null);
     nieuwHotel.lobby = lobby;
     nieuwHotel.ruimtes.add(lobby);
     nieuwHotel.layout.plaatsRuimte(lobby);

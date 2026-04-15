@@ -1,6 +1,7 @@
 package Controller;
 
 import Model.*;
+import Model.persoon.Persoon;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventManager;
 import hotelevents.HotelEventListener;
@@ -97,6 +98,15 @@ public class EventController implements HotelEventListener {
                 break;
             case GODZILLA:
                 if (logger != null) logger.log("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
+                break;
+            case NONE:
+                Hotel hotel = hotelController.getHotel();
+                if (hotel != null) {
+                    for (Persoon p: hotel.personen){
+                        p.beweeg();
+                    }
+                    hotel.notifyListeners();
+                }
                 break;
             default: break;
         }

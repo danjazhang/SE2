@@ -1,4 +1,7 @@
-package Model;
+package Model.layout;
+
+import Model.persoon.Persoon;
+import Model.ruimte.Ruimte;
 
 import java.util.List;
 import java.util.ArrayList;

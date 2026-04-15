@@ -1,4 +1,6 @@
-package Model;
+package Model.ruimte;
+
+import Model.persoon.Gast;
 
 import java.util.ArrayList;
 import java.util.HashMap;

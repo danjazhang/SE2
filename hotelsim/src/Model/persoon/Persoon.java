@@ -1,4 +1,7 @@
-package Model;
+package Model.persoon;
+
+import Model.layout.Layout;
+import Model.layout.Vakje;
 
 import java.util.Queue;
 import java.util.LinkedList;

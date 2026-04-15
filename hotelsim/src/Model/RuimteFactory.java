@@ -1,5 +1,6 @@
 package Model;
 
+import Model.ruimte.*;
 import org.json.JSONObject;
 
 public class RuimteFactory {

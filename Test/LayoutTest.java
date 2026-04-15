@@ -1,7 +1,7 @@
+import Model.layout.Layout;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
 
 class LayoutTest {
 
@@ -22,7 +22,7 @@ class LayoutTest {
         //maakt nieuwe layout
         Layout layout = new Layout (6,8);
         //maakt nieuwe kamer
-        Kamer kamer = new Kamer ();
+        Kamer kamer = new Kamer();
         //geeft kamer positie en breedte,hoogte
         kamer.posX = 1; kamer.posY = 1;
         kamer.breedte = 2; kamer.hoogte = 2;

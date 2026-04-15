@@ -1,8 +1,10 @@
-package Model;
+package Model.ruimte;
+
+import Model.persoon.Persoon;
 
 // Stelt de trap voor in het hotel
 // Heeft een tijdsduur per verdieping die aangeeft hoe lang het duurt om een verdieping te lopen
-public class Trap extends Ruimte{
+public class Trap extends Ruimte {
 
     // tijd die het kost om één verdieping te lopen
     public int tijdperverdieping;

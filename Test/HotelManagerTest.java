@@ -1,6 +1,6 @@
 import Model.Hotel;
 import Model.HotelManager;
-import Model.Layout;
+import Model.layout.Layout;
 
 import org.junit.jupiter.api.Test;
 

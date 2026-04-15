@@ -1,6 +1,9 @@
 package View;
 
 import Model.*;
+import Model.persoon.Gast;
+import Model.persoon.Persoon;
+import Model.ruimte.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -78,7 +81,7 @@ public class LayoutView extends JPanel implements ModelListener {
                 // teken het hele blok in één keer op basis van positie en afmetingen
                 int tekenX = (r.posX -1)* tileSize;
                 // verschuif alles 1 vakje naar rechts zodat de lift links past
-                int tekenY = (r.posY - 1) * tileSize;
+                int tekenY = (r.posY -1) * tileSize;
                 int tekenB = r.breedte * tileSize;
                 int tekenH = r.hoogte * tileSize;
 
@@ -119,7 +122,7 @@ public class LayoutView extends JPanel implements ModelListener {
             //bereken de pixel positie
             //x is al verschoven dus lift dus heeft geen -1
             int px = (p.huidigVakje.x -1) * tileSize + tileSize / 4;
-            int py = (p.huidigVakje.y - 1) * tileSize + tileSize / 4;
+            int py = (p.huidigVakje.y-1) * tileSize + tileSize / 4;
 
             //offset per gast zodat ze niet over elkaar heen tekenen
             if (p instanceof Gast) {

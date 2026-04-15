@@ -1,5 +1,13 @@
 package Model;
 
+import Model.layout.Layout;
+import Model.layout.Vakje;
+import Model.persoon.Persoon;
+import Model.ruimte.Lift;
+import Model.ruimte.Lobby;
+import Model.ruimte.Ruimte;
+import Model.ruimte.Trap;
+
 import java.util.ArrayList;
 import java.util.List;
 

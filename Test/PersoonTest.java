@@ -1,6 +1,7 @@
+import Model.layout.Vakje;
+import Model.persoon.Persoon;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
 
 public class PersoonTest {
 

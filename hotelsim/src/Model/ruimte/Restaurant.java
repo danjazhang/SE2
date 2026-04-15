@@ -1,4 +1,6 @@
-package Model;
+package Model.ruimte;
+
+import Model.persoon.Gast;
 
 // Stelt het restaurant voor in het hotel
 // Erft van Ruimte en reageert op eten events

@@ -1,4 +1,10 @@
-package Model;
+package Model.ruimte;
+
+import Model.*;
+import Model.layout.Vakje;
+import Model.persoon.Gast;
+import Model.persoon.Persoon;
+import Model.persoon.Schoonmaker;
 
 import java.util.List;
 
@@ -45,7 +51,7 @@ public class Lobby extends Ruimte implements IEventListener {
         Kamer kamer = vindVrijeKamer();
         if (kamer != null) {
             //koppel de gast aan kamer
-            gast.checkIn(kamer);
+            kamer.koppelGast(gast);
 
             //stel kamer als doel
             Vakje doel = hotel.layout.krijgVakje(kamer.posX, kamer.posY);
@@ -59,8 +65,6 @@ public class Lobby extends Ruimte implements IEventListener {
                 }
             }
         }
-        //toon het event in de eventlog visueel
-        //if (logger != null) logger.log("[" + event.getTijd() + "] Lobby: gast " + gastId + " checkt in");
     }
 
     private void behandelCheckOut(CheckOutEvent event) {
@@ -71,7 +75,7 @@ public class Lobby extends Ruimte implements IEventListener {
                 Gast gast = (Gast) p;
                 //sla kamer op want na uitchecken is kamer null
                 Kamer kamer = gast.kamer;
-                gast.checkOut();
+                kamer.ontkoppelGast(gast);
                 //zoek vrije schoonmaker
                 Schoonmaker schoonmaker = vindVrijeSchoonmaker();
                 //check of er een schoonmaker is en of de gast een kamer had
@@ -81,8 +85,6 @@ public class Lobby extends Ruimte implements IEventListener {
                 break;
             }
         }
-        //toon checkouut bericht
-        //if (logger != null) logger.log("[" + event.getTijd() + "] Lobby: gast " + gastId + " checkt uit");
     }
 
     private Kamer vindVrijeKamer() {

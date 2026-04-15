@@ -1,4 +1,6 @@
-package Model;
+package Model.ruimte;
+
+import Model.persoon.Gast;
 
 import java.util.List;
 import java.util.ArrayList;

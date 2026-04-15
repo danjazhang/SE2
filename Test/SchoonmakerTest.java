@@ -1,6 +1,6 @@
+import Model.persoon.Schoonmaker;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
 
 public class SchoonmakerTest {
 

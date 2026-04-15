@@ -1,6 +1,6 @@
+import Model.persoon.Gast;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
 
 public class KamerTest {
 
