@@ -1,5 +1,6 @@
 package Controller;
 import Model.*;
+import Model.IEventListener;
 import Model.persoon.Persoon;
 import Model.ruimte.Ruimte;
 

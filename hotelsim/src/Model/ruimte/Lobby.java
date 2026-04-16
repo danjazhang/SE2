@@ -40,7 +40,6 @@ public class Lobby extends Ruimte implements IEventListener {
     }
 
     private void behandelCheckIn(int gastId, int tijd) {
-        System.out.println("logger in behandelCheckIn: " + logger);
         //factory maakt gast
         //zet gast op balie als startpunt
         Vakje startVakje = hotel.layout.krijgVakje(balieX, hotel.hoogte);
