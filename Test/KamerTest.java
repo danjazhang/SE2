@@ -1,62 +1,105 @@
+import Model.ruimte.Kamer;
+import Model.persoon.Gast;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
 
 public class KamerTest {
 
-    // een nieuwe kamer is schoon en heeft geen gast
+    @Test void testNieuweKamerIsSchoon() { assertTrue(new Kamer().isSchoon()); }
+    @Test void testNieuweKamerNietBezet() { assertFalse(new Kamer().isBezet()); }
+    @Test void testSterrenStandaard() { assertEquals(0, new Kamer().sterren); }
+    @Test void testKamernummerStandaard() { assertEquals(0, new Kamer().kamernummer); }
+
     @Test
-    void testConstructor() {
+    void testKoppelGastMaaktBezet() {
         Kamer k = new Kamer();
-        assertTrue(k.schoon);
-        assertNull(k.Gast);
+        Gast g = new Gast(1, 2);
+        k.koppelGast(g);
+        assertTrue(k.isBezet());
     }
 
-    // sterren beginnen op 0 want ze worden niet in de constructor gezet
     @Test
-    void testSterrenStandaard() {
+    void testKoppelGastKoppeltKamerAanGast() {
         Kamer k = new Kamer();
-        assertEquals(0, k.sterren);
+        Gast g = new Gast(1, 2);
+        k.koppelGast(g);
+        assertEquals(k, g.kamer);
     }
 
-    // kamer erft van Ruimte, posX en posY beginnen op 0
     @Test
-    void testErftVanRuimte() {
+    void testOntkoppelGastMaaktLeeg() {
         Kamer k = new Kamer();
-        assertEquals(0, k.posX);
-        assertEquals(0, k.posY);
+        Gast g = new Gast(1, 2);
+        k.koppelGast(g);
+        k.ontkoppelGast(g);
+        assertFalse(k.isBezet());
     }
 
-    // sterren kunnen handmatig gezet worden
     @Test
-    void testZetSterren() {
+    void testOntkoppelGastMaaktVies() {
         Kamer k = new Kamer();
-        k.sterren = 4;
-        assertEquals(4, k.sterren);
+        Gast g = new Gast(1, 2);
+        k.koppelGast(g);
+        k.ontkoppelGast(g);
+        assertFalse(k.isSchoon());
     }
 
-    // schoon kan op false gezet worden
     @Test
-    void testZetSchoonOpFalse() {
+    void testOntkoppelGastZetKamerGastOpNull() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 2);
+        k.koppelGast(g);
+        k.ontkoppelGast(g);
+        assertNull(g.kamer);
+    }
+
+    @Test
+    void testSchoonmakenZetSchoonOpTrue() {
         Kamer k = new Kamer();
         k.schoon = false;
-        assertFalse(k.schoon);
+        k.schoonmaken();
+        assertTrue(k.isSchoon());
     }
 
-    // checkIn mag niet crashen bij een geldige gast
     @Test
-    void testCheckInCrashetNiet() {
+    void testGastNietAanwezigNaKoppelen() {
         Kamer k = new Kamer();
-        Gast g = new Gast(3);
-        // checkIn koppelt de gast aan de kamer, mag niet crashen
-        assertDoesNotThrow(() -> k.checkIn(g));
+        Gast g = new Gast(1, 2);
+        k.koppelGast(g);
+        assertFalse(k.isGastAanwezig(g));
     }
 
-    // checkOut mag niet crashen
     @Test
-    void testCheckOutCrashetNiet() {
+    void testGastAanwezigNaKomtBinnen() {
         Kamer k = new Kamer();
-        // checkOut verwijdert de gast uit de kamer, mag niet crashen
-        assertDoesNotThrow(() -> k.checkOut());
+        Gast g = new Gast(1, 2);
+        k.koppelGast(g);
+        k.gastKomtBinnen(g);
+        assertTrue(k.isGastAanwezig(g));
+    }
+
+    @Test
+    void testGastNietAanwezigNaVerlaten() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 2);
+        k.koppelGast(g);
+        k.gastKomtBinnen(g);
+        k.gastVerlaatKamer(g);
+        assertFalse(k.isGastAanwezig(g));
+    }
+
+    @Test
+    void testMeerdereGastenKunnenKoppelen() {
+        Kamer k = new Kamer();
+        k.koppelGast(new Gast(1, 2));
+        k.koppelGast(new Gast(2, 3));
+        assertEquals(2, k.getIngecheckteGasten().size());
+    }
+
+    @Test
+    void testOntkoppelNietGekoppeldeGastCrashetNiet() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 2);
+        assertDoesNotThrow(() -> k.ontkoppelGast(g));
     }
 }

@@ -136,12 +136,12 @@ public class HotelView extends JFrame {
         top.add(simulatieView);
 
         //stel de breedte van de eventlog in
-        eventLogView.getLogArea().setPreferredSize(new Dimension(200, 0));
+        eventLogView.getLogArea().setPreferredSize(new Dimension(200, 400));
         //voeg eventlog links toe
         add(new JScrollPane(eventLogView.getLogArea()), BorderLayout.WEST);
 
         //venster grootte
-        setSize(730, 650);
+        setSize(1000, 700);
         //venster in het midden van de scherm
         setLocationRelativeTo(null);
         //maak venster zichtbaar

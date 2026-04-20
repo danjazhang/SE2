@@ -1,22 +1,21 @@
+import Model.ruimte.Trap;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
 
 public class TrapTest {
 
-    // tijdperverdieping wordt correct opgeslagen via de constructor
-    @Test
-    void testConstructor() {
+    @Test void testConstructor() {
         Trap t = new Trap(5);
         assertEquals(5, t.tijdperverdieping);
     }
 
-    // verschillende waarden voor tijdperverdieping moeten correct opgeslagen worden
-    @Test
-    void testConstructorVerschillendeWaarden() {
-        Trap t1 = new Trap(1);
-        Trap t2 = new Trap(10);
-        assertEquals(1, t1.tijdperverdieping);
-        assertEquals(10, t2.tijdperverdieping);
+    @Test void testErftVanRuimte() {
+        Trap t = new Trap(2);
+        assertEquals(0, t.posX);
+        assertEquals(0, t.posY);
+    }
+
+    @Test void testGebruikTrapCrashetNiet() {
+        assertDoesNotThrow(() -> new Trap(2).gebruikTrap(null));
     }
 }

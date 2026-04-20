@@ -1,5 +1,8 @@
 package Controller;
 import Model.*;
+import Model.IEventListener;
+import Model.persoon.Persoon;
+import Model.ruimte.Ruimte;
 
 // Verantwoordelijkheid: hotel data beheren
 public class HotelController {
@@ -36,15 +39,30 @@ public class HotelController {
 
     public void setLogger(ILogger logger){
         this.logger = logger;
+        layoutController.setLogger(logger);
     }
     public void setEventController(EventController eventController){
         this.eventController = eventController;
     }
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
-        if (hotel.lobby != null && eventController != null){
+        //stel logger in op lobby
+        if (hotel.lobby != null){
             hotel.lobby.setLogger(logger);
-            eventController.registreerListener(hotel.lobby);
+        }
+        if (eventController != null) {
+            //registreer alle iventlistener ruimter
+            for (Ruimte r : hotel.ruimtes){
+                if ( r instanceof IEventListener) {
+                    eventController.registreerListener((IEventListener) r);
+                }
+            }
+            //registreer schoonmakers
+            for (Persoon p: hotel.personen) {
+                if (p instanceof IEventListener) {
+                    eventController.registreerListener((IEventListener) p);
+                }
+            }
         }
     }
 }

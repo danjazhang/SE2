@@ -1,42 +1,40 @@
+import Model.ruimte.Bioscoop;
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventType;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
 
 public class BioscoopTest {
 
-    // film is niet bezig, duur is 0 en gastenlijst is leeg na aanmaken
-    @Test
-    void testConstructor() {
+    @Test void testConstructor() {
         Bioscoop b = new Bioscoop();
         assertFalse(b.filmBezig);
         assertEquals(0, b.filmDuur);
-        assertNotNull(b.gasten);
         assertTrue(b.gasten.isEmpty());
     }
 
-    // bioscoop erft van Ruimte, posX en posY beginnen op 0
-    @Test
-    void testErftVanRuimte() {
+    @Test void testStartCinemaZetFilmBezig() {
         Bioscoop b = new Bioscoop();
-        assertEquals(0, b.posX);
-        assertEquals(0, b.posY);
-    }
-
-    // filmBezig kan op true gezet worden
-    @Test
-    void testZetFilmBezig() {
-        Bioscoop b = new Bioscoop();
-        b.filmBezig = true;
+        b.onEvent(new HotelEvent(10, HotelEventType.START_CINEMA, -1, -1));
         assertTrue(b.filmBezig);
     }
 
-    // een gast kan aan de gastenlijst toegevoegd worden
-    @Test
-    void testVoegGastToe() {
+    @Test void testFilmEindigtNaFilmduur() {
         Bioscoop b = new Bioscoop();
-        Gast g = new Gast(3);
-        b.gasten.add(g);
-        assertEquals(1, b.gasten.size());
-        assertEquals(g, b.gasten.get(0));
+        b.onEvent(new HotelEvent(10, HotelEventType.START_CINEMA, -1, -1));
+        b.onEvent(new HotelEvent(50, HotelEventType.NONE, -1, -1));
+        assertFalse(b.filmBezig);
+    }
+
+    @Test void testFilmNogBezig() {
+        Bioscoop b = new Bioscoop();
+        b.onEvent(new HotelEvent(10, HotelEventType.START_CINEMA, -1, -1));
+        b.onEvent(new HotelEvent(20, HotelEventType.NONE, -1, -1));
+        assertTrue(b.filmBezig);
+    }
+
+    @Test void testGotoCinemaCrashetNiet() {
+        Bioscoop b = new Bioscoop();
+        assertDoesNotThrow(() -> b.onEvent(new HotelEvent(1, HotelEventType.GOTO_CINEMA, 1, -1)));
     }
 }

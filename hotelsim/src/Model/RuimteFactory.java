@@ -1,10 +1,17 @@
 package Model;
 
+import Model.ruimte.*;
+import Model.ruimte.Ruimte;
 import org.json.JSONObject;
 
 public class RuimteFactory {
 
     private int volgendKamernummer = 101;
+    private ILogger logger;
+
+    public RuimteFactory(ILogger logger){
+        this.logger = logger;
+    }
 
     // maakt de juiste subklasse aan op basis van het AreaType uit de JSON
     public Ruimte maakRuimte(String areaType, JSONObject obj) {
@@ -17,13 +24,13 @@ public class RuimteFactory {
                 kamer.kamernummer = volgendKamernummer++;
                 return kamer;
             case "Restaurant":
-                Restaurant restaurant = new Restaurant();
+                Restaurant restaurant = new Restaurant(logger);
                 if (obj.has("Capacity")) restaurant.capaciteit = obj.getInt("Capacity");
                 return restaurant;
             case "Cinema":
-                return new Bioscoop();
+                return new Bioscoop(logger);
             case "Fitness":
-                return new Fitnessruimte();
+                return new Fitnessruimte(logger);
             default:
                 return new Ruimte();
         }
