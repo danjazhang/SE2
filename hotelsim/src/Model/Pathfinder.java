@@ -20,6 +20,28 @@ public class Pathfinder {
         this.layout = hotel.layout;
     }
 
+    public Vakje volgendeStap(Vakje huidig, Vakje doel) {
+        //haal x en y coordinaten om mee te rekenen
+        int huidigX = huidig.x;
+        int huidigY = huidig.y;
+        int doelX = doel.x;
+        int doelY = doel.y;
+
+    
+        //beginnen met nieuwe positie gelijk aan huidige en dan aanpassen
+        int nieuweX = huidigX;
+        int nieuweY = huidigY;
+
+        //beweeg 1 stap in x of y richting
+        if (huidigX < doelX) nieuweX++;
+        else if (huidigX > doelX) nieuweX--;
+        else if (huidigY < doelY) nieuweY++;
+        else if (huidigY > doelY) nieuweY--;
+
+        //zoek vakje op nieuwe positie via layout
+        return layout.krijgVakje(nieuweX, nieuweY);
+    }
+
     // zoek het trap vakje op een bepaalde verdieping op
     private Vakje vindTrapVakje(int verdieping) {
         for (Ruimte r : hotel.ruimtes) {

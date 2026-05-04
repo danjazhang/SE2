@@ -44,7 +44,7 @@ public class Lobby extends Ruimte implements IEventListener {
         //zet gast op balie als startpunt
         Vakje startVakje = hotel.layout.krijgVakje(balieX, hotel.hoogte);
         PersonenFactory personenFactory = new PersonenFactory();
-        Gast gast = personenFactory.maakGast(gastId, 1, hotel.layout, startVakje);
+        Gast gast = personenFactory.maakGast(gastId, 1, hotel.pathfinder, startVakje);
 
         //voeg persoon toe aan personenlijst in hotel
         hotel.voegPersoonToe(gast);

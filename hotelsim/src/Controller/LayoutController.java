@@ -86,6 +86,7 @@ public class LayoutController {
     nieuwHotel.layout.plaatsRuimte(lobby);
 
     //sla de layout op in hotelmanager met bestandsnaam als naam
+    nieuwHotel.pathfinder = new Pathfinder(nieuwHotel);
     int id = hotelManager.addLayout(bestandsnaam, nieuwHotel.layout);
     //addlayout geeft een volgendeid terug dit wordt opgeslagen in id
     //sla het hele hotel object op in hotelmanager met zelfde id als sleutel

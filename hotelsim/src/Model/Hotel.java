@@ -25,6 +25,9 @@ public class Hotel {
     // de huidige layout van het hotel
     public Layout layout;
 
+    // pathfinder voor het berekenen van routes
+    public Pathfinder pathfinder;
+
     // lijst van alle ruimtes in het hotel
     public List<Ruimte> ruimtes;
 

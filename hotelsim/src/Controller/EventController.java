@@ -23,6 +23,9 @@ public class EventController implements HotelEventListener {
     // hotel controller voor toegang tot hotel data
     private HotelController hotelController;
 
+    // simulatie controller voor het uitvoeren van een tik
+    private SimulatieController simulatieController;
+
     // logger voor grafische weergave - alleen voor noodgevallen
     private ILogger logger;
 
@@ -41,6 +44,11 @@ public class EventController implements HotelEventListener {
     // stel de hotelcontroller in
     public void setHotelController(HotelController hotelController) {
         this.hotelController = hotelController;
+    }
+
+    // stel de simulatiecontroller in
+    public void setSimulatieController(SimulatieController simulatieController) {
+        this.simulatieController = simulatieController;
     }
 
     // stel de logger in
@@ -89,13 +97,7 @@ public class EventController implements HotelEventListener {
                 if (logger != null) logger.log("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
                 break;
             case NONE:
-                Hotel hotel = hotelController.getHotel();
-                if (hotel != null) {
-                    for (Persoon p: hotel.personen){
-                        p.beweeg();
-                    }
-                    hotel.notifyListeners();
-                }
+                if (simulatieController != null) simulatieController.tik();
                 break;
             default: break;
         }

@@ -33,6 +33,7 @@ public class Main {
 
         //maak simulatiecontroller aan
         simulatieController = new SimulatieController(eventManager, eventController, hotelController);
+        eventController.setSimulatieController(simulatieController);
 
         // open het venster
         hotelView = new HotelView(hotelController, logView, eventController, simulatieController);
