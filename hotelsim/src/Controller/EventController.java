@@ -3,6 +3,7 @@ package Controller;
 import Model.*;
 import Model.IEventListener;
 import Model.persoon.Persoon;
+import Model.ruimte.Ruimte;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventManager;
 import hotelevents.HotelEventListener;
@@ -65,6 +66,23 @@ public class EventController implements HotelEventListener {
     // elke ruimte roept dit aan om zichzelf te registreren
     public void registreerListener(IEventListener listener) {
         listeners.add(listener);
+    }
+
+    // registreer alle ruimtes en personen van het hotel als listeners
+    public void registreerHotelListeners(Hotel hotel) {
+        if (hotel == null) return;
+        //registreer alle ruimtes die IEventListener implementeren
+        for (Ruimte r : hotel.ruimtes) {
+            if (r instanceof IEventListener) {
+                registreerListener((IEventListener) r);
+            }
+        }
+        //registreer personen die IEventListener implementeren
+        for (Persoon p : hotel.personen) {
+            if (p instanceof IEventListener) {
+                registreerListener((IEventListener) p);
+            }
+        }
     }
 
     // stuur het library event door naar alle geregistreerde listeners

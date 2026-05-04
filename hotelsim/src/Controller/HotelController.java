@@ -1,14 +1,15 @@
 package Controller;
 import Model.*;
-import Model.IEventListener;
-import Model.persoon.Persoon;
 import Model.ruimte.Ruimte;
 
-// Verantwoordelijkheid: hotel data beheren
+import java.util.ArrayList;
+import java.util.List;
+
+// Verantwoordelijkheid: hotel data beheren en observers notificeren
 public class HotelController {
 
     //huidige hotel
-    private Hotel hotel; 
+    private Hotel hotel;
 
     //beheert het laden van layouts
     private LayoutController layoutController;
@@ -16,6 +17,9 @@ public class HotelController {
     private EventController eventController;
 
     private ILogger logger;
+
+    // lijst van observers (View) die genotificeerd worden bij wijzigingen
+    private List<ModelListener> listeners = new ArrayList<>();
 
     public HotelController() {
         //maak layoutcontroller
@@ -50,19 +54,15 @@ public class HotelController {
         if (hotel.lobby != null){
             hotel.lobby.setLogger(logger);
         }
-        if (eventController != null) {
-            //registreer alle iventlistener ruimter
-            for (Ruimte r : hotel.ruimtes){
-                if ( r instanceof IEventListener) {
-                    eventController.registreerListener((IEventListener) r);
-                }
-            }
-            //registreer schoonmakers
-            for (Persoon p: hotel.personen) {
-                if (p instanceof IEventListener) {
-                    eventController.registreerListener((IEventListener) p);
-                }
-            }
-        }
+    }
+
+    // voeg een observer toe aan de lijst
+    public void voegListenerToe(ModelListener modelListener) {
+        listeners.add(modelListener);
+    }
+
+    // stuur een melding naar alle observers dat het model veranderd is
+    public void notifyListeners() {
+        for (ModelListener modelListener : listeners) modelListener.modelGewijzigd();
     }
 }

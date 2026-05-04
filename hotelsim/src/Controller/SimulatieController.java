@@ -43,6 +43,6 @@ public class SimulatieController {
         for (Persoon p : hotel.personen) {
             p.beweeg();
         }
-        hotel.notifyListeners();
+        hotelController.notifyListeners();
     }
 }
