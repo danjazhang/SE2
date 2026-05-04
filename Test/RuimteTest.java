@@ -1,5 +1,5 @@
 import Model.ruimte.Ruimte;
-import Model.persoon.Persoon;
+import Model.persoon.Gast;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +21,8 @@ public class RuimteTest {
 
     @Test void testBetreedEnVerlaat() {
         Ruimte r = new Ruimte(1, 1, 2, 2);
-        Persoon p = new Persoon();
+        // Gast gebruiken want Persoon is abstract
+        Gast p = new Gast(1, 1);
         r.betreed(p);
         assertTrue(r.getAanwezigen().contains(p));
         r.verlaat(p);
