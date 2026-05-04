@@ -61,4 +61,8 @@ public class Ruimte {
 
     // geef de ingang positie terug als array [x, y]
     public int[] krijgIngang() { return new int[]{ingangX, ingangY}; }
+
+    // geef deze ruimte terug als vrije kamer, standaard null
+    // Kamer overschrijft dit als die vrij en schoon is
+    public Kamer getVrijeKamer() { return null; }
 }

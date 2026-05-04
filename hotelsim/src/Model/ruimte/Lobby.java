@@ -92,13 +92,11 @@ public class Lobby extends Ruimte implements IEventListener {
     private Kamer vindVrijeKamer() {
         //loop door alle ruimtes
         for (Ruimte r : hotel.ruimtes) {
-            //check of het een kamer is
-            if (r instanceof Kamer) {
-                Kamer k = (Kamer) r;
-                //check of het niet bezet is en of die schoon is
-                if (!k.isBezet() && k.isSchoon()) return k;
-            }
-        }//geef null terug als er geen vrije kamer is
+            //geeft de kamer terug als die vrij en schoon is, anders null
+            Kamer k = r.getVrijeKamer();
+            if (k != null) return k;
+        }
+        //geef null terug als er geen vrije kamer is
         return null;
     }
 
