@@ -5,14 +5,17 @@ import Model.ruimte.Ruimte;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Testklasse voor Persoon: ik test positie, doelen en stap-voor-stap bewegen.
 public class PersoonTest {
 
+    // Ik maak een Persoon; ik verwacht nog geen positie en geen doel.
     @Test void testConstructor() {
         Persoon p = new Persoon();
         assertNull(p.huidigVakje);
         assertNull(p.doelVakje);
     }
 
+    // Ik zet een doelvakje; ik verwacht dat doelVakje daarna dat vakje is.
     @Test void testZetDoel() {
         Persoon p = new Persoon();
         Vakje v = new Vakje();
@@ -20,6 +23,7 @@ public class PersoonTest {
         assertEquals(v, p.doelVakje);
     }
 
+    // Ik zet een startpositie; ik verwacht dat de Persoon ook in het Vakje staat.
     @Test void testZetStartPositie() {
         Persoon p = new Persoon();
         Vakje v = new Vakje();
@@ -28,10 +32,12 @@ public class PersoonTest {
         assertTrue(v.krijgPersonen().contains(p));
     }
 
+    // Ik laat een Persoon zonder doel bewegen; ik verwacht geen exception.
     @Test void testBeweegZonderDoelCrashetNiet() {
         assertDoesNotThrow(() -> new Persoon().beweeg());
     }
 
+    // Ik laat een Persoon zonder layout bewegen; ik verwacht dat dit veilig stopt.
     @Test void testBeweegZonderLayoutCrashetNiet() {
         Persoon p = new Persoon();
         Vakje v = new Vakje();
@@ -40,6 +46,7 @@ public class PersoonTest {
         assertDoesNotThrow(() -> p.beweeg());
     }
 
+    // Ik laat een Persoon naar een doel bewegen; ik verwacht dat hij een stap richting doel zet.
     @Test void testBeweegNaarDoel() {
         Layout layout = new Layout(3, 3);
         Persoon p = new Persoon();
@@ -50,6 +57,7 @@ public class PersoonTest {
         assertEquals(2, p.huidigVakje.x);
     }
 
+    // Ik voeg een tussendoel toe; ik verwacht dat het huidige doel behouden blijft.
     @Test void testVoegTussendoelToe() {
         Persoon p = new Persoon();
         Vakje v1 = new Vakje();
@@ -59,6 +67,7 @@ public class PersoonTest {
         assertEquals(v1, p.doelVakje);
     }
 
+    // Ik laat een Persoon bij zijn doel starten; ik verwacht dat het volgende tussendoel actief wordt.
     @Test void testTussendoelWordtDoelNaAankomen() {
         Layout layout = new Layout(3, 3);
         Persoon p = new Persoon();

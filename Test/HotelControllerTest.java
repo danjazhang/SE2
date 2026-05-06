@@ -9,18 +9,22 @@ import hotelevents.HotelEventManager;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Testklasse voor HotelController: ik test hotelbeheer, layoutcontroller en eventregistratie.
 public class HotelControllerTest {
 
+    // Ik maak een HotelController; ik verwacht dat hij een Hotel en LayoutController heeft.
     @Test void testConstructor() {
         HotelController hc = new HotelController();
         assertNotNull(hc.getHotel());
         assertNotNull(hc.getLayoutController());
     }
 
+    // Ik gebruik een nieuwe HotelController; ik verwacht dat er nog geen layout is.
     @Test void testHeeftLayoutFalse() {
         assertFalse(new HotelController().heeftLayout());
     }
 
+    // Ik zet een Hotel met layout; ik verwacht dat heeftLayout true teruggeeft.
     @Test void testHeeftLayoutTrue() {
         HotelController hc = new HotelController();
         Hotel h = new Hotel();
@@ -29,6 +33,7 @@ public class HotelControllerTest {
         assertTrue(hc.heeftLayout());
     }
 
+    // Ik zet een nieuw Hotel; ik verwacht dat getHotel datzelfde hotel teruggeeft.
     @Test void testSetHotel() {
         HotelController hc = new HotelController();
         Hotel h = new Hotel();
@@ -36,17 +41,20 @@ public class HotelControllerTest {
         assertEquals(h, hc.getHotel());
     }
 
+    // Ik zet een logger; ik verwacht dat dit zonder exception kan.
     @Test void testSetLogger() {
         HotelController hc = new HotelController();
         assertDoesNotThrow(() -> hc.setLogger(bericht -> {}));
     }
 
+    // Ik koppel een EventController; ik verwacht dat dit zonder exception kan.
     @Test void testSetEventController() {
         HotelController hc = new HotelController();
         EventController ec = new EventController(new HotelEventManager(true));
         assertDoesNotThrow(() -> hc.setEventController(ec));
     }
 
+    // Ik zet een Hotel met ruimtes; ik verwacht dat listenerregistratie veilig verloopt.
     @Test void testSetHotelRegistreertListeners() {
         HotelController hc = new HotelController();
         EventController ec = new EventController(new HotelEventManager(true));
@@ -66,6 +74,7 @@ public class HotelControllerTest {
         assertDoesNotThrow(() -> hc.setHotel(h));
     }
 
+    // Ik zet een Hotel met Lobby en logger; ik verwacht dat setHotel geen fout geeft.
     @Test void testSetHotelMetLobbyZetLogger() {
         HotelController hc = new HotelController();
         hc.setLogger(bericht -> {});
@@ -79,6 +88,7 @@ public class HotelControllerTest {
         assertDoesNotThrow(() -> hc.setHotel(h));
     }
 
+    // Ik vraag de LayoutController op; ik verwacht een echte LayoutController terug.
     @Test void testGetLayoutController() {
         HotelController hc = new HotelController();
         assertTrue(hc.getLayoutController() instanceof LayoutController);

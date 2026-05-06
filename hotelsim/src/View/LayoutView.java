@@ -3,6 +3,7 @@ package View;
 import Model.*;
 import Model.persoon.Gast;
 import Model.persoon.Persoon;
+import Model.persoon.Schoonmaker;
 import Model.ruimte.*;
 
 import javax.swing.*;
@@ -130,14 +131,26 @@ public class LayoutView extends JPanel implements ModelListener {
                 px+= offset;
             }
             
-            //gasten wit tekenen en schoonmaker grijs
-            if (p instanceof Gast) g.setColor(Color.WHITE);
-            else g.setColor(Color.DARK_GRAY); // schoonmaker
-            //gevulde cirkel van halve vakje grootte tekenen op berekende positie
-            g.fillOval(px, py, tileSize / 3, tileSize / 3);
-            //teken zwarte rand om cirkel
-            g.setColor(Color.BLACK);
-            g.drawOval(px, py, tileSize / 3, tileSize / 3);
+            // Gasten blijven witte cirkels, maar de schoonmaker krijgt een opvallender symbool.
+            // Zo kun je in een drukke simulatie sneller zien waar de schoonmakers staan.
+            if (p instanceof Gast) {
+                g.setColor(Color.WHITE);
+                g.fillOval(px, py, tileSize / 3, tileSize / 3);
+                g.setColor(Color.BLACK);
+                g.drawOval(px, py, tileSize / 3, tileSize / 3);
+            } else if (p instanceof Schoonmaker) {
+                g.setColor(new Color(232, 145, 68));
+                g.fillRoundRect(px, py, tileSize / 3, tileSize / 3, 10, 10);
+                g.setColor(Color.BLACK);
+                g.drawRoundRect(px, py, tileSize / 3, tileSize / 3, 10, 10);
+                g.setFont(new Font("Arial", Font.BOLD, 11));
+                g.drawString("S", px + 7, py + 14);
+            } else {
+                g.setColor(Color.DARK_GRAY);
+                g.fillOval(px, py, tileSize / 3, tileSize / 3);
+                g.setColor(Color.BLACK);
+                g.drawOval(px, py, tileSize / 3, tileSize / 3);
+            }
 
             // teken gastId op de cirkel
             if (p instanceof Gast) {

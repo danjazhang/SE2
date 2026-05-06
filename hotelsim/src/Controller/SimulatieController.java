@@ -19,6 +19,12 @@ public class SimulatieController {
     //hotel controller voor het beheren van de hotel
     private HotelController hotelController;
 
+    // Onze eigen snelheidsstand voor bewegingen in de simulatie.
+    // Dit getal bepaalt niet de library-events zelf, maar wel hoe snel personen bewegen.
+    private int snelheid = 1;
+    // Teller voor NONE-ticks, zodat we in de langzame stand bewegingen kunnen overslaan.
+    private int tikTeller = 0;
+
     //constructor
     public SimulatieController(HotelEventManager eventManager, EventController eventController, HotelController hotelController) {
         this.eventManager = eventManager;
@@ -27,7 +33,9 @@ public class SimulatieController {
     }
 
     public void start() {
-        eventManager.start(0);
+        // Start de library altijd op dezelfde basisinstelling.
+        // Het echte verschil tussen langzaam, normaal en snel regelen we zelf in tik().
+        eventManager.start(1);
     }
     public void pauzeer() {
         eventManager.pauze();
@@ -36,12 +44,33 @@ public class SimulatieController {
         eventManager.stop();
     }
 
+    public void setSnelheid(int snelheid) {
+        this.snelheid = snelheid;
+    }
+
     //personen bewegen per tik
     public void tik() {
         Hotel hotel = hotelController.getHotel();
         if (hotel == null) return;
-        for (Persoon p : hotel.personen) {
-            p.beweeg();
+
+        tikTeller++;
+
+        int stappenPerTik = 1;
+        if (snelheid <= 0) {
+            // Langzaam: laat personen maar om de twee NONE-ticks bewegen.
+            if (tikTeller % 2 != 0) {
+                hotel.notifyListeners();
+                return;
+            }
+        } else if (snelheid >= 4) {
+            // Snel: laat personen binnen een enkele NONE-tick meerdere stappen zetten.
+            stappenPerTik = snelheid;
+        }
+
+        for (int stap = 0; stap < stappenPerTik; stap++) {
+            for (Persoon p : hotel.personen) {
+                p.beweeg();
+            }
         }
         hotel.notifyListeners();
     }

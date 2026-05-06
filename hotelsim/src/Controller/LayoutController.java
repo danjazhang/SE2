@@ -4,6 +4,7 @@ import Model.*;
 import Model.layout.Layout;
 import Model.layout.LayoutParser;
 import Model.layout.ParseResultaat;
+import Model.persoon.Schoonmaker;
 import Model.ruimte.Lift;
 import Model.ruimte.Lobby;
 import Model.ruimte.Ruimte;
@@ -39,7 +40,20 @@ public class LayoutController {
 
     //maak ruimtes aan via ruimtefactory en voeg toe aan hotel en grid
 
-    RuimteFactory factory = new RuimteFactory(logger);
+    // Zoek eerst welke kamerlaag het laagst ligt in de layout.
+    // Die laag is belangrijk, omdat we vanaf daar de kamernummers willen laten beginnen:
+    // de onderste kamers moeten 101, 102, 103, ... krijgen.
+    int ondersteKamerPosY = 1;
+    for (JSONObject obj : resultaat.ruimteData) {
+        if (obj.getString("AreaType").equals("Room")) {
+            ondersteKamerPosY = Math.max(ondersteKamerPosY, obj.getInt("_posY"));
+        }
+    }
+
+    // Geef de onderste kamerlaag door aan de factory.
+    // De factory kan dan uitrekenen welke kamers op verdieping 1, 2, 3, ... liggen
+    // en daar de juiste kamernummers aan koppelen.
+    RuimteFactory factory = new RuimteFactory(logger, ondersteKamerPosY);
 
     //loopt door alle jsonobjecten
     for (JSONObject obj : resultaat.ruimteData) {
@@ -85,8 +99,21 @@ public class LayoutController {
     nieuwHotel.ruimtes.add(lobby);
     nieuwHotel.layout.plaatsRuimte(lobby);
 
-    //sla de layout op in hotelmanager met bestandsnaam als naam
     nieuwHotel.pathfinder = new Pathfinder(nieuwHotel);
+
+    // Maak minstens een schoonmaker aan, zodat die zichtbaar is in de GUI
+    // en meteen beschikbaar is wanneer een kamer schoongemaakt moet worden.
+    PersonenFactory personenFactory = new PersonenFactory();
+    // De eerste schoonmaker wacht links van het midden onderaan het hotel.
+    Model.layout.Vakje wachtVakje = nieuwHotel.layout.krijgVakje(Math.max(2, gridBreedte / 2 - 1), gridHoogte);
+    Schoonmaker schoonmaker = personenFactory.maakSchoonmaker(
+            nieuwHotel.pathfinder,
+            wachtVakje
+    );
+    schoonmaker.setWachtVakje(wachtVakje);
+    nieuwHotel.voegPersoonToe(schoonmaker);
+
+    //sla de layout op in hotelmanager met bestandsnaam als naam
     int id = hotelManager.addLayout(bestandsnaam, nieuwHotel.layout);
     //addlayout geeft een volgendeid terug dit wordt opgeslagen in id
     //sla het hele hotel object op in hotelmanager met zelfde id als sleutel

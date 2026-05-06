@@ -47,6 +47,12 @@ public abstract class Persoon {
         }
     }
 
+    public void wisRoute() {
+        // Maak de huidige route volledig leeg, zodat een nieuw doel netjes opnieuw kan starten.
+        doelVakje = null;
+        tussendoelen.clear();
+    }
+
     //zet persoon op een startvakje
     public void zetStartPositie(Vakje v) {
         huidigVakje = v;

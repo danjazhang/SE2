@@ -8,14 +8,17 @@ import hotelevents.HotelEventType;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Testklasse voor Lobby: ik test check-in, check-out en de koppeling met Hotel/Kamer.
 public class LobbyTest {
 
+    // Ik maak een Lobby met baliepositie; ik verwacht dat balieX en balieY goed opgeslagen zijn.
     @Test void testConstructor() {
         Lobby l = new Lobby(1, 1, 2, 2, 1, 1, null, null);
         assertEquals(1, l.getBalieX());
         assertEquals(1, l.getBalieY());
     }
 
+    // Ik maak een Lobby als Ruimte; ik verwacht dat positie en afmetingen goed staan.
     @Test void testErftVanRuimte() {
         Lobby l = new Lobby(2, 3, 4, 5, 1, 1, null, null);
         assertEquals(2, l.posX);
@@ -24,6 +27,7 @@ public class LobbyTest {
         assertEquals(5, l.hoogte);
     }
 
+    // Ik stuur CHECK_IN naar Lobby; ik verwacht dat er een Gast in het Hotel komt.
     @Test void testCheckInMaaktGastAan() {
         Hotel hotel = new Hotel();
         hotel.layout = new Layout(5, 5);
@@ -37,6 +41,7 @@ public class LobbyTest {
         assertEquals(1, hotel.personen.size());
     }
 
+    // Ik stuur CHECK_IN met een vrije Kamer; ik verwacht dat de Kamer bezet wordt.
     @Test void testCheckInKoppeltKamer() {
         Hotel hotel = new Hotel();
         hotel.layout = new Layout(5, 5);
@@ -50,6 +55,7 @@ public class LobbyTest {
         assertTrue(kamer.isBezet());
     }
 
+    // Ik check een Gast in en uit; ik verwacht dat de Kamer leeg en vies wordt.
     @Test void testCheckOutOntkoppeltGast() {
         Hotel hotel = new Hotel();
         hotel.layout = new Layout(5, 5);
@@ -65,6 +71,7 @@ public class LobbyTest {
         assertFalse(kamer.isSchoon());
     }
 
+    // Ik stuur CHECK_OUT voor een onbekende Gast; ik verwacht geen exception.
     @Test void testCheckOutZonderGastCrashetNiet() {
         Hotel hotel = new Hotel();
         hotel.layout = new Layout(5, 5);
@@ -72,6 +79,7 @@ public class LobbyTest {
         assertDoesNotThrow(() -> lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_OUT, 99, -1)));
     }
 
+    // Ik stuur CHECK_IN met een logger; ik verwacht dat Lobby een logbericht schrijft.
     @Test void testLoggerWordtAangeroepen() {
         Hotel hotel = new Hotel();
         hotel.layout = new Layout(5, 5);

@@ -1,6 +1,7 @@
 package Controller;
 import Model.*;
 import Model.IEventListener;
+import Model.persoon.Schoonmaker;
 import Model.persoon.Persoon;
 import Model.ruimte.Ruimte;
 
@@ -49,6 +50,12 @@ public class HotelController {
         //stel logger in op lobby
         if (hotel.lobby != null){
             hotel.lobby.setLogger(logger);
+        }
+        for (Persoon p : hotel.personen) {
+            if (p instanceof Schoonmaker) {
+                ((Schoonmaker) p).setLogger(logger);
+                ((Schoonmaker) p).setHotel(hotel);
+            }
         }
         if (eventController != null) {
             //registreer alle iventlistener ruimter

@@ -6,14 +6,17 @@ import Controller.LayoutController;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Testklasse voor Hotel: ik test hoteldata, personenlijst en model-listeners.
 public class HotelTest {
 
+    // Ik maak een nieuw Hotel; ik verwacht lege ruimte- en personenlijsten.
     @Test void testConstructor() {
         Hotel h = new Hotel();
         assertTrue(h.ruimtes.isEmpty());
         assertTrue(h.personen.isEmpty());
     }
 
+    // Ik voeg een Gast toe; ik verwacht dat de personenlijst groter wordt.
     @Test void testVoegPersoonToe() {
         Hotel h = new Hotel();
         Gast g = new Gast(1, 2);
@@ -21,6 +24,7 @@ public class HotelTest {
         assertEquals(1, h.personen.size());
     }
 
+    // Ik voeg een ModelListener toe en notify; ik verwacht dat de listener wordt aangeroepen.
     @Test void testNotifyListeners() {
         Hotel h = new Hotel();
         boolean[] called = {false};
@@ -29,6 +33,7 @@ public class HotelTest {
         assertTrue(called[0]);
     }
 
+    // Ik laad een layout en vraag een ruimte op; ik verwacht dat daar een Kamer ligt.
     @Test void testKrijgRuimteOpMetLayout() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
