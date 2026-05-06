@@ -5,7 +5,7 @@ import Model.persoon.Persoon;
 import java.util.ArrayList;
 import java.util.List;
 
-// Basisklasse voor alle ruimtes in het hotel
+
 // Kamer, Restaurant, Bioscoop, Fitnesruimte en Lobby erven van deze klasse
 public class Ruimte {
 

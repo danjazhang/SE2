@@ -2,7 +2,7 @@ package Model.persoon;
 
 import Model.ruimte.Kamer;
 
-// Stelt een hotelgast voor
+
 // Erft van Persoon en heeft een gewenst aantal sterren en een kamer
 public class Gast extends Persoon {
 

@@ -28,7 +28,6 @@ public class Lobby extends Ruimte implements IEventListener {
     }
 
     @Override
-    //onEvent wordt aangeroepen bij elk event
     public void onEvent(HotelEvent event) {
         //check of het een checkin of checkout event is en roep de juiste methode aan
         if (event.getEventType() == HotelEventType.CHECK_IN){

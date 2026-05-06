@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Stelt een hotelkamer voor
+
 // Erft van Ruimte en heeft een aantal sterren, een gast en een schoon-status
 public class Kamer extends Ruimte {
 

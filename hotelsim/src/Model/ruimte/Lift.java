@@ -5,8 +5,8 @@ import Model.persoon.Persoon;
 import java.util.ArrayList;
 import java.util.List;
 
-// Stelt de lift voor in het hotel
-// Beheert de huidige verdieping, passagiers en verzoeken
+
+
 public class Lift extends Ruimte {
 
     // de verdieping waar de lift zich momenteel bevindt
