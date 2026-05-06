@@ -24,6 +24,7 @@ public class LayoutView extends JPanel implements ModelListener {
     public LayoutView(Hotel hotel) {
         this.hotel = hotel;
         hotel.voegListenerToe(this);
+        updateVoorkeursGrootte();
     }
 
     // geef het hotel terug
@@ -33,7 +34,26 @@ public class LayoutView extends JPanel implements ModelListener {
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
         hotel.voegListenerToe(this);
+        updateVoorkeursGrootte();
         repaint();
+    }
+
+    public static int getTileSize() {
+        return tileSize;
+    }
+
+    // Pas de zoom van het hotel aan door de grootte van elk vakje te wijzigen.
+    public void setTileSize(int nieuweTileSize) {
+        tileSize = nieuweTileSize;
+        updateVoorkeursGrootte();
+        revalidate();
+        repaint();
+    }
+
+    // Laat de scrollpane weten hoe groot het tekenvlak moet zijn bij de huidige zoom.
+    private void updateVoorkeursGrootte() {
+        if (hotel == null) return;
+        setPreferredSize(new Dimension(Math.max(400, hotel.breedte * tileSize), Math.max(400, hotel.hoogte * tileSize)));
     }
 
     // wordt aangeroepen door Hotel als de layout veranderd is
@@ -96,6 +116,14 @@ public class LayoutView extends JPanel implements ModelListener {
                 g.setFont(new Font("Arial", Font.BOLD, 12));
                 if (r instanceof Lift) g.drawString("Schacht", tekenX +4, tekenY + 16);
                 else g.drawString(r.getClass().getSimpleName(), tekenX +4, tekenY + 16);
+
+                // Markeer de lobby als knelpunt, omdat veel routes daar beginnen of eindigen.
+                if (r instanceof Lobby) {
+                    g.setColor(new Color(255, 223, 92));
+                    g.drawRect(tekenX + 3, tekenY + 3, tekenB - 6, tekenH - 6);
+                    g.drawRect(tekenX + 6, tekenY + 6, tekenB - 12, tekenH - 12);
+                    g.drawString("!", tekenX + tekenB - 14, tekenY + 18);
+                }
 
                 //teken kamernummer als het een kamer is
                 if (r instanceof Kamer){

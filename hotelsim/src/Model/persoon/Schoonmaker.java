@@ -18,7 +18,7 @@ import hotelevents.HotelEventType;
 public class Schoonmaker extends Persoon implements IEventListener {
 
     // Aantal NONE-ticks dat een schoonmaakbeurt duurt.
-    private static final int SCHOONMAAKDUUR = 5;
+    private static final int SCHOONMAAKDUUR = 15;
 
     // of de schoonmaker momenteel bezig is
     public boolean bezig;

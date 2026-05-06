@@ -32,8 +32,12 @@ public class HotelView extends JFrame {
     private JButton importButton = new JButton("Import layout");
     //start knop
     private JButton startButton = new JButton("Start");
+    // knop om een klein instellingenvenster te openen
+    private JButton instellingenButton = new JButton("Instellingen");
     //toont events grafisch
     private EventLogView eventLogView;
+    // scrollpane van de eventlog, zodat we die via instellingen kunnen tonen of verbergen
+    private JScrollPane zijLog;
 
     //constructor
     public HotelView(HotelController hotelController, EventLogView eventLogView, EventController eventController, SimulatieController simulatieController) {
@@ -121,6 +125,9 @@ public class HotelView extends JFrame {
             simulatieController.start();
         });
 
+        // Open een klein instellingenpaneel met snelheid, eventlog en grootte.
+        instellingenButton.addActionListener((ActionEvent e) -> openInstellingenPaneel());
+
         // =========================
         // UI
         // =========================
@@ -128,6 +135,7 @@ public class HotelView extends JFrame {
         top.add(importButton);
         top.add(layoutSelector);
         top.add(startButton);
+        top.add(instellingenButton);
 
         //voeg hotel grid toe in het midden
         add(top, BorderLayout.NORTH);
@@ -138,7 +146,7 @@ public class HotelView extends JFrame {
         top.add(simulatieView);
 
         // Toon de eventlog links met zowel verticale als horizontale scrollbars.
-        JScrollPane zijLog = new JScrollPane(
+        zijLog = new JScrollPane(
                 eventLogView.getLogArea(),
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -152,5 +160,62 @@ public class HotelView extends JFrame {
         setLocationRelativeTo(null);
         //maak venster zichtbaar
         setVisible(true);
+    }
+
+    // Dit instellingenpaneel bundelt een paar simpele instellingen op een plaats.
+    // Zo hoeft de gebruiker niet in de code te zoeken om snelheid, logzichtbaarheid of zoom te veranderen.
+    private void openInstellingenPaneel() {
+        JPanel instellingenPanel = new JPanel(new GridLayout(0, 2, 8, 8));
+
+        JComboBox<String> snelheidKeuze = new JComboBox<>(new String[]{"Langzaam", "Normaal", "Snel"});
+        snelheidKeuze.setSelectedItem(simulatieView.getGekozenSnelheid());
+
+        JCheckBox toonEventlog = new JCheckBox("Toon eventlog", zijLog.isVisible());
+
+        JComboBox<String> grootteKeuze = new JComboBox<>(new String[]{"Klein", "Normaal", "Groot"});
+        int huidigeTileSize = LayoutView.getTileSize();
+        if (huidigeTileSize <= 48) {
+            grootteKeuze.setSelectedItem("Klein");
+        } else if (huidigeTileSize >= 80) {
+            grootteKeuze.setSelectedItem("Groot");
+        } else {
+            grootteKeuze.setSelectedItem("Normaal");
+        }
+
+        instellingenPanel.add(new JLabel("Snelheid:"));
+        instellingenPanel.add(snelheidKeuze);
+        instellingenPanel.add(new JLabel("Eventlog:"));
+        instellingenPanel.add(toonEventlog);
+        instellingenPanel.add(new JLabel("Grootte:"));
+        instellingenPanel.add(grootteKeuze);
+
+        int keuze = JOptionPane.showConfirmDialog(
+                this,
+                instellingenPanel,
+                "Instellingen",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (keuze != JOptionPane.OK_OPTION) return;
+
+        // Pas eerst de snelheid aan via de bestaande SimulatieView, zodat alle logica op een plek blijft.
+        simulatieView.stelSnelheidIn((String) snelheidKeuze.getSelectedItem());
+
+        // Toon of verberg de eventlog zonder de rest van het venster te veranderen.
+        zijLog.setVisible(toonEventlog.isSelected());
+
+        // Kies een andere tileSize voor een kleinere of grotere hotelweergave.
+        String grootte = (String) grootteKeuze.getSelectedItem();
+        if ("Klein".equals(grootte)) {
+            panel.setTileSize(48);
+        } else if ("Groot".equals(grootte)) {
+            panel.setTileSize(88);
+        } else {
+            panel.setTileSize(64);
+        }
+
+        revalidate();
+        repaint();
     }
 }
