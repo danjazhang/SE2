@@ -19,10 +19,9 @@ public class LayoutView extends JPanel implements ModelListener {
     // de pixelgrootte van elk vakje in het grid
     static int tileSize = 64;
 
-    // constructor: registreer dit panel als observer bij het hotel
+    // constructor: registreer dit panel als observer bij de hotelcontroller
     public LayoutView(Hotel hotel) {
         this.hotel = hotel;
-        hotel.voegListenerToe(this);
     }
 
     // geef het hotel terug
@@ -31,7 +30,6 @@ public class LayoutView extends JPanel implements ModelListener {
     // stel een nieuw hotel in en herteken het panel
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
-        hotel.voegListenerToe(this);
         repaint();
     }
 

@@ -10,9 +10,8 @@ import hotelevents.HotelEventType;
 import java.util.HashMap;
 import java.util.Map;
 
-// Stelt het restaurant voor in het hotel
-// Erft van Ruimte en implementeert IEventListener
-// Het restaurant is verantwoordelijk voor eten logica (single responsibility)
+
+
 // Bij NEED_FOOD slaat hij de eindtijd op
 // Bij NONE checkt hij elke tick of gasten klaar zijn en maakt RestaurantEindEvent aan
 public class Restaurant extends Ruimte implements IEventListener {

@@ -8,9 +8,7 @@ import Model.ruimte.Kamer;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 
-// Stelt een schoonmaker voor in het hotel
-// Erft van Persoon en implementeert IEventListener
-// De schoonmaker is verantwoordelijk voor schoonmaak logica (single responsibility)
+
 // Bij CLEANING_EMERGENCY maakt hij een SchoonmaakEindEvent aan en logt de noodsituatie
 public class Schoonmaker extends Persoon implements IEventListener {
 

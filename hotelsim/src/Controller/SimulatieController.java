@@ -1,6 +1,9 @@
 package Controller;
 
+import Model.Hotel;
+import Model.persoon.Persoon;
 import hotelevents.HotelEventManager;
+
 
 
 // Verantwoordelijkheid: simulatie starten, pauzeren en stoppen
@@ -31,5 +34,15 @@ public class SimulatieController {
     }
     public void stop() {
         eventManager.stop();
+    }
+
+    //personen bewegen per tik
+    public void tik() {
+        Hotel hotel = hotelController.getHotel();
+        if (hotel == null) return;
+        for (Persoon p : hotel.personen) {
+            p.beweeg();
+        }
+        hotelController.notifyListeners();
     }
 }

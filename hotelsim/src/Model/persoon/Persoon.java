@@ -1,6 +1,6 @@
 package Model.persoon;
 
-import Model.layout.Layout;
+import Model.Pathfinder;
 import Model.layout.Vakje;
 
 import java.util.Queue;
@@ -8,7 +8,7 @@ import java.util.LinkedList;
 
 // Basisklasse voor alle personen in het hotel
 // Gast en Schoonmaker erven van deze klasse
-public class Persoon {
+public abstract class Persoon {
 
     // het vakje waar de persoon zich momenteel bevindt
     public Vakje huidigVakje;
@@ -16,15 +16,22 @@ public class Persoon {
     // het vakje waar de persoon naartoe wil
     public Vakje doelVakje;
 
-    //layout zodat persoon vakjes kan opzoeken
-    public Layout layout;
+    // pathfinder voor het berekenen van de volgende stap
+    private Pathfinder pathfinder;
 
+    //queue is first in first out
+    //linkedlist verwijst de elementen naar elkaar
     private Queue<Vakje> tussendoelen = new LinkedList<>();
 
     // constructor: persoon begint zonder positie
     public Persoon() {
         this.huidigVakje = null;
         this.doelVakje = null;
+    }
+
+    // stel de pathfinder in
+    public void setPathfinder(Pathfinder pathfinder) {
+        this.pathfinder = pathfinder;
     }
 
     // stel het doelVakje in
@@ -56,38 +63,21 @@ public class Persoon {
 
         if (huidigVakje == doelVakje && !tussendoelen.isEmpty()) {
         doelVakje = tussendoelen.poll();
-        }
+        }//poll is eerste element ophalen en verwijderen
 
         if (doelVakje == null || huidigVakje == doelVakje) return;
 
-        //haal x en y coordinaten om mee te rekenen
-        int huidigX = huidigVakje.x;
-        int huidigY = huidigVakje.y;
-        int doelX = doelVakje.x;
-        int doelY = doelVakje.y;
-
-        //beweeg 1 stap in x of y richting
-        //beginnen met nieuwe positie gelijk aan huidige en dan aanpassen
-        int nieuweX = huidigX;
-        int nieuweY = huidigY;
-
-        //beweeg 1 stap, eerst x daarna y
-        if (huidigX < doelX) nieuweX++;
-        else if (huidigX > doelX) nieuweX--;
-        else if (huidigY < doelY) nieuweY++;
-        else if (huidigY > doelY) nieuweY--;
-
-        // haal het nieuwe vakje op via de layout
-        //stop als layout niet bestaat
-        if (layout == null) return;
-        //zoek vakje op nieuwe positie van persoon via layout
-        Vakje nieuwVakje = layout.krijgVakje(nieuweX, nieuweY);
+        
+        //stop als pathfinder niet bestaat
+        if (pathfinder == null) return;
+        //zoek vakje op nieuwe positie van persoon via pathfinder
+        Vakje nieuwVakje = pathfinder.volgendeStap(huidigVakje, doelVakje);
         //stop als vakje niet bestaat
         if (nieuwVakje == null) return;
 
         // verwijder van huidig vakje
         huidigVakje.verwijderPersoon(this);
-        //verwokder persoon uit ruimte als er eentje is
+        //verwijder persoon uit ruimte als er eentje is
         if (huidigVakje.ruimte != null) huidigVakje.ruimte.verlaat(this);
 
         // zet persoon op nieuw vakje

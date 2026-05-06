@@ -10,9 +10,7 @@ import hotelevents.HotelEventType;
 import java.util.ArrayList;
 import java.util.List;
 
-// Stelt de bioscoop voor in het hotel
-// Erft van Ruimte en implementeert IEventListener
-// De bioscoop is verantwoordelijk voor film logica (single responsibility)
+
 // Bij GOTO_CINEMA logt hij dat een gast binnenkomt
 // Bij START_CINEMA slaat hij de eindtijd op
 // Bij NONE checkt hij elke tick of de film eindigt en maakt FilmEindEvent aan

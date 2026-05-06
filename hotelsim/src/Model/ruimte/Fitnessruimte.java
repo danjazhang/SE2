@@ -12,9 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Stelt de fitnessruimte voor in het hotel
-// Erft van Ruimte en implementeert IEventListener
-// De fitnessruimte is verantwoordelijk voor sport logica (single responsibility)
+
 // Bij GOTO_FITNESS slaat hij de eindtijd op
 // Bij NONE checkt hij elke tick of gasten klaar zijn en maakt FitnessEindEvent aan
 public class Fitnessruimte extends Ruimte implements IEventListener {
