@@ -1,12 +1,9 @@
 package View;
 
-import Model.Hotel;
-import Model.Ruimte;
-import Model.Kamer;
-import Model.Restaurant;
-import Model.Bioscoop;
-import Model.Fitnessruimte;
-import Model.ModelListener;
+import Model.*;
+import Model.persoon.Gast;
+import Model.persoon.Persoon;
+import Model.ruimte.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,10 +19,9 @@ public class LayoutView extends JPanel implements ModelListener {
     // de pixelgrootte van elk vakje in het grid
     static int tileSize = 64;
 
-    // constructor: registreer dit panel als observer bij het hotel
+    // constructor: registreer dit panel als observer bij de hotelcontroller
     public LayoutView(Hotel hotel) {
         this.hotel = hotel;
-        hotel.voegListenerToe(this);
     }
 
     // geef het hotel terug
@@ -34,7 +30,6 @@ public class LayoutView extends JPanel implements ModelListener {
     // stel een nieuw hotel in en herteken het panel
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
-        hotel.voegListenerToe(this);
         repaint();
     }
 
@@ -72,16 +67,19 @@ public class LayoutView extends JPanel implements ModelListener {
                 getekend.add(r);
 
                 // kies kleur op basis van ruimtetype
-                if (r instanceof Kamer) g.setColor(new Color(70, 130, 180));
-                else if (r instanceof Restaurant) g.setColor(Color.ORANGE);
-                else if (r instanceof Bioscoop) g.setColor(Color.RED);
-                else if (r instanceof Fitnessruimte) g.setColor(Color.GREEN);
+                if (r instanceof Kamer) g.setColor(new Color(222, 229, 240));
+                else if (r instanceof Restaurant) g.setColor(new Color(228, 223, 235));
+                else if (r instanceof Bioscoop) g.setColor(new Color(247, 234, 219));
+                else if (r instanceof Fitnessruimte) g.setColor(new Color(235, 241, 223));
+                else if ( r instanceof Lift)g.setColor(new Color(171, 87, 81));//schacht
+                else if (r instanceof Trap) g.setColor(new Color(162, 185, 103));
+                else if (r instanceof Lobby) g.setColor(new Color(123, 102, 158));
                 else g.setColor(Color.LIGHT_GRAY);
 
                 // teken het hele blok in één keer op basis van positie en afmetingen
-                int tekenX = r.posX * tileSize;
+                int tekenX = (r.posX -1)* tileSize;
                 // verschuif alles 1 vakje naar rechts zodat de lift links past
-                int tekenY = (r.posY - 1) * tileSize;
+                int tekenY = (r.posY -1) * tileSize;
                 int tekenB = r.breedte * tileSize;
                 int tekenH = r.hoogte * tileSize;
 
@@ -91,43 +89,60 @@ public class LayoutView extends JPanel implements ModelListener {
                 g.drawRect(tekenX, tekenY, tekenB, tekenH);
 
                 // teken de naam van de ruimte op het vakje
-                String naam = r.getClass().getSimpleName();
                 g.setColor(Color.BLACK);
                 g.setFont(new Font("Arial", Font.BOLD, 12));
-                g.drawString(naam, tekenX + 4, tekenY + 16);
+                if (r instanceof Lift) g.drawString("Schacht", tekenX +4, tekenY + 16);
+                else g.drawString(r.getClass().getSimpleName(), tekenX +4, tekenY + 16);
 
                 //teken kamernummer als het een kamer is
                 if (r instanceof Kamer){
                     //((Kamer) r) zet r van type ruimte naar kamer
                     //String.valueof zet int naar string
                     g.drawString(String.valueOf(((Kamer) r).getKamernummer()), tekenX + 4, tekenY + 30);
-                    
+                }
+                //tekent lift cabine
+                if (r instanceof Lift){
+                    int cabineY = (hotel.lift.getHuidigeVerdieping() - 1) * tileSize;
+                    g.setColor(new Color(202, 152, 150));
+                    g.fillRect(tekenX, cabineY, tileSize, tileSize);
+                    g.setColor(Color.BLACK);
+                    g.drawRect(tekenX, cabineY, tileSize, tileSize);
+                    g.drawString("Lift", tekenX + 4, cabineY + 16);
                 }
             }
         }
 
-        // teken de lift helemaal links in cyaan
-        g.setColor(Color.CYAN);
-        g.fillRect(0, 0, tileSize, (hotel.hoogte + 1) * tileSize);
-        g.setColor(Color.BLACK);
-        g.drawRect(0, 0, tileSize, (hotel.hoogte + 1) * tileSize);
-        g.setFont(new Font("Arial", Font.BOLD, 12));
-        g.drawString("Lift", 4, 16);
+        // teken personen
+        //doorloop alle personen in hotel
+        for (Persoon p : hotel.personen) {
+            //stop als de persoon geen positie heeft
+            if (p.huidigVakje == null) continue;
+            //bereken de pixel positie
+            //x is al verschoven dus lift dus heeft geen -1
+            int px = (p.huidigVakje.x -1) * tileSize + tileSize / 4;
+            int py = (p.huidigVakje.y-1) * tileSize + tileSize / 4;
 
-        // teken de trap helemaal rechts in magenta
-        int trapX = (hotel.breedte + 1) * tileSize;
-        g.setColor(Color.MAGENTA);
-        g.fillRect(trapX, 0, tileSize, (hotel.hoogte + 1) * tileSize);
-        g.setColor(Color.BLACK);
-        g.drawRect(trapX, 0, tileSize, (hotel.hoogte + 1) * tileSize);
-        g.drawString("Trap", trapX + 4, 16);
+            //offset per gast zodat ze niet over elkaar heen tekenen
+            if (p instanceof Gast) {
+                int offset = (((Gast) p).gastId % 3) *10;
+                px+= offset;
+            }
 
-        // teken de lobby onderin, even breed als het hotel
-        int lobbyY = hotel.hoogte * tileSize;
-        g.setColor(Color.YELLOW);
-        g.fillRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
-        g.setColor(Color.BLACK);
-        g.drawRect(tileSize, lobbyY, hotel.breedte * tileSize, tileSize);
-        g.drawString("Lobby", tileSize + 4, lobbyY + 16);
+            //gasten wit tekenen en schoonmaker grijs
+            if (p instanceof Gast) g.setColor(Color.WHITE);
+            else g.setColor(Color.DARK_GRAY); // schoonmaker
+            //gevulde cirkel van halve vakje grootte tekenen op berekende positie
+            g.fillOval(px, py, tileSize / 3, tileSize / 3);
+            //teken zwarte rand om cirkel
+            g.setColor(Color.BLACK);
+            g.drawOval(px, py, tileSize / 3, tileSize / 3);
+
+            // teken gastId op de cirkel
+            if (p instanceof Gast) {
+                g.setColor(Color.BLACK);
+                g.setFont(new Font("Arial", Font.BOLD, 10));
+                g.drawString(String.valueOf(((Gast) p).gastId), px + tileSize / 8, py + tileSize / 3);
+            }
+        }
     }
 }

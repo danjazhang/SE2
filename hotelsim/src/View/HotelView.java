@@ -34,12 +34,15 @@ public class HotelView extends JFrame {
     private JButton startButton = new JButton("Start");
     //toont events grafisch
     private EventLogView eventLogView;
+    //event controller voor het registreren van listeners
+    private EventController eventController;
 
     //constructor
     public HotelView(HotelController hotelController, EventLogView eventLogView, EventController eventController, SimulatieController simulatieController) {
 
         this.hotelController = hotelController;
         this.eventLogView = eventLogView;
+        this.eventController = eventController;
         this.simulatieController = simulatieController;
         //haal layoutcontroller op via hotelcontroller
         this.layoutController = hotelController.getLayoutController();
@@ -80,6 +83,9 @@ public class HotelView extends JFrame {
                 Hotel nieuwHotel = layoutController.getHotel(id);
                 //update hotel in de controller
                 hotelController.setHotel(nieuwHotel);
+                eventController.registreerHotelListeners(nieuwHotel);
+                //registreer layoutview als observer
+                hotelController.voegListenerToe(panel);
                 //update hotel
                 this.hotel = nieuwHotel;
                 //update panel
@@ -136,12 +142,12 @@ public class HotelView extends JFrame {
         top.add(simulatieView);
 
         //stel de breedte van de eventlog in
-        eventLogView.getLogArea().setPreferredSize(new Dimension(200, 0));
+        eventLogView.getLogArea().setPreferredSize(new Dimension(200, 400));
         //voeg eventlog links toe
         add(new JScrollPane(eventLogView.getLogArea()), BorderLayout.WEST);
 
         //venster grootte
-        setSize(730, 650);
+        setSize(1000, 700);
         //venster in het midden van de scherm
         setLocationRelativeTo(null);
         //maak venster zichtbaar

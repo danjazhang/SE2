@@ -1,10 +1,13 @@
 package Controller;
 
+import Model.*;
+import Model.events.IEventListener;
+import Model.persoon.Persoon;
+import Model.ruimte.Ruimte;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventManager;
 import hotelevents.HotelEventListener;
-import hotelevents.HotelEventType;
-import Model.*;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -19,6 +22,9 @@ public class EventController implements HotelEventListener {
 
     // hotel controller voor toegang tot hotel data
     private HotelController hotelController;
+
+    // simulatie controller voor het uitvoeren van een tik
+    private SimulatieController simulatieController;
 
     // logger voor grafische weergave - alleen voor noodgevallen
     private ILogger logger;
@@ -40,6 +46,11 @@ public class EventController implements HotelEventListener {
         this.hotelController = hotelController;
     }
 
+    // stel de simulatiecontroller in
+    public void setSimulatieController(SimulatieController simulatieController) {
+        this.simulatieController = simulatieController;
+    }
+
     // stel de logger in
     public void setLogger(ILogger logger) {
         this.logger = logger;
@@ -54,6 +65,23 @@ public class EventController implements HotelEventListener {
     // elke ruimte roept dit aan om zichzelf te registreren
     public void registreerListener(IEventListener listener) {
         listeners.add(listener);
+    }
+
+    // registreer alle ruimtes en personen van het hotel als listeners
+    public void registreerHotelListeners(Hotel hotel) {
+        if (hotel == null) return;
+        //registreer alle ruimtes die IEventListener implementeren
+        for (Ruimte r : hotel.ruimtes) {
+            if (r instanceof IEventListener) {
+                registreerListener((IEventListener) r);
+            }
+        }
+        //registreer personen die IEventListener implementeren
+        for (Persoon p : hotel.personen) {
+            if (p instanceof IEventListener) {
+                registreerListener((IEventListener) p);
+            }
+        }
     }
 
     // stuur het library event door naar alle geregistreerde listeners
@@ -84,6 +112,9 @@ public class EventController implements HotelEventListener {
                 break;
             case GODZILLA:
                 if (logger != null) logger.log("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
+                break;
+            case NONE:
+                if (simulatieController != null) simulatieController.tik();
                 break;
             default: break;
         }

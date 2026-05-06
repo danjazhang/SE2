@@ -13,7 +13,7 @@ public class SimulatieView extends JPanel {
 
     public SimulatieView(SimulatieController simulatieController) {
         this.simulatieController = simulatieController;
-  
+
 
         // pauze knop
         pauseButton.addActionListener((ActionEvent e) -> {
@@ -28,7 +28,7 @@ public class SimulatieView extends JPanel {
         // stop knop
         stopButton.addActionListener((ActionEvent e) -> simulatieController.stop());
 
-        
+
         add(pauseButton);
         add(stopButton);
     }
