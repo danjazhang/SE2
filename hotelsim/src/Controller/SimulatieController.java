@@ -46,6 +46,16 @@ public class SimulatieController {
         this.snelheid = snelheid;
     }
 
+    // snelheid aanpassen op basis van gebruikerskeuze
+    public void pasSnelheidToe(String keuze) {
+        switch (keuze) {
+            case "Langzaam": snelheid = 0; break;
+            case "Normaal":  snelheid = 1; break;
+            case "Snel":     snelheid = 4; break;
+            default:         snelheid = 1; break;
+        }
+    }
+
     // personen bewegen per tik
     public void tik() {
         Hotel hotel = hotelController.getHotel();
