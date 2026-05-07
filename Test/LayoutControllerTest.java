@@ -10,18 +10,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class LayoutControllerTest {
 
+    // laadGeldigBestand: id groter dan 0 bij succes
     @Test void testLaadGeldigBestand() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
         assertTrue(id > 0);
     }
 
+    // laadOngeldigBestand: geeft -1 terug bij fout
     @Test void testLaadOngeldigBestandGeeftMinEen() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("bestaat_niet.json", "test");
         assertEquals(-1, id);
     }
 
+    // getHotel: hotel is niet null na laden
     @Test void testGetHotelNaLaden() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -29,6 +32,7 @@ public class LayoutControllerTest {
         assertNotNull(h);
     }
 
+    // hotel heeft ruimtes na laden
     @Test void testHotelHeeftRuimtes() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -36,6 +40,7 @@ public class LayoutControllerTest {
         assertFalse(h.ruimtes.isEmpty());
     }
 
+    // hotel heeft een lift na laden
     @Test void testHotelHeeftLift() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -44,6 +49,7 @@ public class LayoutControllerTest {
         assertTrue(h.lift instanceof Lift);
     }
 
+    // hotel heeft een trap na laden
     @Test void testHotelHeeftTrap() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -52,6 +58,7 @@ public class LayoutControllerTest {
         assertTrue(h.trap instanceof Trap);
     }
 
+    // hotel heeft een lobby na laden
     @Test void testHotelHeeftLobby() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -60,6 +67,7 @@ public class LayoutControllerTest {
         assertTrue(h.lobby instanceof Lobby);
     }
 
+    // hotel heeft kamers na laden
     @Test void testHotelHeeftKamers() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -67,6 +75,7 @@ public class LayoutControllerTest {
         assertTrue(h.ruimtes.stream().anyMatch(r -> r instanceof Kamer));
     }
 
+    // maakHandmatigeLayout: hotel heeft juiste afmetingen
     @Test void testMaakHandmatigeLayout() {
         LayoutController lc = new LayoutController();
         int id = lc.maakHandmatigeLayout("test", 5, 5);
@@ -76,17 +85,20 @@ public class LayoutControllerTest {
         assertEquals(5, h.hoogte);
     }
 
+    // getHotelManager: geeft een HotelManager terug
     @Test void testGetHotelManager() {
         LayoutController lc = new LayoutController();
         assertNotNull(lc.getHotelManager());
         assertTrue(lc.getHotelManager() instanceof HotelManager);
     }
 
+    // setLogger: geen crash
     @Test void testSetLogger() {
         LayoutController lc = new LayoutController();
         assertDoesNotThrow(() -> lc.setLogger(bericht -> {}));
     }
 
+    // meerdere layouts laden: ids zijn verschillend
     @Test void testMeerdereLayoutsLaden() {
         LayoutController lc = new LayoutController();
         int id1 = lc.laadVanBestand("layout.json", "layout1");

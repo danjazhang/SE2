@@ -51,7 +51,14 @@ public class Lobby extends Ruimte implements IEventListener {
             //bereken en zet route naar kamer via pathfinder
             hotel.pathfinder.zetRoute(gast, kamer);
         }
-        if (logger != null) logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt in");
+        if (logger != null) {
+            if (kamer != null) {
+                //toon kamernummer zodat duidelijk is welke kamer de gast krijgt
+                logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt in kamer no " + kamer.getKamernummer());
+            } else {
+                logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt in, maar er is geen vrije kamer");
+            }
+        }
     }
 
     private void behandelCheckOut(int gastId, int tijd) {
@@ -60,14 +67,23 @@ public class Lobby extends Ruimte implements IEventListener {
         if (gast == null) return;
         //sla kamer op want na uitchecken is kamer null
         Kamer kamer = gast.kamer;
-        kamer.ontkoppelGast(gast);
+        if (kamer != null) kamer.ontkoppelGast(gast);
         //zoek vrije schoonmaker
         Schoonmaker schoonmaker = personenService.vindVrijeSchoonmaker();
         //check of er een schoonmaker is en of de gast een kamer had
         if (schoonmaker != null && kamer != null) {
             schoonmaker.maakKamerSchoon(kamer);
+            //stuur schoonmaker naar de kamer via een route
+            hotel.pathfinder.zetRoute(schoonmaker, kamer);
         }
-        if (logger != null) logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt uit");
+        if (logger != null) {
+            if (kamer != null) {
+                //toon kamernummer zodat duidelijk is welke kamer vrijkomt
+                logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt uit uit kamer " + kamer.getKamernummer());
+            } else {
+                logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt uit");
+            }
+        }
     }
 
     private Kamer vindVrijeKamer() {

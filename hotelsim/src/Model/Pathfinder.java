@@ -2,7 +2,7 @@ package Model;
 
 import Model.layout.Layout;
 import Model.layout.Vakje;
-import Model.persoon.Gast;
+import Model.persoon.Persoon;
 import Model.ruimte.Lift;
 import Model.ruimte.Ruimte;
 import Model.ruimte.Trap;
@@ -43,15 +43,15 @@ public class Pathfinder {
         return layout.krijgVakje(nieuweX, nieuweY);
     }
 
-    // bereken route van gast naar ruimte en zet die op de gast
-    public void zetRoute(Gast gast, Ruimte ruimte) {
-        Vakje start = gast.huidigVakje;
+    // bereken route van persoon naar ruimte en zet die op de persoon
+    public void zetRoute(Persoon persoon, Ruimte ruimte) {
+        Vakje start = persoon.huidigVakje;
         Vakje doel = layout.krijgVakje(ruimte.posX, ruimte.posY);
         if (start == null || doel == null) return;
         List<Vakje> route = berekenRoute(start, doel);
-        gast.zetDoel(route.get(0));
+        persoon.zetDoel(route.get(0));
         for (int i = 1; i < route.size(); i++) {
-            gast.voegTussendoelToe(route.get(i));
+            persoon.voegTussendoelToe(route.get(i));
         }
     }
 

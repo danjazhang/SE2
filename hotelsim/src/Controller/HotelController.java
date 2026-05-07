@@ -1,5 +1,7 @@
 package Controller;
 import Model.*;
+import Model.persoon.Persoon;
+import Model.persoon.Schoonmaker;
 import Model.ruimte.Ruimte;
 
 import java.util.ArrayList;
@@ -53,6 +55,16 @@ public class HotelController {
         //stel logger in op lobby
         if (hotel.lobby != null){
             hotel.lobby.setLogger(logger);
+        }
+        //stel logger in op schoonmakers
+        for (Persoon p : hotel.personen) {
+            if (p instanceof Schoonmaker) {
+                ((Schoonmaker) p).setLogger(logger);
+            }
+        }
+        //registreer alle listeners via eventcontroller
+        if (eventController != null) {
+            eventController.registreerHotelListeners(hotel);
         }
     }
 

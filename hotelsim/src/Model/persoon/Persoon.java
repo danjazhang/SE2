@@ -88,6 +88,12 @@ public abstract class Persoon {
         if (nieuwVakje.ruimte != null) nieuwVakje.ruimte.betreed(this);
     }
 
+    // wis de huidige route zodat de persoon stopt met bewegen
+    public void wisRoute() {
+        doelVakje = null;
+        tussendoelen.clear();
+    }
+
     // voer de taak van de persoon uit
     public void voerTaakUit() {}
 }
