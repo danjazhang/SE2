@@ -121,6 +121,9 @@ public class HotelView extends JFrame {
                 JOptionPane.showMessageDialog(this, "Kies eerst een layout!");
                 return;
             }
+            // Zorg dat ook bij de allereerste start de actuele snelheid uit de GUI wordt gebruikt.
+            simulatieView.pasSnelheidToe();
+
             //start de simulatie
             simulatieController.start();
         });
@@ -141,13 +144,17 @@ public class HotelView extends JFrame {
         simulatieView = new SimulatieView(simulatieController);
         top.add(simulatieView);
 
-        //stel de breedte van de eventlog in
-        eventLogView.getLogArea().setPreferredSize(new Dimension(200, 400));
-        //voeg eventlog links toe
-        add(new JScrollPane(eventLogView.getLogArea()), BorderLayout.WEST);
+        // Toon de eventlog links met zowel verticale als horizontale scrollbars.
+        JScrollPane zijLog = new JScrollPane(
+                eventLogView.getLogArea(),
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
+        zijLog.setPreferredSize(new Dimension(240, 400));
+        add(zijLog, BorderLayout.WEST);
 
         //venster grootte
-        setSize(1000, 700);
+        setSize(1200, 850);
         //venster in het midden van de scherm
         setLocationRelativeTo(null);
         //maak venster zichtbaar
