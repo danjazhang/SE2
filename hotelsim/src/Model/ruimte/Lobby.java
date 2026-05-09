@@ -12,6 +12,8 @@ import hotelevents.HotelEventType;
 
 import java.util.List;
 
+// De lobby is het centrale start- en eindpunt voor gasten.
+// Hier gebeurt check-in, check-out en de eerste toewijzing van kamers.
 public class Lobby extends Ruimte implements IEventListener {
 
     //positie van
@@ -50,7 +52,8 @@ public class Lobby extends Ruimte implements IEventListener {
         //voeg persoon toe aan personenlijst in hotel
         hotel.voegPersoonToe(gast);
 
-        //zoek een vrije schone kamer
+        // Zoek een vrije en schone kamer voor deze nieuwe gast.
+        // Pas nadat een kamer gekoppeld is, berekenen we een route door het hotel.
         Kamer kamer = vindVrijeKamer();
         if (kamer != null) {
             //koppel de gast aan kamer
@@ -151,6 +154,8 @@ public class Lobby extends Ruimte implements IEventListener {
         Vakje doel = hotel.layout.krijgVakje(kamer.posX, kamer.posY);
         if (doel == null) return;
 
+        // De schoonmaker krijgt net als een gast een volledige route met een eerste doel
+        // en daarna eventuele tussenstappen via lift of trap.
         List<Vakje> route = hotel.pathfinder.berekenRoute(schoonmaker.huidigVakje, doel);
         if (route.isEmpty()) return;
 

@@ -53,6 +53,9 @@ public class RuimteFactory {
         }
     }
 
+    // Bereken een kamernummer op basis van de verticale positie in de layout.
+    // De onderste kamerlaag wordt verdieping 1, zodat die laag nummers 101, 102, ...
+    // krijgt en de laag erboven 201, 202, ... krijgt.
     private int maakKamernummer(JSONObject obj) {
         int posY = obj.has("_posY") ? Math.max(1, obj.getInt("_posY")) : 1;
         // In de layout staat een kleine y-waarde juist hoger op het scherm.

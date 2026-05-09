@@ -38,6 +38,8 @@ public class LayoutView extends JPanel implements ModelListener {
         repaint();
     }
 
+    // Andere schermdelen, zoals het instellingenpaneel, lezen via deze getter
+    // welke zoomgrootte momenteel actief is.
     public static int getTileSize() {
         return tileSize;
     }
@@ -117,7 +119,8 @@ public class LayoutView extends JPanel implements ModelListener {
                 if (r instanceof Lift) g.drawString("Schacht", tekenX +4, tekenY + 16);
                 else g.drawString(r.getClass().getSimpleName(), tekenX +4, tekenY + 16);
 
-                // Markeer de lobby als knelpunt, omdat veel routes daar beginnen of eindigen.
+                // Markeer de lobby als knelpunt, omdat veel routes daar beginnen,
+                // samenkomen of eindigen. Zo valt deze centrale plek direct op in de GUI.
                 if (r instanceof Lobby) {
                     g.setColor(new Color(255, 223, 92));
                     g.drawRect(tekenX + 3, tekenY + 3, tekenB - 6, tekenH - 6);
@@ -160,7 +163,8 @@ public class LayoutView extends JPanel implements ModelListener {
             }
             
             // Gasten blijven witte cirkels, maar de schoonmaker krijgt een opvallender symbool.
-            // Zo kun je in een drukke simulatie sneller zien waar de schoonmakers staan.
+            // Zo kun je in een drukke simulatie sneller zien waar de schoonmakers staan
+            // en raakt hij visueel minder snel kwijt tussen meerdere gasten.
             if (p instanceof Gast) {
                 g.setColor(Color.WHITE);
                 g.fillOval(px, py, tileSize / 3, tileSize / 3);

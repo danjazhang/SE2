@@ -36,7 +36,8 @@ public class HotelView extends JFrame {
     private JButton instellingenButton = new JButton("Instellingen");
     //toont events grafisch
     private EventLogView eventLogView;
-    // scrollpane van de eventlog, zodat we die via instellingen kunnen tonen of verbergen
+    // We bewaren de scrollpane apart, zodat het instellingenpaneel
+    // de volledige logweergave zichtbaar of onzichtbaar kan maken.
     private JScrollPane zijLog;
 
     //constructor
@@ -167,11 +168,17 @@ public class HotelView extends JFrame {
     private void openInstellingenPaneel() {
         JPanel instellingenPanel = new JPanel(new GridLayout(0, 2, 8, 8));
 
+        // Gebruik de huidige simulatiesnelheid als startwaarde,
+        // zodat het instellingenpaneel altijd de actuele toestand toont.
         JComboBox<String> snelheidKeuze = new JComboBox<>(new String[]{"Langzaam", "Normaal", "Snel"});
         snelheidKeuze.setSelectedItem(simulatieView.getGekozenSnelheid());
 
+        // De eventlog mag via instellingen snel aan of uit gezet worden
+        // zonder dat de rest van de layout opnieuw opgebouwd hoeft te worden.
         JCheckBox toonEventlog = new JCheckBox("Toon eventlog", zijLog.isVisible());
 
+        // De grootte-optie verandert de tileSize van het grid.
+        // Daardoor kunnen we het hotel kleiner of groter tekenen zonder de layoutdata te wijzigen.
         JComboBox<String> grootteKeuze = new JComboBox<>(new String[]{"Klein", "Normaal", "Groot"});
         int huidigeTileSize = LayoutView.getTileSize();
         if (huidigeTileSize <= 48) {

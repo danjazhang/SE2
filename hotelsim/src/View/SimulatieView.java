@@ -36,6 +36,8 @@ public class SimulatieView extends JPanel {
     }
 
     public void pasSnelheidToe() {
+        // Deze view vertaalt alleen de woorden uit de GUI
+        // naar een getal dat de controller kan gebruiken.
         if ("Langzaam".equals(gekozenSnelheid)) {
             // Langzaam gebruikt een lagere bewegingsfrequentie.
             simulatieController.setSnelheid(0);
@@ -55,6 +57,8 @@ public class SimulatieView extends JPanel {
     }
 
     public String getGekozenSnelheid() {
+        // Het instellingenpaneel gebruikt deze getter om de
+        // huidige keuze opnieuw in het keuzemenu te tonen.
         return gekozenSnelheid;
     }
 }

@@ -103,8 +103,10 @@ public class LayoutController {
 
     // Maak minstens een schoonmaker aan, zodat die zichtbaar is in de GUI
     // en meteen beschikbaar is wanneer een kamer schoongemaakt moet worden.
+    // Zonder deze stap zou de schoonmakerlogica wel bestaan, maar zou er niemand zijn om die uit te voeren.
     PersonenFactory personenFactory = new PersonenFactory();
     // De eerste schoonmaker wacht links van het midden onderaan het hotel.
+    // Dat punt gebruiken we ook als vaste wachtplek waar hij later naar kan terugkeren.
     Model.layout.Vakje wachtVakje = nieuwHotel.layout.krijgVakje(Math.max(2, gridBreedte / 2 - 1), gridHoogte);
     Schoonmaker schoonmaker = personenFactory.maakSchoonmaker(
             nieuwHotel.pathfinder,

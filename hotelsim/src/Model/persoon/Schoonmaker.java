@@ -68,6 +68,7 @@ public class Schoonmaker extends Persoon implements IEventListener {
 
     // Wijs een kamer toe die schoongemaakt moet worden.
     // De echte schoonmaak gebeurt later pas wanneer de schoonmaker in die kamer is aangekomen.
+    // Hierdoor zie je eerst de verplaatsing in de simulatie en pas daarna de schoonmaak zelf.
     public void maakKamerSchoon(Kamer k) {
         this.kamer = k;
         this.bezig = true;
@@ -129,6 +130,8 @@ public class Schoonmaker extends Persoon implements IEventListener {
     private void startNoodschoonmaakVoorGast(int gastId) {
         if (hotel == null || huidigVakje == null) return;
 
+        // Zoek de gast met dit guestId en gebruik daarna zijn gekoppelde kamer
+        // als schoonmaakdoel voor de noodsituatie.
         for (Persoon p : hotel.personen) {
             if (p instanceof Gast && ((Gast) p).gastId == gastId) {
                 Gast gast = (Gast) p;
