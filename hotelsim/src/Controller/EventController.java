@@ -28,6 +28,9 @@ public class EventController implements HotelEventListener {
     // logger voor grafische weergave - alleen voor noodgevallen
     private ILogger logger;
 
+    // service voor het sturen van gasten naar de juiste ruimte
+    private GastRoutingService gastRoutingService;
+
     // personen die genotificeerd worden
     private List<Persoon> personen = new ArrayList<>();
 
@@ -67,7 +70,10 @@ public class EventController implements HotelEventListener {
     }
 
     // registreer alle ruimtes en personen van een hotel als listeners
+    // wist eerst de oude listeners zodat er geen dubbele registraties zijn
     public void registreerHotelListeners(Hotel hotel) {
+        listeners.clear();
+        gastRoutingService = new GastRoutingService(hotel);
         if (hotel == null) return;
         for (Model.ruimte.Ruimte r : hotel.ruimtes) {
             if (r instanceof IEventListener) registreerListener((IEventListener) r);
@@ -89,11 +95,31 @@ public class EventController implements HotelEventListener {
         // logica voor later
     }
 
+    // stuur gast naar de juiste ruimte op basis van het event type
+    private void stuurGastNaarRuimte(HotelEvent evt) {
+        if (gastRoutingService == null) return;
+        switch (evt.getEventType()) {
+            case NEED_FOOD:
+                gastRoutingService.stuurNaarRestaurant(evt.getGuestId());
+                break;
+            case GOTO_FITNESS:
+                gastRoutingService.stuurNaarFitness(evt.getGuestId());
+                break;
+            case GOTO_CINEMA:
+                gastRoutingService.stuurNaarBioscoop(evt.getGuestId());
+                break;
+            default: break;
+        }
+    }
+
     // ontvang library events en stuur ze door naar alle listeners
     // noodgevallen worden hier apart gelogd
     @Override
     public void notify(HotelEvent evt) {
         if (hotelController == null || hotelController.getHotel() == null) return;
+
+        // stuur gast naar de juiste ruimte
+        stuurGastNaarRuimte(evt);
 
         // stuur het event door naar alle listeners
         stuurNaarListeners(evt);

@@ -46,8 +46,10 @@ public class Restaurant extends Ruimte implements IEventListener {
     @Override
     public void onEvent(HotelEvent event) {
         // NEED_FOOD: een gast gaat eten, log dat en sla eindtijd op
+        // alleen verwerken als de gast nog niet in de eetEindTijden map zit
         if (event.getEventType() == HotelEventType.NEED_FOOD) {
             int gastId = event.getGuestId();
+            if (eetEindTijden.containsKey(gastId)) return;
             int eindTijd = event.getTime() + EETDUUR;
             eetEindTijden.put(gastId, eindTijd);
             if (logger != null) logger.log("[" + event.getTime() + "] Restaurant: gast " + gastId + " bestelt eten");
