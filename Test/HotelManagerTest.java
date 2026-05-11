@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class HotelManagerTest {
 
+    // addLayout: layout wordt opgeslagen en teruggevonden via id
     @Test void testAddLayout() {
         HotelManager hm = new HotelManager();
         Layout l = new Layout(3, 3);
@@ -13,6 +14,7 @@ public class HotelManagerTest {
         assertEquals(l, hm.getLayout(id));
     }
 
+    // loadHotel en getHotel: hotel wordt opgeslagen en teruggevonden via id
     @Test void testLoadEnGetHotel() {
         HotelManager hm = new HotelManager();
         Layout l = new Layout(3, 3);
@@ -22,6 +24,7 @@ public class HotelManagerTest {
         assertEquals(h, hm.getHotel(id));
     }
 
+    // removeLayout: layout is weg na verwijderen
     @Test void testRemoveLayout() {
         HotelManager hm = new HotelManager();
         Layout l = new Layout(3, 3);
@@ -30,6 +33,7 @@ public class HotelManagerTest {
         assertNull(hm.getLayout(id));
     }
 
+    // getAllLayoutIds: geeft alle ids terug
     @Test void testGetAllLayoutIds() {
         HotelManager hm = new HotelManager();
         hm.addLayout("a", new Layout(2, 2));
@@ -37,6 +41,7 @@ public class HotelManagerTest {
         assertEquals(2, hm.getAllLayoutIds().size());
     }
 
+    // ids zijn oplopend
     @Test void testIdOplopend() {
         HotelManager hm = new HotelManager();
         int id1 = hm.addLayout("a", new Layout(2, 2));

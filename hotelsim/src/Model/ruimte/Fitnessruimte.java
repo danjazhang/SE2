@@ -1,10 +1,11 @@
 package Model.ruimte;
 
 import Model.events.FitnessEindEvent;
-import Model.IEventListener;
+import Model.events.IEventListener;
 import Model.ILogger;
 import Model.persoon.Gast;
 
+import Model.GastTerugService;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 import java.util.ArrayList;
@@ -29,6 +30,9 @@ public class Fitnessruimte extends Ruimte implements IEventListener {
     // logger voor het loggen naar de GUI
     private ILogger logger;
 
+    // service voor het terugsturen van gasten naar hun kamer
+    private GastTerugService gastTerugService;
+
     // constructor met logger
     public Fitnessruimte(ILogger logger) {
         this.gasten = new ArrayList<>();
@@ -40,6 +44,11 @@ public class Fitnessruimte extends Ruimte implements IEventListener {
     public Fitnessruimte() {
         this.gasten = new ArrayList<>();
         this.sportEindTijden = new HashMap<>();
+    }
+
+    // stel de terugservice in
+    public void setGastTerugService(GastTerugService gastTerugService) {
+        this.gastTerugService = gastTerugService;
     }
 
     // wordt aangeroepen door EventController als er een library event binnenkomt
@@ -60,6 +69,7 @@ public class Fitnessruimte extends Ruimte implements IEventListener {
                     // maak een FitnessEindEvent aan en log gast klaar
                     FitnessEindEvent eindEvent = new FitnessEindEvent(tijd, entry.getKey());
                     if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Fitness: gast " + eindEvent.getGastId() + " klaar");
+                    if (gastTerugService != null) gastTerugService.stuurTerugNaarKamer(eindEvent.getGastId());
                     return true;
                 }
                 return false;

@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class LayoutTest {
 
+    // aanmaken: vakjes bestaan op geldige posities
     @Test void testAanmaak() {
         Layout l = new Layout(6, 8);
         assertNotNull(l.krijgVakje(1, 1));
         assertNotNull(l.krijgVakje(6, 8));
     }
 
+    // buiten grid: geeft null terug
     @Test void testBuitenGridNull() {
         Layout l = new Layout(4, 4);
         assertNull(l.krijgVakje(0, 0));
@@ -18,12 +20,14 @@ public class LayoutTest {
         assertNull(l.krijgVakje(-1, 1));
     }
 
+    // vakjes hebben juiste coordinaten
     @Test void testVakjesHebbenJuisteCoordinaten() {
         Layout l = new Layout(3, 3);
         assertEquals(1, l.krijgVakje(1, 1).x);
         assertEquals(3, l.krijgVakje(3, 3).y);
     }
 
+    // plaatsRuimte: ruimte staat op juiste vakjes
     @Test void testPlaatsRuimte() {
         Layout l = new Layout(6, 8);
         Kamer k = new Kamer();
@@ -33,6 +37,7 @@ public class LayoutTest {
         assertEquals(k, l.krijgVakje(2, 2).ruimte);
     }
 
+    // plaatsRuimte buiten grid: geen crash
     @Test void testPlaatsRuimteBuitenGridCrashetNiet() {
         Layout l = new Layout(3, 3);
         Kamer k = new Kamer();

@@ -48,29 +48,23 @@ public class HotelView extends JFrame {
         this.layoutController = hotelController.getLayoutController();
         this.hotel = hotelController.getHotel();
 
-
         setTitle("Hotel Simulatie");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         panel = new LayoutView(hotel);
-
         layoutSelector = new JComboBox<>();
 
         // =========================
         // IMPORT BUTTON
         // =========================
         importButton.addActionListener((ActionEvent e) -> {
-
             //maak nieuwe filepicker
             JFileChooser chooser = new JFileChooser();
-
             //open filepicker en als de gebruiker een bestand kiest wordt dit goed gekeurd
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-
                 //haal het gekozen bestand op
                 File file = chooser.getSelectedFile();
-
                 //laad de layout via de controller
                 int id = layoutController.laadVanBestand(file.getAbsolutePath(), file.getName());
                 //check of laden is mislukt want id begint bij 1, dus -1 betekent mislukt
@@ -78,12 +72,10 @@ public class HotelView extends JFrame {
                     JOptionPane.showMessageDialog(this, "Fout bij laden van layout!");
                     return;
                 }
-
                 //haal hotel op via id
                 Hotel nieuwHotel = layoutController.getHotel(id);
                 //update hotel in de controller
                 hotelController.setHotel(nieuwHotel);
-                eventController.registreerHotelListeners(nieuwHotel);
                 //registreer layoutview als observer
                 hotelController.voegListenerToe(panel);
                 //update hotel
@@ -103,7 +95,7 @@ public class HotelView extends JFrame {
         layoutSelector.addActionListener((ActionEvent e) -> {
             //als er niks geselecteerd is stop dan
             if (layoutSelector.getSelectedItem() == null) return;
-            //haal de geselcteerde tekst op
+            //haal de geselecteerde tekst op
             String selected = (String) layoutSelector.getSelectedItem();
             //haal het id op voor -
             int id = Integer.parseInt(selected.split(" - ")[0]);
@@ -121,6 +113,8 @@ public class HotelView extends JFrame {
                 JOptionPane.showMessageDialog(this, "Kies eerst een layout!");
                 return;
             }
+            //zorg dat de actuele snelheid uit de GUI wordt gebruikt bij de start
+            simulatieView.pasSnelheidToe();
             //start de simulatie
             simulatieController.start();
         });
@@ -141,14 +135,16 @@ public class HotelView extends JFrame {
         simulatieView = new SimulatieView(simulatieController);
         top.add(simulatieView);
 
-        //stel de breedte van de eventlog in
-        eventLogView.getLogArea().setPreferredSize(new Dimension(200, 400));
-        //voeg eventlog links toe
-        add(new JScrollPane(eventLogView.getLogArea()), BorderLayout.WEST);
+        //toon de eventlog links zonder horizontale scrollbar
+        JScrollPane zijLog = new JScrollPane(eventLogView.getLogArea(),
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        zijLog.setPreferredSize(new Dimension(360, 400));
+        add(zijLog, BorderLayout.WEST);
 
         //venster grootte
-        setSize(1000, 700);
-        //venster in het midden van de scherm
+        setSize(1200, 800);
+        //venster in het midden van het scherm
         setLocationRelativeTo(null);
         //maak venster zichtbaar
         setVisible(true);

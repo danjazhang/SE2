@@ -24,7 +24,7 @@ public class RestaurantTest {
     @Test void testGastKlaarNaEetduur() {
         boolean[] logged = {false};
         Restaurant r = new Restaurant(bericht -> logged[0] = true);
-        r.onEvent(new HotelEvent(1, HotelEventType.NEED_FOOD, 1, -1));
+        r.registreerGast(1, 1);
         r.onEvent(new HotelEvent(21, HotelEventType.NONE, -1, -1));
         assertTrue(logged[0]);
     }

@@ -1,6 +1,6 @@
 package Model.events;
 
-import Model.InternEvent;
+import Model.events.InternEvent;
 
 // Intern eind event dat aangemaakt wordt door de Fitnessruimte
 // als een gast klaar is met sporten na een bepaald aantal ticks na GOTO_FITNESS

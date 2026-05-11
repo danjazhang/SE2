@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class LayoutParserTest {
 
+    // laadGeldigBestand: resultaat is niet null en heeft afmetingen
     @Test void testLaadGeldigBestand() {
         ParseResultaat r = new LayoutParser().laad("layout.json");
         assertNotNull(r);
@@ -13,11 +14,13 @@ public class LayoutParserTest {
         assertFalse(r.ruimteData.isEmpty());
     }
 
+    // laadOngeldigBestand: geeft null terug
     @Test void testLaadOngeldigBestandGeeftNull() {
         ParseResultaat r = new LayoutParser().laad("bestaat_niet.json");
         assertNull(r);
     }
 
+    // aantal ruimtes klopt met het json bestand
     @Test void testAantalRuimtes() {
         ParseResultaat r = new LayoutParser().laad("layout.json");
         assertNotNull(r);

@@ -1,14 +1,13 @@
 package Controller;
 
-import Model.*;
-import Model.IEventListener;
-import Model.persoon.Persoon;
-import Model.ruimte.Ruimte;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventManager;
 import hotelevents.HotelEventListener;
 import hotelevents.HotelEventType;
 import Model.*;
+import Model.events.IEventListener;
+import Model.GastTerugService;
+import Model.persoon.Persoon;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -24,11 +23,14 @@ public class EventController implements HotelEventListener {
     // hotel controller voor toegang tot hotel data
     private HotelController hotelController;
 
-    // simulatie controller voor het uitvoeren van een tik
+    // simulatie controller voor het uitvoeren van een tik bij NONE
     private SimulatieController simulatieController;
 
     // logger voor grafische weergave - alleen voor noodgevallen
     private ILogger logger;
+
+    // service voor het sturen van gasten naar de juiste ruimte
+    private GastRoutingService gastRoutingService;
 
     // personen die genotificeerd worden
     private List<Persoon> personen = new ArrayList<>();
@@ -68,20 +70,21 @@ public class EventController implements HotelEventListener {
         listeners.add(listener);
     }
 
-    // registreer alle ruimtes en personen van het hotel als listeners
+    // registreer alle ruimtes en personen van een hotel als listeners
+    // wist eerst de oude listeners zodat er geen dubbele registraties zijn
     public void registreerHotelListeners(Hotel hotel) {
+        listeners.clear();
+        gastRoutingService = new GastRoutingService(hotel);
         if (hotel == null) return;
-        //registreer alle ruimtes die IEventListener implementeren
-        for (Ruimte r : hotel.ruimtes) {
-            if (r instanceof IEventListener) {
-                registreerListener((IEventListener) r);
-            }
+        GastTerugService gastTerugService = new GastTerugService(hotel);
+        for (Model.ruimte.Ruimte r : hotel.ruimtes) {
+            if (r instanceof IEventListener) registreerListener((IEventListener) r);
+            if (r instanceof Model.ruimte.Restaurant) ((Model.ruimte.Restaurant) r).setGastTerugService(gastTerugService);
+            if (r instanceof Model.ruimte.Fitnessruimte) ((Model.ruimte.Fitnessruimte) r).setGastTerugService(gastTerugService);
+            if (r instanceof Model.ruimte.Bioscoop) ((Model.ruimte.Bioscoop) r).setGastTerugService(gastTerugService);
         }
-        //registreer personen die IEventListener implementeren
         for (Persoon p : hotel.personen) {
-            if (p instanceof IEventListener) {
-                registreerListener((IEventListener) p);
-            }
+            if (p instanceof IEventListener) registreerListener((IEventListener) p);
         }
     }
 
@@ -97,11 +100,32 @@ public class EventController implements HotelEventListener {
         // logica voor later
     }
 
+    // stuur gast naar de juiste ruimte op basis van het event type
+    private void stuurGastNaarRuimte(HotelEvent evt) {
+        if (gastRoutingService == null) return;
+        switch (evt.getEventType()) {
+            case NEED_FOOD:
+                Model.ruimte.Restaurant restaurant = gastRoutingService.stuurNaarRestaurant(evt.getGuestId());
+                if (restaurant != null) restaurant.registreerGast(evt.getGuestId(), evt.getTime());
+                break;
+            case GOTO_FITNESS:
+                gastRoutingService.stuurNaarFitness(evt.getGuestId());
+                break;
+            case GOTO_CINEMA:
+                gastRoutingService.stuurNaarBioscoop(evt.getGuestId());
+                break;
+            default: break;
+        }
+    }
+
     // ontvang library events en stuur ze door naar alle listeners
     // noodgevallen worden hier apart gelogd
     @Override
     public void notify(HotelEvent evt) {
         if (hotelController == null || hotelController.getHotel() == null) return;
+
+        // stuur gast naar de juiste ruimte
+        stuurGastNaarRuimte(evt);
 
         // stuur het event door naar alle listeners
         stuurNaarListeners(evt);

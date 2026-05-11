@@ -1,6 +1,6 @@
 package Model.events;
 
-import Model.InternEvent;
+import Model.events.InternEvent;
 
 // Intern eind event dat aangemaakt wordt door de Schoonmaker
 // als een schoonmaak noodgeval is afgehandeld

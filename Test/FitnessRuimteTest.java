@@ -4,7 +4,7 @@ import hotelevents.HotelEventType;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FitnessruimteTest {
+public class FitnessRuimteTest {
 
     @Test void testConstructor() {
         Fitnessruimte f = new Fitnessruimte();

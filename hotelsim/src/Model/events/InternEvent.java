@@ -1,4 +1,4 @@
-package Model;
+package Model.events;
 
 // Abstracte basisklasse voor alle interne eind events in het hotel
 // De eind events zoals FilmEindEvent erven van deze klasse
