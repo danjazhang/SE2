@@ -15,6 +15,9 @@ public class Gast extends Persoon {
     // de kamer waar de gast momenteel verblijft
     public Kamer kamer;
 
+    // of de gast onderweg is naar de lobby om uit te checken
+    public boolean uitcheckend = false;
+
     // constructor: maak een gast aan met een gewenst aantal sterren
     public Gast(int gastId, int gewensteSterren) {
         this.gastId = gastId;

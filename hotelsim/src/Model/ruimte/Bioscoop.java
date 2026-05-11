@@ -1,14 +1,17 @@
 package Model.ruimte;
 
-import Model.IEventListener;
+import Model.events.IEventListener;
 import Model.ILogger;
 import Model.persoon.Gast;
 import Model.events.FilmEindEvent;
 
+import Model.GastTerugService;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 // Bij GOTO_CINEMA logt hij dat een gast binnenkomt
@@ -28,11 +31,17 @@ public class Bioscoop extends Ruimte implements IEventListener {
     // het tijdstip waarop de huidige film eindigt
     private int filmEindTijd;
 
+    // gastIds van gasten die momenteel in de bioscoop zitten
+    private Set<Integer> aanwezigeGastIds = new HashSet<>();
+
     // een film duurt dit aantal ticks na START_CINEMA
     private static final int FILMDUUR = 40;
 
     // logger voor het loggen naar de GUI
     private ILogger logger;
+
+    // service voor het terugsturen van gasten naar hun kamer
+    private GastTerugService gastTerugService;
 
     // constructor met logger
     public Bioscoop(ILogger logger) {
@@ -51,11 +60,17 @@ public class Bioscoop extends Ruimte implements IEventListener {
         this.filmEindTijd = 0;
     }
 
+    // stel de terugservice in
+    public void setGastTerugService(GastTerugService gastTerugService) {
+        this.gastTerugService = gastTerugService;
+    }
+
     // wordt aangeroepen door EventController als er een library event binnenkomt
     @Override
     public void onEvent(HotelEvent event) {
-        // GOTO_CINEMA: een gast gaat naar de bioscoop, log dat
+        // GOTO_CINEMA: een gast gaat naar de bioscoop, log dat en registreer hem
         if (event.getEventType() == HotelEventType.GOTO_CINEMA) {
+            aanwezigeGastIds.add(event.getGuestId());
             if (logger != null) logger.log("[" + event.getTime() + "] Bioscoop: gast " + event.getGuestId() + " komt binnen");
         }
         // START_CINEMA: film start officieel, sla eindtijd op en log film start
@@ -70,9 +85,15 @@ public class Bioscoop extends Ruimte implements IEventListener {
             // als de film bezig is en de eindtijd is bereikt
             if (filmBezig && tijd >= filmEindTijd) {
                 filmBezig = false;
-                // maak een FilmEindEvent aan en log film eindigt
                 FilmEindEvent eindEvent = new FilmEindEvent(tijd, -1);
                 if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Bioscoop: film eindigt");
+                // stuur alle aanwezige gasten terug naar hun kamer
+                if (gastTerugService != null) {
+                    for (int gastId : aanwezigeGastIds) {
+                        gastTerugService.stuurTerugNaarKamer(gastId);
+                    }
+                }
+                aanwezigeGastIds.clear();
             }
         }
     }

@@ -1,7 +1,7 @@
 package Model.ruimte;
 
 import Model.*;
-import Model.IEventListener;
+import Model.events.IEventListener;
 import Model.ILogger;
 import Model.layout.Vakje;
 import Model.persoon.Gast;
@@ -76,9 +76,12 @@ public class Lobby extends Ruimte implements IEventListener {
             //stuur schoonmaker naar de kamer via een route
             hotel.pathfinder.zetRoute(schoonmaker, kamer);
         }
+        // markeer gast als uitcheckend en stuur naar de lobby
+        // zodra de gast de lobby bereikt wordt hij grafisch verwijderd via betreed()
+        gast.uitcheckend = true;
+        hotel.pathfinder.zetRoute(gast, this);
         if (logger != null) {
             if (kamer != null) {
-                //toon kamernummer zodat duidelijk is welke kamer vrijkomt
                 logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt uit uit kamer " + kamer.getKamernummer());
             } else {
                 logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt uit");
@@ -101,4 +104,22 @@ public class Lobby extends Ruimte implements IEventListener {
     public void toonStatusScherm() { System.out.println("Status van hotel wordt getoond..."); }
     public int getBalieX() { return balieX; }
     public int getBalieY() { return balieY; }
+
+    // als een uitcheckende gast de lobby betreedt, verwijder hem grafisch
+    @Override
+    public void betreed(Model.persoon.Persoon p) {
+        super.betreed(p);
+        if (p instanceof Gast) {
+            Gast gast = (Gast) p;
+            if (gast.uitcheckend) {
+                // verwijder van huidig vakje en uit de personenlijst
+                if (gast.huidigVakje != null) {
+                    gast.huidigVakje.verwijderPersoon(gast);
+                    gast.huidigVakje = null;
+                }
+                gast.wisRoute();
+                hotel.personen.remove(gast);
+            }
+        }
+    }
 }

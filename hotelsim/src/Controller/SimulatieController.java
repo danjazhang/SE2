@@ -76,7 +76,10 @@ public class SimulatieController {
         }
 
         for (int stap = 0; stap < stappenPerTik; stap++) {
-            for (Persoon p : hotel.personen) {
+            // maak een kopie van de lijst om concurrent modification te voorkomen
+            // als een gast uitcheckt tijdens beweeg() wordt hij uit de originele lijst verwijderd
+            java.util.List<Persoon> personenKopie = new java.util.ArrayList<>(hotel.personen);
+            for (Persoon p : personenKopie) {
                 p.beweeg();
             }
         }

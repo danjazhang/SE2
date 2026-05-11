@@ -5,7 +5,8 @@ import hotelevents.HotelEventManager;
 import hotelevents.HotelEventListener;
 import hotelevents.HotelEventType;
 import Model.*;
-import Model.IEventListener;
+import Model.events.IEventListener;
+import Model.GastTerugService;
 import Model.persoon.Persoon;
 import java.util.List;
 import java.util.ArrayList;
@@ -75,8 +76,12 @@ public class EventController implements HotelEventListener {
         listeners.clear();
         gastRoutingService = new GastRoutingService(hotel);
         if (hotel == null) return;
+        GastTerugService gastTerugService = new GastTerugService(hotel);
         for (Model.ruimte.Ruimte r : hotel.ruimtes) {
             if (r instanceof IEventListener) registreerListener((IEventListener) r);
+            if (r instanceof Model.ruimte.Restaurant) ((Model.ruimte.Restaurant) r).setGastTerugService(gastTerugService);
+            if (r instanceof Model.ruimte.Fitnessruimte) ((Model.ruimte.Fitnessruimte) r).setGastTerugService(gastTerugService);
+            if (r instanceof Model.ruimte.Bioscoop) ((Model.ruimte.Bioscoop) r).setGastTerugService(gastTerugService);
         }
         for (Persoon p : hotel.personen) {
             if (p instanceof IEventListener) registreerListener((IEventListener) p);
@@ -100,7 +105,8 @@ public class EventController implements HotelEventListener {
         if (gastRoutingService == null) return;
         switch (evt.getEventType()) {
             case NEED_FOOD:
-                gastRoutingService.stuurNaarRestaurant(evt.getGuestId());
+                Model.ruimte.Restaurant restaurant = gastRoutingService.stuurNaarRestaurant(evt.getGuestId());
+                if (restaurant != null) restaurant.registreerGast(evt.getGuestId(), evt.getTime());
                 break;
             case GOTO_FITNESS:
                 gastRoutingService.stuurNaarFitness(evt.getGuestId());

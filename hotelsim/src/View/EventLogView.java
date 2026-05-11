@@ -10,9 +10,10 @@ public class EventLogView implements ILogger {
 
     public EventLogView() {
         logArea.setEditable(false);
-        logArea.setLineWrap(false);
+        logArea.setLineWrap(true);
+        logArea.setWrapStyleWord(true);
         logArea.setRows(100);
-        logArea.setColumns(24);
+        logArea.setColumns(30);
     }
 
     //geef tekstvak terug

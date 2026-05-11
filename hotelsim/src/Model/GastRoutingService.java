@@ -18,35 +18,34 @@ public class GastRoutingService {
         this.hotel = hotel;
     }
 
-    // stuur een gast naar het dichtstbijzijnde restaurant
-    public void stuurNaarRestaurant(int gastId) {
-        stuurNaarRuimte(gastId, "restaurant");
-    }
-
-    // stuur een gast naar de dichtstbijzijnde fitnessruimte
-    public void stuurNaarFitness(int gastId) {
-        stuurNaarRuimte(gastId, "fitness");
-    }
-
-    // stuur een gast naar de dichtstbijzijnde bioscoop
-    public void stuurNaarBioscoop(int gastId) {
-        stuurNaarRuimte(gastId, "bioscoop");
-    }
-
-    // stuur een gast naar de dichtstbijzijnde ruimte van het opgegeven type
-    private void stuurNaarRuimte(int gastId, String ruimteType) {
-        if (hotel == null || hotel.pathfinder == null) return;
-
-        // zoek de gast op
+    // stuur een gast naar het dichtstbijzijnde restaurant en geef dat restaurant terug
+    public Restaurant stuurNaarRestaurant(int gastId) {
         Gast gast = vindGast(gastId);
-        if (gast == null || gast.huidigVakje == null) return;
-
-        // zoek de dichtstbijzijnde ruimte van het gevraagde type
-        Ruimte doelRuimte = vindDichtstbijzijndeRuimte(gast, ruimteType);
-        if (doelRuimte == null) return;
-
-        // bereken en zet de route
+        if (gast == null || gast.huidigVakje == null) return null;
+        Ruimte doelRuimte = vindDichtstbijzijndeRuimte(gast, "restaurant");
+        if (doelRuimte == null) return null;
         hotel.pathfinder.zetRoute(gast, doelRuimte);
+        return (Restaurant) doelRuimte;
+    }
+
+    // stuur een gast naar de dichtstbijzijnde fitnessruimte en geef die terug
+    public Fitnessruimte stuurNaarFitness(int gastId) {
+        Gast gast = vindGast(gastId);
+        if (gast == null || gast.huidigVakje == null) return null;
+        Ruimte doelRuimte = vindDichtstbijzijndeRuimte(gast, "fitness");
+        if (doelRuimte == null) return null;
+        hotel.pathfinder.zetRoute(gast, doelRuimte);
+        return (Fitnessruimte) doelRuimte;
+    }
+
+    // stuur een gast naar de dichtstbijzijnde bioscoop en geef die terug
+    public Bioscoop stuurNaarBioscoop(int gastId) {
+        Gast gast = vindGast(gastId);
+        if (gast == null || gast.huidigVakje == null) return null;
+        Ruimte doelRuimte = vindDichtstbijzijndeRuimte(gast, "bioscoop");
+        if (doelRuimte == null) return null;
+        hotel.pathfinder.zetRoute(gast, doelRuimte);
+        return (Bioscoop) doelRuimte;
     }
 
     // zoek een gast op basis van id

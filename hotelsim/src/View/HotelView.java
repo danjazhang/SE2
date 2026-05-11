@@ -135,15 +135,15 @@ public class HotelView extends JFrame {
         simulatieView = new SimulatieView(simulatieController);
         top.add(simulatieView);
 
-        //toon de eventlog links met verticale en horizontale scrollbars
+        //toon de eventlog links zonder horizontale scrollbar
         JScrollPane zijLog = new JScrollPane(eventLogView.getLogArea(),
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        zijLog.setPreferredSize(new Dimension(240, 400));
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        zijLog.setPreferredSize(new Dimension(360, 400));
         add(zijLog, BorderLayout.WEST);
 
         //venster grootte
-        setSize(1200, 850);
+        setSize(1200, 800);
         //venster in het midden van het scherm
         setLocationRelativeTo(null);
         //maak venster zichtbaar
