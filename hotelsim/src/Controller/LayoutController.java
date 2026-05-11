@@ -1,6 +1,15 @@
 package Controller;
 
 import Model.*;
+import Model.layout.Layout;
+import Model.layout.LayoutParser;
+import Model.layout.ParseResultaat;
+import Model.layout.Vakje;
+import Model.persoon.Schoonmaker;
+import Model.ruimte.Lift;
+import Model.ruimte.Lobby;
+import Model.ruimte.Ruimte;
+import Model.ruimte.Trap;
 import org.json.JSONObject;
 
 // Verantwoordelijkheid: layouts laden en opslaan
@@ -9,6 +18,8 @@ public class LayoutController {
     // beheert alle geladen hotels
     private HotelManager hotelManager = new HotelManager();
 
+    private ILogger logger;
+
     // laad een nieuw hotel vanuit een JSON bestand
     public int laadVanBestand(String bestandspad, String bestandsnaam) {
         //lees het JSON bestand via de parser
@@ -16,53 +27,87 @@ public class LayoutController {
         //als laden mislukt geef -1 terug, want id begint bij 1
         if (resultaat == null) return -1;
 
-    //maak nieuwe hotel
-    Hotel nieuwHotel = new Hotel();
-    nieuwHotel.breedte = resultaat.breedte;
-    nieuwHotel.hoogte = resultaat.hoogte;
-    //maak grid op basis van bovenstaande afmetingen
-    nieuwHotel.layout = new Layout(resultaat.breedte, resultaat.hoogte);
+        //maak nieuwe hotel
+        Hotel nieuwHotel = new Hotel();
 
-    //maak ruimtes aan via ruimtefactory en voeg toe aan hotel en grid
+        //grid groter maken voor lift trap en lobby
+        int gridBreedte = resultaat.breedte + 3;
+        int gridHoogte = resultaat.hoogte + 1;
 
-    RuimteFactory factory = new RuimteFactory();
+        nieuwHotel.breedte = gridBreedte;
+        nieuwHotel.hoogte = gridHoogte;
+        //maak grid op basis van bovenstaande afmetingen
+        nieuwHotel.layout = new Layout(gridBreedte, gridHoogte);
 
-    //loopt door alle jsonobjecten
-    for (JSONObject obj : resultaat.ruimteData) {
-        //maak de juiste ruimte subklasse aan
-        Ruimte r = factory.maakRuimte(obj.getString("AreaType"), obj);
-        //waardes zijn allemaal opgeslagen in jsonobject 
-        //set de x en y positie 
-        r.posX = obj.getInt("_posX");
-        r.posY = obj.getInt("_posY");
-        //set de breedte en hoogte
-        r.breedte = obj.getInt("_breedte");
-        r.hoogte = obj.getInt("_hoogte");
-        //voeg de ruimte toe aan de lijst van ruimtes in het hotel
-        nieuwHotel.ruimtes.add(r);
-        //plaats de ruimte op de juiste positie in het grid
-        nieuwHotel.layout.plaatsRuimte(r);
-    }
+        //zoek de onderste kamerlaag in de layout voor correcte kamernummers per verdieping
+        //de onderste kamers moeten 101, 102, ... krijgen, daarboven 201, 202, ...
+        int ondersteKamerPosY = 1;
+        for (JSONObject obj : resultaat.ruimteData) {
+            if (obj.getString("AreaType").equals("Room")) {
+                ondersteKamerPosY = Math.max(ondersteKamerPosY, obj.getInt("_posY"));
+            }
+        }
 
-    // na de ruimtes loop, voor het opslaan
-    // maak lift aan links
-    nieuwHotel.lift = new Lift();
+        //maak ruimtes aan via ruimtefactory en voeg toe aan hotel en grid
+        RuimteFactory factory = new RuimteFactory(logger, ondersteKamerPosY);
 
-    // maak trap aan rechts
-    nieuwHotel.trap = new Trap(2);
+        //loopt door alle jsonobjecten
+        for (JSONObject obj : resultaat.ruimteData) {
+            //maak de juiste ruimte subklasse aan
+            Ruimte r = factory.maakRuimte(obj.getString("AreaType"), obj);
+            //set de x en y positie
+            r.posX = obj.getInt("_posX") + 1; // ruimte voor lift
+            r.posY = obj.getInt("_posY");
+            //set de breedte en hoogte
+            r.breedte = obj.getInt("_breedte");
+            r.hoogte = obj.getInt("_hoogte");
+            //voeg de ruimte toe aan de lijst van ruimtes in het hotel
+            nieuwHotel.ruimtes.add(r);
+            //plaats de ruimte op de juiste positie in het grid
+            nieuwHotel.layout.plaatsRuimte(r);
+        }
 
-    // maak lobby aan onderin
-    Lobby lobby = new Lobby(1, nieuwHotel.hoogte + 1, nieuwHotel.breedte, 1, 1, nieuwHotel.hoogte + 1, nieuwHotel, null);
-    nieuwHotel.lobby = lobby;
-    nieuwHotel.ruimtes.add(lobby);
+        // maak lift aan links
+        Lift lift = new Lift();
+        lift.posX = 1;
+        lift.posY = 1;
+        lift.breedte = 1;
+        lift.hoogte = gridHoogte;
+        nieuwHotel.lift = lift;
+        nieuwHotel.ruimtes.add(lift);
+        nieuwHotel.layout.plaatsRuimte(lift);
 
-    //sla de layout op in hotelmanager met bestandsnaam als naam
-    int id = hotelManager.addLayout(bestandsnaam, nieuwHotel.layout);
-    //addlayout geeft een volgendeid terug dit wordt opgeslagen in id
-    //sla het hele hotel object op in hotelmanager met zelfde id als sleutel
-    hotelManager.loadHotel(id, nieuwHotel);
-    return id;
-    //hotel en layout zijn aan elkaar gekoppeld via id
+        // maak trap aan rechts
+        Trap trap = new Trap(3);
+        trap.posX = gridBreedte - 1;
+        trap.posY = 1;
+        trap.breedte = 2;
+        trap.hoogte = gridHoogte;
+        nieuwHotel.trap = trap;
+        nieuwHotel.ruimtes.add(trap);
+        nieuwHotel.layout.plaatsRuimte(trap);
+
+        // maak lobby aan onderin
+        Lobby lobby = new Lobby(2, gridHoogte, gridBreedte - 3, 1, gridBreedte / 2, gridHoogte, nieuwHotel, logger);
+        nieuwHotel.lobby = lobby;
+        nieuwHotel.ruimtes.add(lobby);
+        nieuwHotel.layout.plaatsRuimte(lobby);
+
+        nieuwHotel.pathfinder = new Pathfinder(nieuwHotel);
+
+        //maak een schoonmaker aan zodat die meteen beschikbaar is bij check-out
+        PersonenFactory personenFactory = new PersonenFactory();
+        //schoonmaker wacht links van het midden onderaan het hotel
+        Vakje wachtVakje = nieuwHotel.layout.krijgVakje(Math.max(2, gridBreedte / 2 - 1), gridHoogte);
+        Schoonmaker schoonmaker = personenFactory.maakSchoonmaker(nieuwHotel.pathfinder, wachtVakje);
+        schoonmaker.setWachtVakje(wachtVakje);
+        nieuwHotel.voegPersoonToe(schoonmaker);
+
+        //sla de layout op in hotelmanager met bestandsnaam als naam
+        int id = hotelManager.addLayout(bestandsnaam, nieuwHotel.layout);
+        //sla het hele hotel object op in hotelmanager met zelfde id als sleutel
+        hotelManager.loadHotel(id, nieuwHotel);
+        return id;
     }
 
     // maak handmatig een lege layout aan
@@ -79,6 +124,10 @@ public class LayoutController {
         //sla hotel op met zelfde id
         hotelManager.loadHotel(id, nieuwHotel);
         return id;
+    }
+
+    public void setLogger(ILogger logger) {
+        this.logger = logger;
     }
 
     // geef een hotel terug op basis van id

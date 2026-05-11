@@ -1,45 +1,31 @@
+import Model.ruimte.Restaurant;
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventType;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
 
 public class RestaurantTest {
 
-    @Test
-    void testConstructor() {
+    @Test void testConstructor() {
         Restaurant r = new Restaurant();
         assertEquals(0, r.capaciteit);
-        assertNull(r.gasten);
     }
 
-    @Test
-    void testErftVanRuimte() {
+    @Test void testNeedFoodCrashetNiet() {
         Restaurant r = new Restaurant();
-        assertEquals(0, r.posX);
-        assertEquals(0, r.posY);
+        assertDoesNotThrow(() -> r.onEvent(new HotelEvent(1, HotelEventType.NEED_FOOD, 1, -1)));
     }
 
-    @Test
-    void testZetCapaciteit() {
+    @Test void testNoneCrashetNiet() {
         Restaurant r = new Restaurant();
-        r.capaciteit = 50;
-        assertEquals(50, r.capaciteit);
+        assertDoesNotThrow(() -> r.onEvent(new HotelEvent(1, HotelEventType.NONE, -1, -1)));
     }
 
-    @Test
-    void testBetreedRestaurantCrashetNiet() {
-        Restaurant r = new Restaurant();
-        assertDoesNotThrow(() -> r.betreedRestaurant());
-    }
-
-    @Test
-    void testVerlaatRestaurantCrashetNiet() {
-        Restaurant r = new Restaurant();
-        assertDoesNotThrow(() -> r.verlaatRestaurant());
-    }
-
-    @Test
-    void testIsVolCrashetNiet() {
-        Restaurant r = new Restaurant();
-        assertDoesNotThrow(() -> r.isVol());
+    @Test void testGastKlaarNaEetduur() {
+        boolean[] logged = {false};
+        Restaurant r = new Restaurant(bericht -> logged[0] = true);
+        r.registreerGast(1, 1);
+        r.onEvent(new HotelEvent(21, HotelEventType.NONE, -1, -1));
+        assertTrue(logged[0]);
     }
 }

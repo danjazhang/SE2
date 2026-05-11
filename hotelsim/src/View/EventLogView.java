@@ -8,6 +8,14 @@ public class EventLogView implements ILogger {
     //maak nieuwe tekstvak
     private JTextArea logArea = new JTextArea();
 
+    public EventLogView() {
+        logArea.setEditable(false);
+        logArea.setLineWrap(true);
+        logArea.setWrapStyleWord(true);
+        logArea.setRows(100);
+        logArea.setColumns(30);
+    }
+
     //geef tekstvak terug
     public JTextArea getLogArea() {
         return logArea;

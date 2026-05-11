@@ -1,11 +1,17 @@
 package Controller;
 import Model.*;
+import Model.persoon.Persoon;
+import Model.persoon.Schoonmaker;
+import Model.ruimte.Ruimte;
 
-// Verantwoordelijkheid: hotel data beheren
+import java.util.ArrayList;
+import java.util.List;
+
+// Verantwoordelijkheid: hotel data beheren en observers notificeren
 public class HotelController {
 
     //huidige hotel
-    private Hotel hotel; 
+    private Hotel hotel;
 
     //beheert het laden van layouts
     private LayoutController layoutController;
@@ -13,6 +19,9 @@ public class HotelController {
     private EventController eventController;
 
     private ILogger logger;
+
+    // lijst van observers (View) die genotificeerd worden bij wijzigingen
+    private List<ModelListener> listeners = new ArrayList<>();
 
     public HotelController() {
         //maak layoutcontroller
@@ -36,15 +45,36 @@ public class HotelController {
 
     public void setLogger(ILogger logger){
         this.logger = logger;
+        layoutController.setLogger(logger);
     }
     public void setEventController(EventController eventController){
         this.eventController = eventController;
     }
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
-        if (hotel.lobby != null && eventController != null){
+        //stel logger in op lobby
+        if (hotel.lobby != null){
             hotel.lobby.setLogger(logger);
-            eventController.registreerListener(hotel.lobby);
         }
+        //stel logger in op schoonmakers
+        for (Persoon p : hotel.personen) {
+            if (p instanceof Schoonmaker) {
+                ((Schoonmaker) p).setLogger(logger);
+            }
+        }
+        //registreer alle listeners via eventcontroller
+        if (eventController != null) {
+            eventController.registreerHotelListeners(hotel);
+        }
+    }
+
+    // voeg een observer toe aan de lijst
+    public void voegListenerToe(ModelListener modelListener) {
+        listeners.add(modelListener);
+    }
+
+    // stuur een melding naar alle observers dat het model veranderd is
+    public void notifyListeners() {
+        for (ModelListener modelListener : listeners) modelListener.modelGewijzigd();
     }
 }

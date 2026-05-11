@@ -1,82 +1,51 @@
-import Model.Hotel;
 import Model.HotelManager;
-import Model.Layout;
+import Model.Hotel;
+import Model.layout.Layout;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HotelManagerTest {
 
-    @Test
-    void testMeerdereLayoutsOpslaan() {
-        HotelManager manager = new HotelManager();
-        Layout layout1 = new Layout(6, 8);
-        Layout layout2 = new Layout(4, 5);
-        manager.addLayout("layout1", layout1);
-        manager.addLayout("layout2", layout2);
-        assertEquals(2, manager.getAllLayoutIds().size());
+    // addLayout: layout wordt opgeslagen en teruggevonden via id
+    @Test void testAddLayout() {
+        HotelManager hm = new HotelManager();
+        Layout l = new Layout(3, 3);
+        int id = hm.addLayout("test", l);
+        assertEquals(l, hm.getLayout(id));
     }
 
-    @Test
-    void testGetLayout() {
-        HotelManager manager = new HotelManager();
-        Layout layout = new Layout(6, 8);
-        int id = manager.addLayout("test", layout);
-        assertEquals(layout, manager.getLayout(id));
+    // loadHotel en getHotel: hotel wordt opgeslagen en teruggevonden via id
+    @Test void testLoadEnGetHotel() {
+        HotelManager hm = new HotelManager();
+        Layout l = new Layout(3, 3);
+        int id = hm.addLayout("test", l);
+        Hotel h = new Hotel();
+        hm.loadHotel(id, h);
+        assertEquals(h, hm.getHotel(id));
     }
 
-    @Test
-    void testMeerdereHotelsOpslaan() {
-        HotelManager manager = new HotelManager();
-        Hotel hotel1 = new Hotel();
-        Hotel hotel2 = new Hotel();
-        manager.loadHotel(1, hotel1);
-        manager.loadHotel(2, hotel2);
-        assertEquals(hotel1, manager.getHotel(1));
-        assertEquals(hotel2, manager.getHotel(2));
+    // removeLayout: layout is weg na verwijderen
+    @Test void testRemoveLayout() {
+        HotelManager hm = new HotelManager();
+        Layout l = new Layout(3, 3);
+        int id = hm.addLayout("test", l);
+        hm.removeLayout(id);
+        assertNull(hm.getLayout(id));
     }
 
-    @Test
-    void testRemoveLayout() {
-        HotelManager manager = new HotelManager();
-        Layout layout = new Layout(3, 3);
-        int id = manager.addLayout("test", layout);
-        manager.removeLayout(id);
-        assertNull(manager.getLayout(id));
+    // getAllLayoutIds: geeft alle ids terug
+    @Test void testGetAllLayoutIds() {
+        HotelManager hm = new HotelManager();
+        hm.addLayout("a", new Layout(2, 2));
+        hm.addLayout("b", new Layout(2, 2));
+        assertEquals(2, hm.getAllLayoutIds().size());
     }
 
-    @Test
-    void testGetLayoutNietBestaand() {
-        HotelManager manager = new HotelManager();
-        assertNull(manager.getLayout(999));
-    }
-
-    @Test
-    void testGetHotelNietBestaand() {
-        HotelManager manager = new HotelManager();
-        assertNull(manager.getHotel(999));
-    }
-
-    @Test
-    void testLayoutIdWordsOpgehoogd() {
-        HotelManager manager = new HotelManager();
-        int id1 = manager.addLayout("a", new Layout(1, 1));
-        int id2 = manager.addLayout("b", new Layout(1, 1));
-        assertNotEquals(id1, id2);
-    }
-
-    @Test
-    void testLayoutNaamWordtOpgeslagen() {
-        HotelManager manager = new HotelManager();
-        Layout layout = new Layout(2, 2);
-        int id = manager.addLayout("mijnLayout", layout);
-        assertEquals("mijnLayout", manager.getLayout(id).naam);
-    }
-
-    @Test
-    void testLayoutIdWordtOpgeslagen() {
-        HotelManager manager = new HotelManager();
-        Layout layout = new Layout(2, 2);
-        int id = manager.addLayout("test", layout);
-        assertEquals(id, manager.getLayout(id).id);
+    // ids zijn oplopend
+    @Test void testIdOplopend() {
+        HotelManager hm = new HotelManager();
+        int id1 = hm.addLayout("a", new Layout(2, 2));
+        int id2 = hm.addLayout("b", new Layout(2, 2));
+        assertTrue(id2 > id1);
     }
 }

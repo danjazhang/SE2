@@ -1,60 +1,88 @@
 package Controller;
 
 import Model.Hotel;
-import Model.Persoon;
+import Model.persoon.Persoon;
 import hotelevents.HotelEventManager;
-
-import javax.swing.*;
-
 
 // Verantwoordelijkheid: simulatie starten, pauzeren en stoppen
 public class SimulatieController {
 
-    
     // event manager voor start/stop/pauze
     private HotelEventManager eventManager;
 
-     // event controller voor het starten van events
+    // event controller voor het starten van events
     private EventController eventController;
 
-    //hotel controller voor het beheren van de hotel
+    // hotel controller voor het beheren van de hotel
     private HotelController hotelController;
 
-    //dit moet later weg en hte opvragen van hoteleventmanager
-    private Timer simulatieTimer;
+    // snelheidsstand voor bewegingen: bepaalt hoe snel personen bewegen
+    private int snelheid = 1;
 
-    //constructor
+    // teller voor tiks, zodat we in de langzame stand bewegingen kunnen overslaan
+    private int tikTeller = 0;
+
+    // constructor
     public SimulatieController(HotelEventManager eventManager, EventController eventController, HotelController hotelController) {
         this.eventManager = eventManager;
         this.eventController = eventController;
         this.hotelController = hotelController;
-
-        simulatieTimer = new Timer (1000, e-> stap ());
-    }
-
-    // 1 simulatiestap: beweeg alle personen
-    private void stap(){
-        //vraag hotel op hotelcontroller
-        Hotel hotel = hotelController.getHotel();
-        //stop als hotel niet bestaat
-        if (hotel == null) return;
-        //loop door alle personen van in het hotel
-        for ( Persoon p : hotel.personen) {
-            p.beweeg();
-        }
-        hotel.notifyListeners();
     }
 
     public void start() {
-        eventManager.start(0);
-        simulatieTimer.start();
+        // start de library op basisinstelling, snelheid van personen regelen we zelf in tik()
+        eventManager.start(1);
     }
+
     public void pauzeer() {
         eventManager.pauze();
-        simulatieTimer.stop();
     }
+
     public void stop() {
         eventManager.stop();
-        simulatieTimer.stop();
+    }
+
+    public void setSnelheid(int snelheid) {
+        this.snelheid = snelheid;
+    }
+
+    // snelheid aanpassen op basis van gebruikerskeuze
+    public void pasSnelheidToe(String keuze) {
+        switch (keuze) {
+            case "Langzaam": snelheid = 0; break;
+            case "Normaal":  snelheid = 1; break;
+            case "Snel":     snelheid = 4; break;
+            default:         snelheid = 1; break;
+        }
+    }
+
+    // personen bewegen per tik
+    public void tik() {
+        Hotel hotel = hotelController.getHotel();
+        if (hotel == null) return;
+
+        tikTeller++;
+
+        int stappenPerTik = 1;
+        if (snelheid <= 0) {
+            // langzaam: personen bewegen maar om de twee tiks
+            if (tikTeller % 2 != 0) {
+                hotelController.notifyListeners();
+                return;
+            }
+        } else if (snelheid >= 4) {
+            // snel: personen zetten meerdere stappen per tik
+            stappenPerTik = snelheid;
+        }
+
+        for (int stap = 0; stap < stappenPerTik; stap++) {
+            // maak een kopie van de lijst om concurrent modification te voorkomen
+            // als een gast uitcheckt tijdens beweeg() wordt hij uit de originele lijst verwijderd
+            java.util.List<Persoon> personenKopie = new java.util.ArrayList<>(hotel.personen);
+            for (Persoon p : personenKopie) {
+                p.beweeg();
+            }
+        }
+        hotelController.notifyListeners();
     }
 }

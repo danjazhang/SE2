@@ -1,21 +1,28 @@
 package Model;
 
+import Model.layout.Layout;
+import Model.layout.Vakje;
+import Model.persoon.Persoon;
+import Model.ruimte.Lift;
+import Model.ruimte.Lobby;
+import Model.ruimte.Ruimte;
+import Model.ruimte.Trap;
+
 import java.util.ArrayList;
 import java.util.List;
 
 // Model klasse: bevat alle data van het hotel
-// Implementeert HotelEventListener om te reageren op events (bijv. evacuatie)
-// Implementeert het Observer pattern via ModelListener zodat View en Controller
-// automatisch een melding krijgen als de data verandert
 public class Hotel {
 
     // breedte en hoogte van het hotel grid
     public int breedte;
     public int hoogte;
 
-
     // de huidige layout van het hotel
     public Layout layout;
+
+    // pathfinder voor het berekenen van routes
+    public Pathfinder pathfinder;
 
     // lijst van alle ruimtes in het hotel
     public List<Ruimte> ruimtes;
@@ -23,10 +30,6 @@ public class Hotel {
     // lijst van alle personen in het hotel
     public List<Persoon> personen;
 
-    // lijst van observers (View en Controller) die genotificeerd worden bij wijzigingen
-    private List<ModelListener> listeners = new ArrayList<>();
-
-    
     public Lift lift;
     public Trap trap;
     public Lobby lobby;
@@ -35,16 +38,6 @@ public class Hotel {
     public Hotel() {
         ruimtes = new ArrayList<>();
         personen = new ArrayList<>();
-    }
-
-    // voeg een observer toe aan de lijst
-    public void voegListenerToe(ModelListener l) {
-        listeners.add(l);
-    }
-
-    // stuur een melding naar alle observers dat het model veranderd is
-    public void notifyListeners() {
-        for (ModelListener l : listeners) l.modelGewijzigd();
     }
 
     // voeg een persoon toe aan het hotel

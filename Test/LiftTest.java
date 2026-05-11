@@ -1,61 +1,51 @@
+import Model.ruimte.Lift;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
 
 public class LiftTest {
 
-    @Test
-    void testConstructor() {
+    @Test void testConstructor() {
         Lift l = new Lift();
-        assertEquals(0, l.getHuidigeVerdieping());
-        assertNotNull(l.getVerzoeken());
+        assertEquals(1, l.getHuidigeVerdieping());
         assertTrue(l.getVerzoeken().isEmpty());
     }
 
-    @Test
-    void testGaOmhoog() {
+    @Test void testGaOmhoog() {
         Lift l = new Lift();
         l.gaOmhoog();
-        assertEquals(1, l.getHuidigeVerdieping());
+        assertEquals(2, l.getHuidigeVerdieping());
     }
 
-    @Test
-    void testGaOmlaag() {
+    @Test void testGaOmlaag() {
         Lift l = new Lift();
         l.gaOmhoog();
         l.gaOmlaag();
-        assertEquals(0, l.getHuidigeVerdieping());
+        assertEquals(1, l.getHuidigeVerdieping());
     }
 
-    @Test
-    void testVoegVerzoekToe() {
+    @Test void testVoegVerzoekToe() {
         Lift l = new Lift();
         l.voegVerzoekToe(3);
         assertEquals(1, l.getVerzoeken().size());
         assertEquals(3, l.getVerzoeken().get(0));
     }
 
-    @Test
-    void testDubbelVerzoekWordtNietToegevoegd() {
+    @Test void testDubbelVerzoekNietToegevoegd() {
         Lift l = new Lift();
         l.voegVerzoekToe(3);
         l.voegVerzoekToe(3);
         assertEquals(1, l.getVerzoeken().size());
     }
 
-    @Test
-    void testOpenEnSluitDeur() {
+    @Test void testMeerdereVerschillendeVerzoeken() {
         Lift l = new Lift();
-        assertDoesNotThrow(() -> l.openDeur());
-        assertDoesNotThrow(() -> l.sluitDeur());
+        l.voegVerzoekToe(2);
+        l.voegVerzoekToe(4);
+        assertEquals(2, l.getVerzoeken().size());
     }
 
-    @Test
-    void testMeerdereVerzoeken() {
+    @Test void testErftVanRuimte() {
         Lift l = new Lift();
-        l.voegVerzoekToe(1);
-        l.voegVerzoekToe(2);
-        l.voegVerzoekToe(3);
-        assertEquals(3, l.getVerzoeken().size());
+        assertEquals(0, l.posX);
     }
 }

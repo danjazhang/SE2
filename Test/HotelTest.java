@@ -1,62 +1,64 @@
+import Model.Hotel;
+import Model.Pathfinder;
+import Model.layout.Layout;
+import Model.persoon.Gast;
+import Model.ruimte.Kamer;
+import Model.ruimte.Lift;
+import Model.ruimte.Trap;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import Model.*;
-import Controller.*;
 
-class HotelTest {
+public class HotelTest {
 
-    private Hotel laadHotel() {
-        HotelController hc = new HotelController();
-        int id = hc.getLayoutController().laadVanBestand("layout.json", "layout.json");
-        return hc.getLayoutController().getHotel(id);
+    // constructor: ruimtes en personen zijn lege lijsten
+    @Test void testConstructor() {
+        Hotel h = new Hotel();
+        assertTrue(h.ruimtes.isEmpty());
+        assertTrue(h.personen.isEmpty());
     }
 
-    @Test
-    void testLaadLayoutBestand() {
-        Hotel hotel = laadHotel();
-        assertNotNull(hotel);
-        assertEquals(30, hotel.ruimtes.size());
-        assertEquals(6, hotel.breedte);
-        assertEquals(8, hotel.hoogte);
+    // voegPersoonToe: persoon wordt toegevoegd aan lijst
+    @Test void testVoegPersoonToe() {
+        Hotel h = new Hotel();
+        Gast g = new Gast(1, 2);
+        h.voegPersoonToe(g);
+        assertEquals(1, h.personen.size());
+        assertTrue(h.personen.contains(g));
     }
 
-    @Test
-    void testKrijgRuimteOp() {
-        Hotel hotel = laadHotel();
-        assertNotNull(hotel.krijgRuimteOp(1, 1));
-        assertTrue(hotel.krijgRuimteOp(1, 1) instanceof Kamer);
+    // krijgRuimteOp: geeft ruimte terug op juiste positie
+    @Test void testKrijgRuimteOp() {
+        Hotel h = new Hotel();
+        h.layout = new Layout(5, 5);
+        Kamer k = new Kamer();
+        k.posX = 2; k.posY = 2; k.breedte = 1; k.hoogte = 1;
+        h.ruimtes.add(k);
+        h.layout.plaatsRuimte(k);
+        assertEquals(k, h.krijgRuimteOp(2, 2));
     }
 
-    @Test
-    void testKrijgRuimteOpBuitenGrid() {
-        Hotel hotel = laadHotel();
-        assertNull(hotel.krijgRuimteOp(0, 0));
-        assertNull(hotel.krijgRuimteOp(99, 99));
+    // krijgRuimteOp: geeft null terug als er geen ruimte is
+    @Test void testKrijgRuimteOpLeegVakje() {
+        Hotel h = new Hotel();
+        h.layout = new Layout(5, 5);
+        assertNull(h.krijgRuimteOp(3, 3));
     }
 
-    @Test
-    void testVoegPersoonToe() {
-        Hotel hotel = new Hotel();
-        Gast g = new Gast(1, 3);
-        hotel.voegPersoonToe(g);
-        assertEquals(1, hotel.personen.size());
-    }
-
-    @Test
-    void testVoegListenerToeEnNotify() {
-        Hotel hotel = new Hotel();
-        boolean[] genotificeerd = {false};
-        hotel.voegListenerToe(() -> genotificeerd[0] = true);
-        hotel.notifyListeners();
-        assertTrue(genotificeerd[0]);
-    }
-
-    @Test
-    void testConstructorLegeHotel() {
-        Hotel hotel = new Hotel();
-        assertNotNull(hotel.ruimtes);
-        assertNotNull(hotel.personen);
-        assertTrue(hotel.ruimtes.isEmpty());
-        assertTrue(hotel.personen.isEmpty());
+    // pathfinder: kan worden aangemaakt en ingesteld
+    @Test void testPathfinderInstellen() {
+        Hotel h = new Hotel();
+        h.layout = new Layout(5, 3);
+        h.breedte = 5;
+        h.hoogte = 3;
+        Lift lift = new Lift();
+        lift.posX = 1; lift.posY = 1; lift.breedte = 1; lift.hoogte = 3;
+        h.ruimtes.add(lift);
+        h.layout.plaatsRuimte(lift);
+        Trap trap = new Trap(2);
+        trap.posX = 5; trap.posY = 1; trap.breedte = 1; trap.hoogte = 3;
+        h.ruimtes.add(trap);
+        h.layout.plaatsRuimte(trap);
+        assertDoesNotThrow(() -> h.pathfinder = new Pathfinder(h));
+        assertNotNull(h.pathfinder);
     }
 }
