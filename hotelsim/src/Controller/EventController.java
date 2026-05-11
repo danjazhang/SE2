@@ -1,14 +1,12 @@
 package Controller;
 
-import Model.*;
-import Model.IEventListener;
-import Model.persoon.Persoon;
-import Model.ruimte.Ruimte;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventManager;
 import hotelevents.HotelEventListener;
 import hotelevents.HotelEventType;
 import Model.*;
+import Model.IEventListener;
+import Model.persoon.Persoon;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -24,7 +22,7 @@ public class EventController implements HotelEventListener {
     // hotel controller voor toegang tot hotel data
     private HotelController hotelController;
 
-    // simulatie controller voor het uitvoeren van een tik
+    // simulatie controller voor het uitvoeren van een tik bij NONE
     private SimulatieController simulatieController;
 
     // logger voor grafische weergave - alleen voor noodgevallen
@@ -68,20 +66,14 @@ public class EventController implements HotelEventListener {
         listeners.add(listener);
     }
 
-    // registreer alle ruimtes en personen van het hotel als listeners
+    // registreer alle ruimtes en personen van een hotel als listeners
     public void registreerHotelListeners(Hotel hotel) {
         if (hotel == null) return;
-        //registreer alle ruimtes die IEventListener implementeren
-        for (Ruimte r : hotel.ruimtes) {
-            if (r instanceof IEventListener) {
-                registreerListener((IEventListener) r);
-            }
+        for (Model.ruimte.Ruimte r : hotel.ruimtes) {
+            if (r instanceof IEventListener) registreerListener((IEventListener) r);
         }
-        //registreer personen die IEventListener implementeren
         for (Persoon p : hotel.personen) {
-            if (p instanceof IEventListener) {
-                registreerListener((IEventListener) p);
-            }
+            if (p instanceof IEventListener) registreerListener((IEventListener) p);
         }
     }
 

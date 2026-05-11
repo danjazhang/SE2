@@ -76,7 +76,6 @@ public class HotelView extends JFrame {
                 Hotel nieuwHotel = layoutController.getHotel(id);
                 //update hotel in de controller
                 hotelController.setHotel(nieuwHotel);
-                eventController.registreerHotelListeners(nieuwHotel);
                 //registreer layoutview als observer
                 hotelController.voegListenerToe(panel);
                 //update hotel
