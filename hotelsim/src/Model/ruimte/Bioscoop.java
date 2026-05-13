@@ -5,7 +5,7 @@ import Model.ILogger;
 import Model.persoon.Gast;
 import Model.events.FilmEindEvent;
 
-import Model.GastTerugService;
+import Model.GastRoutingService;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class Bioscoop extends Ruimte implements IEventListener {
     private ILogger logger;
 
     // service voor het terugsturen van gasten naar hun kamer
-    private GastTerugService gastTerugService;
+    private GastRoutingService gastTerugService;
 
     // constructor met logger
     public Bioscoop(ILogger logger) {
@@ -61,7 +61,7 @@ public class Bioscoop extends Ruimte implements IEventListener {
     }
 
     // stel de terugservice in
-    public void setGastTerugService(GastTerugService gastTerugService) {
+    public void setGastTerugService(GastRoutingService gastTerugService) {
         this.gastTerugService = gastTerugService;
     }
 

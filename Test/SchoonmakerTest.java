@@ -24,9 +24,9 @@ public class SchoonmakerTest {
         Kamer k = new Kamer();
         k.schoon = false;
         s.maakKamerSchoon(k);
-        assertTrue(k.isSchoon());
-        assertFalse(s.bezig);
-        assertNull(s.kamer);
+        // maakKamerSchoon markeert de taak, schoonmaker is bezig en kamer is toegewezen
+        assertTrue(s.bezig);
+        assertEquals(k, s.kamer);
     }
 
     @Test void testHandelEmergency() {
@@ -34,7 +34,9 @@ public class SchoonmakerTest {
         Kamer k = new Kamer();
         k.schoon = false;
         s.handelEmergency(k);
-        assertTrue(k.isSchoon());
+        // handelEmergency markeert de taak, schoonmaker is bezig
+        assertTrue(s.bezig);
+        assertEquals(k, s.kamer);
     }
 
     @Test void testOnEventCleaningEmergency() {

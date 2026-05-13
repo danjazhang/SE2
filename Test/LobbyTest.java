@@ -99,13 +99,16 @@ public class LobbyTest {
         assertFalse(kamer.isSchoon());
     }
 
-    // checkOut: schoonmaker maakt kamer schoon na check-out
+    // checkOut: schoonmaker krijgt de kamer toegewezen na check-out
     @Test void testCheckOutRoeptSchoonmakerAan() {
         Schoonmaker s = new Schoonmaker();
+        s.zetStartPositie(hotel.layout.krijgVakje(3, 4));
         hotel.voegPersoonToe(s);
         lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
         lobby.onEvent(new HotelEvent(2, HotelEventType.CHECK_OUT, 1, -1));
-        assertTrue(kamer.isSchoon());
+        // schoonmaker is bezig en heeft de kamer toegewezen gekregen
+        assertTrue(s.bezig);
+        assertEquals(kamer, s.kamer);
     }
 
     // checkOut: geen crash als gast niet bestaat
