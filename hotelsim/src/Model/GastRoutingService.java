@@ -4,6 +4,7 @@ import Model.persoon.Gast;
 import Model.persoon.Persoon;
 import Model.ruimte.Bioscoop;
 import Model.ruimte.Fitnessruimte;
+import Model.ruimte.Kamer;
 import Model.ruimte.Restaurant;
 import Model.ruimte.Ruimte;
 
@@ -47,6 +48,16 @@ public class GastRoutingService {
         if (doelRuimte == null) return null;
         hotel.pathfinder.zetRoute(gast, doelRuimte);
         return (Bioscoop) doelRuimte;
+    }
+
+    // stuur een gast terug naar zijn kamer na een activiteit
+    public void stuurTerugNaarKamer(int gastId) {
+        if (hotel == null || hotel.pathfinder == null) return;
+        Gast gast = vindGast(gastId);
+        if (gast == null) return;
+        Kamer kamer = gast.kamer;
+        if (kamer == null) return;
+        hotel.pathfinder.zetRoute(gast, kamer);
     }
 
     // zoek een gast op basis van id

@@ -4,14 +4,15 @@ import Model.events.IEventListener;
 import Model.ILogger;
 import Model.persoon.Gast;
 import Model.events.FilmEindEvent;
-import Model.GastTerugService;
 
+import Model.GastRoutingService;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 
 // Bij GOTO_CINEMA logt hij dat een gast binnenkomt
 // Bij START_CINEMA slaat hij de eindtijd op
@@ -40,7 +41,7 @@ public class Bioscoop extends Ruimte implements IEventListener {
     private ILogger logger;
 
     // service voor het terugsturen van gasten naar hun kamer
-    private GastTerugService gastTerugService;
+    private GastRoutingService gastTerugService;
 
     // constructor met logger
     public Bioscoop(ILogger logger) {
@@ -60,7 +61,7 @@ public class Bioscoop extends Ruimte implements IEventListener {
     }
 
     // stel de terugservice in
-    public void setGastTerugService(GastTerugService gastTerugService) {
+    public void setGastTerugService(GastRoutingService gastTerugService) {
         this.gastTerugService = gastTerugService;
     }
 
@@ -81,10 +82,12 @@ public class Bioscoop extends Ruimte implements IEventListener {
         // NONE: elke tick checkt de bioscoop of de film al voorbij is
         else if (event.getEventType() == HotelEventType.NONE) {
             int tijd = event.getTime();
+            // als de film bezig is en de eindtijd is bereikt
             if (filmBezig && tijd >= filmEindTijd) {
                 filmBezig = false;
                 FilmEindEvent eindEvent = new FilmEindEvent(tijd, -1);
                 if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Bioscoop: film eindigt");
+                // stuur alle aanwezige gasten terug naar hun kamer
                 if (gastTerugService != null) {
                     for (int gastId : aanwezigeGastIds) {
                         gastTerugService.stuurTerugNaarKamer(gastId);
