@@ -3,6 +3,7 @@ import Model.*;
 import Model.IEventListener;
 import Model.persoon.Schoonmaker;
 import Model.persoon.Persoon;
+import Model.service.SchoonmaakService;
 import Model.ruimte.Ruimte;
 
 // Verantwoordelijkheid: hotel data beheren
@@ -17,6 +18,8 @@ public class HotelController {
     private EventController eventController;
 
     private ILogger logger;
+    // Deze service verwerkt schoonmaak-noodgevallen en wijst ze toe aan een vrije schoonmaker.
+    private SchoonmaakService schoonmaakService;
 
     public HotelController() {
         //maak layoutcontroller
@@ -57,7 +60,9 @@ public class HotelController {
                 ((Schoonmaker) p).setHotel(hotel);
             }
         }
+        schoonmaakService = new SchoonmaakService(hotel, logger);
         if (eventController != null) {
+            eventController.registreerListener(schoonmaakService);
             //registreer alle iventlistener ruimter
             for (Ruimte r : hotel.ruimtes){
                 if ( r instanceof IEventListener) {

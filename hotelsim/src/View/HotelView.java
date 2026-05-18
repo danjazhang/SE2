@@ -5,6 +5,7 @@ import Controller.HotelController;
 import Controller.LayoutController;
 import Controller.SimulatieController;
 import Model.Hotel;
+import View.dialog.InstellingenDialog;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,6 +40,8 @@ public class HotelView extends JFrame {
     // We bewaren de scrollpane apart, zodat het instellingenpaneel
     // de volledige logweergave zichtbaar of onzichtbaar kan maken.
     private JScrollPane zijLog;
+    // Het echte opbouwen van het instellingenvenster lives in een aparte dialogklasse.
+    private InstellingenDialog instellingenDialog = new InstellingenDialog();
 
     //constructor
     public HotelView(HotelController hotelController, EventLogView eventLogView, EventController eventController, SimulatieController simulatieController) {
@@ -166,61 +169,23 @@ public class HotelView extends JFrame {
     // Dit instellingenpaneel bundelt een paar simpele instellingen op een plaats.
     // Zo hoeft de gebruiker niet in de code te zoeken om snelheid, logzichtbaarheid of zoom te veranderen.
     private void openInstellingenPaneel() {
-        JPanel instellingenPanel = new JPanel(new GridLayout(0, 2, 8, 8));
-
-        // Gebruik de huidige simulatiesnelheid als startwaarde,
-        // zodat het instellingenpaneel altijd de actuele toestand toont.
-        JComboBox<String> snelheidKeuze = new JComboBox<>(new String[]{"Langzaam", "Normaal", "Snel"});
-        snelheidKeuze.setSelectedItem(simulatieView.getGekozenSnelheid());
-
-        // De eventlog mag via instellingen snel aan of uit gezet worden
-        // zonder dat de rest van de layout opnieuw opgebouwd hoeft te worden.
-        JCheckBox toonEventlog = new JCheckBox("Toon eventlog", zijLog.isVisible());
-
-        // De grootte-optie verandert de tileSize van het grid.
-        // Daardoor kunnen we het hotel kleiner of groter tekenen zonder de layoutdata te wijzigen.
-        JComboBox<String> grootteKeuze = new JComboBox<>(new String[]{"Klein", "Normaal", "Groot"});
-        int huidigeTileSize = LayoutView.getTileSize();
-        if (huidigeTileSize <= 48) {
-            grootteKeuze.setSelectedItem("Klein");
-        } else if (huidigeTileSize >= 80) {
-            grootteKeuze.setSelectedItem("Groot");
-        } else {
-            grootteKeuze.setSelectedItem("Normaal");
-        }
-
-        instellingenPanel.add(new JLabel("Snelheid:"));
-        instellingenPanel.add(snelheidKeuze);
-        instellingenPanel.add(new JLabel("Eventlog:"));
-        instellingenPanel.add(toonEventlog);
-        instellingenPanel.add(new JLabel("Grootte:"));
-        instellingenPanel.add(grootteKeuze);
-
-        int keuze = JOptionPane.showConfirmDialog(
+        InstellingenDialog.InstellingenResult resultaat = instellingenDialog.toon(
                 this,
-                instellingenPanel,
-                "Instellingen",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE
+                simulatieView.getGekozenSnelheid(),
+                zijLog.isVisible(),
+                LayoutView.getTileSize()
         );
 
-        if (keuze != JOptionPane.OK_OPTION) return;
+        if (resultaat == null) return;
 
         // Pas eerst de snelheid aan via de bestaande SimulatieView, zodat alle logica op een plek blijft.
-        simulatieView.stelSnelheidIn((String) snelheidKeuze.getSelectedItem());
+        simulatieView.stelSnelheidIn(resultaat.getSnelheid());
 
         // Toon of verberg de eventlog zonder de rest van het venster te veranderen.
-        zijLog.setVisible(toonEventlog.isSelected());
+        zijLog.setVisible(resultaat.isEventlogZichtbaar());
 
         // Kies een andere tileSize voor een kleinere of grotere hotelweergave.
-        String grootte = (String) grootteKeuze.getSelectedItem();
-        if ("Klein".equals(grootte)) {
-            panel.setTileSize(48);
-        } else if ("Groot".equals(grootte)) {
-            panel.setTileSize(88);
-        } else {
-            panel.setTileSize(64);
-        }
+        panel.setTileSize(resultaat.getTileSize());
 
         revalidate();
         repaint();
