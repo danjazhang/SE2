@@ -5,7 +5,7 @@ import Model.persoon.Gast;
 import Model.persoon.Persoon;
 import Model.persoon.Schoonmaker;
 
-// Verantwoordelijkheid: personen beheren, aanmaken en zoeken
+// Verantwoordelijkheid: personen beheren
 public class PersonenService {
 
     private Hotel hotel;
