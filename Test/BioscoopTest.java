@@ -1,4 +1,5 @@
 import Model.*;
+import Model.ruimte.Bioscoop;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 import org.junit.jupiter.api.Test;

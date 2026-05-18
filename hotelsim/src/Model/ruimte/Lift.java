@@ -5,8 +5,6 @@ import Model.persoon.Persoon;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
 public class Lift extends Ruimte {
 
     // de verdieping waar de lift zich momenteel bevindt
@@ -21,7 +19,7 @@ public class Lift extends Ruimte {
     // of de deur open is
     private boolean deurOpen;
 
-    // constructor: lift begint op verdieping 0 met lege lijsten
+    // constructor: lift begint op verdieping 1 met lege lijsten
     public Lift() {
         this.huidigeVerdieping = 1;
         this.passagiers = new ArrayList<>();

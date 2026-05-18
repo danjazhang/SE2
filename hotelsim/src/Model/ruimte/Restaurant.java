@@ -4,14 +4,12 @@ import Model.events.IEventListener;
 import Model.ILogger;
 import Model.events.RestaurantEindEvent;
 import Model.persoon.Gast;
-
 import Model.GastTerugService;
+
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 import java.util.HashMap;
 import java.util.Map;
-
-
 
 // Bij NEED_FOOD slaat hij de eindtijd op
 // Bij NONE checkt hij elke tick of gasten klaar zijn en maakt RestaurantEindEvent aan
@@ -52,7 +50,6 @@ public class Restaurant extends Ruimte implements IEventListener {
     }
 
     // wordt aangeroepen door GastRoutingService als een gast naar dit restaurant gestuurd wordt
-    // registreert de gast en logt dat hij eten bestelt
     public void registreerGast(int gastId, int tijd) {
         if (eetEindTijden.containsKey(gastId)) return;
         int eindTijd = tijd + EETDUUR;
@@ -63,14 +60,11 @@ public class Restaurant extends Ruimte implements IEventListener {
     // wordt aangeroepen door EventController als er een library event binnenkomt
     @Override
     public void onEvent(HotelEvent event) {
-        // NEED_FOOD: wordt afgehandeld via registreerGast() vanuit GastRoutingService
-        // zodat alleen het restaurant waar de gast naartoe gestuurd wordt logt
         // NONE: elke tick checkt het restaurant of gasten klaar zijn
         if (event.getEventType() == HotelEventType.NONE) {
             int tijd = event.getTime();
             eetEindTijden.entrySet().removeIf(entry -> {
                 if (tijd >= entry.getValue()) {
-                    // maak een RestaurantEindEvent aan en log gast klaar
                     RestaurantEindEvent eindEvent = new RestaurantEindEvent(tijd, entry.getKey());
                     if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Restaurant: gast " + eindEvent.getGastId() + " klaar");
                     if (gastTerugService != null) gastTerugService.stuurTerugNaarKamer(eindEvent.getGastId());

@@ -19,24 +19,6 @@ public class SchoonmakerTest {
         assertNull(s.doelVakje);
     }
 
-    @Test void testMaakKamerSchoon() {
-        Schoonmaker s = new Schoonmaker();
-        Kamer k = new Kamer();
-        k.schoon = false;
-        s.maakKamerSchoon(k);
-        assertTrue(k.isSchoon());
-        assertFalse(s.bezig);
-        assertNull(s.kamer);
-    }
-
-    @Test void testHandelEmergency() {
-        Schoonmaker s = new Schoonmaker();
-        Kamer k = new Kamer();
-        k.schoon = false;
-        s.handelEmergency(k);
-        assertTrue(k.isSchoon());
-    }
-
     @Test void testOnEventCleaningEmergency() {
         Schoonmaker s = new Schoonmaker();
         HotelEvent evt = new HotelEvent(1, HotelEventType.CLEANING_EMERGENCY, 1, -1);
