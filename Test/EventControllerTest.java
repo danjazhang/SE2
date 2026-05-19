@@ -14,30 +14,30 @@ public class EventControllerTest {
 
     private HotelEventManager manager = new HotelEventManager(true);
 
-    // constructor: geen crash
+    // Ik maak een nieuwe EventController aan; ik verwacht dat dit zonder crash lukt.
     @Test void testConstructor() {
         assertNotNull(new EventController(manager));
     }
 
-    // registreerListener: listener wordt toegevoegd zonder crash
+    // Ik registreer een listener; ik verwacht dat dit zonder crash lukt.
     @Test void testRegistreerListener() {
         EventController ec = new EventController(manager);
         assertDoesNotThrow(() -> ec.registreerListener(event -> {}));
     }
 
-    // setLogger: geen crash
+    // Ik stel een logger in; ik verwacht dat dit zonder crash lukt.
     @Test void testSetLogger() {
         EventController ec = new EventController(manager);
         assertDoesNotThrow(() -> ec.setLogger(bericht -> {}));
     }
 
-    // setHotelController: geen crash
+    // Ik stel een hotelcontroller in; ik verwacht dat dit zonder crash lukt.
     @Test void testSetHotelController() {
         EventController ec = new EventController(manager);
         assertDoesNotThrow(() -> ec.setHotelController(new HotelController()));
     }
 
-    // setSimulatieController: geen crash
+    // Ik stel een simulatiecontroller in; ik verwacht dat dit zonder crash lukt.
     @Test void testSetSimulatieController() {
         EventController ec = new EventController(manager);
         HotelController hc = new HotelController();
@@ -45,13 +45,13 @@ public class EventControllerTest {
         assertDoesNotThrow(() -> ec.setSimulatieController(sc));
     }
 
-    // notify: geen crash zonder hotelcontroller
+    // Ik stuur een event zonder hotelcontroller; ik verwacht dat dit geen crash geeft.
     @Test void testNotifyZonderHotelControllerCrashetNiet() {
         EventController ec = new EventController(manager);
         assertDoesNotThrow(() -> ec.notify(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1)));
     }
 
-    // notify EVACUATE: logger wordt aangeroepen
+    // Ik stuur een EVACUATE event met logger; ik verwacht dat de logger wordt aangeroepen.
     @Test void testNotifyEvacuateLogt() {
         EventController ec = new EventController(manager);
         HotelController hc = new HotelController();
@@ -65,7 +65,7 @@ public class EventControllerTest {
         assertTrue(logged[0]);
     }
 
-    // notify GODZILLA: logger wordt aangeroepen
+    // Ik stuur een GODZILLA event met logger; ik verwacht dat de logger wordt aangeroepen.
     @Test void testNotifyGodzillaLogt() {
         EventController ec = new EventController(manager);
         HotelController hc = new HotelController();
@@ -79,7 +79,7 @@ public class EventControllerTest {
         assertTrue(logged[0]);
     }
 
-    // notify NONE: geen crash zonder personen
+    // Ik stuur een NONE event in een leeg hotel; ik verwacht dat dit geen crash geeft.
     @Test void testNotifyNoneZonderPersonenCrashetNiet() {
         EventController ec = new EventController(manager);
         HotelController hc = new HotelController();
@@ -90,7 +90,7 @@ public class EventControllerTest {
         assertDoesNotThrow(() -> ec.notify(new HotelEvent(1, HotelEventType.NONE, -1, -1)));
     }
 
-    // stuurNaarListeners: alle listeners worden aangeroepen
+    // Ik registreer twee listeners en stuur een event; ik verwacht dat beide listeners worden aangeroepen.
     @Test void testStuurNaarListenersRoeptAlleListenersAan() {
         EventController ec = new EventController(manager);
         HotelController hc = new HotelController();
@@ -105,20 +105,20 @@ public class EventControllerTest {
         assertEquals(2, count[0]);
     }
 
-    // registreerHotelListeners: geen crash met null hotel
+    // Ik registreer hotellisteners met een null hotel; ik verwacht dat dit geen crash geeft.
     @Test void testRegistreerHotelListenersNullHotel() {
         EventController ec = new EventController(manager);
         assertDoesNotThrow(() -> ec.registreerHotelListeners(null));
     }
 
-    // registreerHotelListeners: geen crash met leeg hotel
+    // Ik registreer hotellisteners met een leeg hotel; ik verwacht dat dit geen crash geeft.
     @Test void testRegistreerHotelListenersLeegHotel() {
         EventController ec = new EventController(manager);
         Hotel hotel = new Hotel();
         assertDoesNotThrow(() -> ec.registreerHotelListeners(hotel));
     }
 
-    // notificeerPersoon: geen crash
+    // Ik notificeer één persoon handmatig; ik verwacht dat dit geen crash geeft.
     @Test void testNotificeerPersoon() {
         EventController ec = new EventController(manager);
         Model.persoon.Gast gast = new Model.persoon.Gast(1, 1);

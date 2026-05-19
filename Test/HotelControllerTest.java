@@ -11,19 +11,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class HotelControllerTest {
 
-    // constructor: hotel en layoutcontroller worden aangemaakt
+    // Ik maak een nieuwe HotelController aan; ik verwacht dat hotel en layoutcontroller meteen bestaan.
     @Test void testConstructor() {
         HotelController hc = new HotelController();
         assertNotNull(hc.getHotel());
         assertNotNull(hc.getLayoutController());
     }
 
-    // heeftLayout: false als hotel geen layout heeft
+    // Ik vraag of een leeg hotel al een layout heeft; ik verwacht dat dit false geeft.
     @Test void testHeeftLayoutFalse() {
         assertFalse(new HotelController().heeftLayout());
     }
 
-    // heeftLayout: true als hotel een layout heeft
+    // Ik geef het hotel een layout; ik verwacht dat heeftLayout daarna true teruggeeft.
     @Test void testHeeftLayoutTrue() {
         HotelController hc = new HotelController();
         Hotel h = new Hotel();
@@ -32,7 +32,7 @@ public class HotelControllerTest {
         assertTrue(hc.heeftLayout());
     }
 
-    // setHotel: hotel wordt correct ingesteld
+    // Ik stel een hotel in op de controller; ik verwacht dat datzelfde hotel teruggelezen kan worden.
     @Test void testSetHotel() {
         HotelController hc = new HotelController();
         Hotel h = new Hotel();
@@ -40,20 +40,20 @@ public class HotelControllerTest {
         assertEquals(h, hc.getHotel());
     }
 
-    // setLogger: geen crash
+    // Ik stel een logger in op de controller; ik verwacht dat dit geen crash geeft.
     @Test void testSetLogger() {
         HotelController hc = new HotelController();
         assertDoesNotThrow(() -> hc.setLogger(bericht -> {}));
     }
 
-    // setEventController: geen crash
+    // Ik stel een eventcontroller in; ik verwacht dat dit geen crash geeft.
     @Test void testSetEventController() {
         HotelController hc = new HotelController();
         EventController ec = new EventController(new HotelEventManager(true));
         assertDoesNotThrow(() -> hc.setEventController(ec));
     }
 
-    // setHotel: lobby krijgt logger als die ingesteld is
+    // Ik stel eerst een logger in en daarna een hotel met lobby; ik verwacht dat dit zonder crash lukt.
     @Test void testSetHotelMetLobbyZetLogger() {
         HotelController hc = new HotelController();
         hc.setLogger(bericht -> {});
@@ -65,13 +65,13 @@ public class HotelControllerTest {
         assertDoesNotThrow(() -> hc.setHotel(h));
     }
 
-    // getLayoutController: geeft een LayoutController terug
+    // Ik vraag de layoutcontroller op; ik verwacht dat die bestaat en van het juiste type is.
     @Test void testGetLayoutController() {
         HotelController hc = new HotelController();
         assertTrue(hc.getLayoutController() instanceof LayoutController);
     }
 
-    // voegListenerToe: listener wordt toegevoegd
+    // Ik voeg een listener toe en notificeer daarna; ik verwacht dat die listener wordt aangeroepen.
     @Test void testVoegListenerToe() {
         HotelController hc = new HotelController();
         boolean[] called = {false};
@@ -80,7 +80,7 @@ public class HotelControllerTest {
         assertTrue(called[0]);
     }
 
-    // notifyListeners: alle listeners worden aangeroepen
+    // Ik voeg twee listeners toe en notificeer daarna; ik verwacht dat beide listeners worden aangeroepen.
     @Test void testNotifyListenersRoeptAlleListenersAan() {
         HotelController hc = new HotelController();
         int[] count = {0};
@@ -90,14 +90,14 @@ public class HotelControllerTest {
         assertEquals(2, count[0]);
     }
 
-    // registreerListeners via eventController: geen crash als hotel leeg is
+    // Ik registreer hotellisteners voor een leeg hotel; ik verwacht dat dit geen crash geeft.
     @Test void testRegistreerListenersLeegHotel() {
         EventController ec = new EventController(new HotelEventManager(true));
         Hotel h = new Hotel();
         assertDoesNotThrow(() -> ec.registreerHotelListeners(h));
     }
 
-    // registreerListeners via eventController: lobby wordt geregistreerd
+    // Ik registreer hotellisteners voor een hotel met lobby; ik verwacht dat dit geen crash geeft.
     @Test void testRegistreerListenersMetLobby() {
         EventController ec = new EventController(new HotelEventManager(true));
         Hotel h = new Hotel();

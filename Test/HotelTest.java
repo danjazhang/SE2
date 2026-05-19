@@ -10,14 +10,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class HotelTest {
 
-    // constructor: ruimtes en personen zijn lege lijsten
+    // Ik maak een nieuw hotel aan; ik verwacht dat de lijsten voor ruimtes en personen leeg starten.
     @Test void testConstructor() {
         Hotel h = new Hotel();
         assertTrue(h.ruimtes.isEmpty());
         assertTrue(h.personen.isEmpty());
     }
 
-    // voegPersoonToe: persoon wordt toegevoegd aan lijst
+    // Ik voeg een persoon toe aan het hotel; ik verwacht dat die persoon in de personenlijst terechtkomt.
     @Test void testVoegPersoonToe() {
         Hotel h = new Hotel();
         Gast g = new Gast(1, 2);
@@ -26,7 +26,7 @@ public class HotelTest {
         assertTrue(h.personen.contains(g));
     }
 
-    // krijgRuimteOp: geeft ruimte terug op juiste positie
+    // Ik plaats een kamer op een bekende positie; ik verwacht dat het hotel die ruimte op die positie teruggeeft.
     @Test void testKrijgRuimteOp() {
         Hotel h = new Hotel();
         h.layout = new Layout(5, 5);
@@ -37,14 +37,15 @@ public class HotelTest {
         assertEquals(k, h.krijgRuimteOp(2, 2));
     }
 
-    // krijgRuimteOp: geeft null terug als er geen ruimte is
+    // Ik vraag een leeg vakje op; ik verwacht dat het hotel daar geen ruimte teruggeeft.
     @Test void testKrijgRuimteOpLeegVakje() {
         Hotel h = new Hotel();
         h.layout = new Layout(5, 5);
         assertNull(h.krijgRuimteOp(3, 3));
     }
 
-    // pathfinder: kan worden aangemaakt en ingesteld
+    // Ik maak een hotel met lift en trap en stel daarna een pathfinder in;
+    // ik verwacht dat dat lukt en dat de pathfinder niet null is.
     @Test void testPathfinderInstellen() {
         Hotel h = new Hotel();
         h.layout = new Layout(5, 3);

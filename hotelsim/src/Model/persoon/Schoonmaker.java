@@ -1,17 +1,13 @@
 package Model.persoon;
 
-import Model.events.IEventListener;
 import Model.ILogger;
-import Model.events.SchoonmaakEindEvent;
 import Model.layout.Vakje;
 import Model.ruimte.Kamer;
 
-import hotelevents.HotelEvent;
-import hotelevents.HotelEventType;
-
-// Verantwoordelijkheid: bewegen, schoonmaaktijd aftellen en kamer schoonmaken
-// Route berekenen en gasten opzoeken is de verantwoordelijkheid van Lobby en Pathfinder
-public class Schoonmaker extends Persoon implements IEventListener {
+// Verantwoordelijkheid: bewegen, schoonmaaktijd aftellen en kamer schoonmaken.
+// Eventkeuze en taaktoewijzing gebeuren buiten deze klasse,
+// zodat de schoonmaker zelf alleen uitvoert.
+public class Schoonmaker extends Persoon {
 
     // aantal ticks dat een schoonmaakbeurt duurt
     private static final int SCHOONMAAKDUUR = 15;
@@ -46,29 +42,11 @@ public class Schoonmaker extends Persoon implements IEventListener {
         this.resterendeSchoonmaakTicks = 0;
     }
 
-    // wordt aangeroepen door EventController als er een library event binnenkomt
-    // schoonmaker reageert alleen op CLEANING_EMERGENCY
-    @Override
-    public void onEvent(HotelEvent event) {
-        if (event.getEventType() == HotelEventType.CLEANING_EMERGENCY) {
-            // als hij al bezig is negeer het nieuwe noodgeval
-            if (bezig && kamer != null) return;
-            SchoonmaakEindEvent eindEvent = new SchoonmaakEindEvent(event.getTime(), event.getGuestId());
-            if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Schoonmaker: noodsituatie!");
-            this.bezig = true;
-        }
-    }
-
     // wijs een kamer toe die schoongemaakt moet worden
     // de echte schoonmaak start pas als de schoonmaker in de kamer aankomt
     public void maakKamerSchoon(Kamer k) {
         this.kamer = k;
         this.bezig = true;
-    }
-
-    // handel een noodsituatie af
-    public void handelEmergency(Kamer k) {
-        maakKamerSchoon(k);
     }
 
     // overschrijft beweeg() van Persoon om schoonmaaktijd af te tellen als de schoonmaker in de kamer staat

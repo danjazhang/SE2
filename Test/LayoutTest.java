@@ -5,14 +5,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class LayoutTest {
 
-    // aanmaken: vakjes bestaan op geldige posities
+    // Ik maak een layout aan; ik verwacht dat geldige vakjes binnen de layout bestaan.
     @Test void testAanmaak() {
         Layout l = new Layout(6, 8);
         assertNotNull(l.krijgVakje(1, 1));
         assertNotNull(l.krijgVakje(6, 8));
     }
 
-    // buiten grid: geeft null terug
+    // Ik vraag vakjes buiten het grid op; ik verwacht dat de layout daar null teruggeeft.
     @Test void testBuitenGridNull() {
         Layout l = new Layout(4, 4);
         assertNull(l.krijgVakje(0, 0));
@@ -20,14 +20,14 @@ public class LayoutTest {
         assertNull(l.krijgVakje(-1, 1));
     }
 
-    // vakjes hebben juiste coordinaten
+    // Ik lees de coördinaten van vakjes uit; ik verwacht dat die overeenkomen met hun positie in de layout.
     @Test void testVakjesHebbenJuisteCoordinaten() {
         Layout l = new Layout(3, 3);
         assertEquals(1, l.krijgVakje(1, 1).x);
         assertEquals(3, l.krijgVakje(3, 3).y);
     }
 
-    // plaatsRuimte: ruimte staat op juiste vakjes
+    // Ik plaats een kamer in de layout; ik verwacht dat de juiste vakjes naar die kamer verwijzen.
     @Test void testPlaatsRuimte() {
         Layout l = new Layout(6, 8);
         Kamer k = new Kamer();
@@ -37,7 +37,7 @@ public class LayoutTest {
         assertEquals(k, l.krijgVakje(2, 2).ruimte);
     }
 
-    // plaatsRuimte buiten grid: geen crash
+    // Ik plaats een te grote kamer deels buiten het grid; ik verwacht dat dit geen crash geeft.
     @Test void testPlaatsRuimteBuitenGridCrashetNiet() {
         Layout l = new Layout(3, 3);
         Kamer k = new Kamer();

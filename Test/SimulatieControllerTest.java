@@ -17,7 +17,8 @@ public class SimulatieControllerTest {
     private EventController ec = new EventController(manager);
     private HotelController hc = new HotelController();
 
-    // hulpmethode: maak hotel met pathfinder
+    // Ik maak met deze hulpmethode een hotel met pathfinder,
+    // zodat de simulatiecontroller personen kan laten bewegen.
     private Hotel maakHotel() {
         Hotel hotel = new Hotel();
         hotel.layout = new Layout(6, 4);
@@ -35,30 +36,30 @@ public class SimulatieControllerTest {
         return hotel;
     }
 
-    // constructor: geen crash
+    // Ik maak een nieuwe SimulatieController aan; ik verwacht dat dit geen crash geeft.
     @Test void testConstructor() {
         assertDoesNotThrow(() -> new SimulatieController(manager, ec, hc));
     }
 
-    // start: gooit exception zonder scenario
+    // Ik start de simulatie zonder scenario; ik verwacht dat dit in testmodus een exception geeft.
     @Test void testStartGooidExceptionZonderScenario() {
         SimulatieController sc = new SimulatieController(manager, ec, hc);
         assertThrows(RuntimeException.class, () -> sc.start());
     }
 
-    // pauzeer: geen crash
+    // Ik pauzeer de simulatiecontroller; ik verwacht dat dit geen crash geeft.
     @Test void testPauzeer() {
         SimulatieController sc = new SimulatieController(manager, ec, hc);
         assertDoesNotThrow(() -> sc.pauzeer());
     }
 
-    // stop: gooit exception in testmodus want executor is null
+    // Ik stop de simulatiecontroller in testmodus; ik verwacht dat dit een exception geeft omdat de executor ontbreekt.
     @Test void testStop() {
         SimulatieController sc = new SimulatieController(manager, ec, hc);
         assertThrows(Exception.class, () -> sc.stop());
     }
 
-    // tik: geen crash zonder personen
+    // Ik voer een tik uit in een hotel zonder personen; ik verwacht dat dit geen crash geeft.
     @Test void testTikZonderPersonen() {
         Hotel hotel = maakHotel();
         hc.setHotel(hotel);
@@ -66,7 +67,7 @@ public class SimulatieControllerTest {
         assertDoesNotThrow(() -> sc.tik());
     }
 
-    // tik: personen bewegen per tik
+    // Ik voer een tik uit met een gast die een doel heeft; ik verwacht dat die gast één stap beweegt.
     @Test void testTikBeweegPersonen() {
         Hotel hotel = maakHotel();
         Gast gast = new Gast(1, 1);
@@ -77,11 +78,11 @@ public class SimulatieControllerTest {
         hc.setHotel(hotel);
         SimulatieController sc = new SimulatieController(manager, ec, hc);
         sc.tik();
-        // gast is 1 stap verder
+        // Ik verwacht dat de gast precies één stap verder staat.
         assertEquals(3, gast.huidigVakje.x);
     }
 
-    // tik: notifyListeners wordt aangeroepen
+    // Ik voer een tik uit met een listener op het hotel; ik verwacht dat die listener wordt aangeroepen.
     @Test void testTikNotificeertListeners() {
         Hotel hotel = maakHotel();
         hc.setHotel(hotel);
@@ -92,11 +93,11 @@ public class SimulatieControllerTest {
         assertTrue(called[0]);
     }
 
-    // tik: geen crash als hotel null is
+    // Ik voer een tik uit met een lege hotelcontroller; ik verwacht dat dit geen crash geeft.
     @Test void testTikZonderHotel() {
         HotelController legeHc = new HotelController();
         SimulatieController sc = new SimulatieController(manager, ec, legeHc);
-        // hotel is leeg maar niet null, dus geen crash verwacht
+        // Ik verwacht geen crash, omdat de controller wel bestaat ook al is het hotel leeg.
         assertDoesNotThrow(() -> sc.tik());
     }
 }

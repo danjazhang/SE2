@@ -12,7 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class PersonenFactoryTest {
 
-    // hulpmethode: maak een hotel met pathfinder
+    // Ik maak met deze hulpmethode een klein hotel met route-ondersteuning,
+    // zodat de factory gasten en schoonmakers meteen een pathfinder kan meegeven.
     private Hotel maakHotel() {
         Hotel hotel = new Hotel();
         hotel.layout = new Layout(5, 3);
@@ -30,7 +31,7 @@ public class PersonenFactoryTest {
         return hotel;
     }
 
-    // maakGast: gast heeft juiste id, sterren en startpositie
+    // Ik laat de factory een gast maken; ik verwacht dat id, gewenste sterren en startpositie correct gezet worden.
     @Test void testMaakGast() {
         Hotel hotel = maakHotel();
         PersonenFactory f = new PersonenFactory();
@@ -41,7 +42,7 @@ public class PersonenFactoryTest {
         assertEquals(v, g.huidigVakje);
     }
 
-    // maakGast: gast zonder startvakje heeft null huidigVakje
+    // Ik maak een gast zonder startvakje; ik verwacht dat hij nog geen huidig vakje heeft.
     @Test void testMaakGastZonderStartVakje() {
         Hotel hotel = maakHotel();
         PersonenFactory f = new PersonenFactory();
@@ -49,13 +50,13 @@ public class PersonenFactoryTest {
         assertNull(g.huidigVakje);
     }
 
-    // maakGast: pathfinder null geeft geen crash
+    // Ik maak een gast met een null pathfinder; ik verwacht dat dit geen crash geeft.
     @Test void testMaakGastMetNullPathfinder() {
         PersonenFactory f = new PersonenFactory();
         assertDoesNotThrow(() -> f.maakGast(1, 2, null, null));
     }
 
-    // maakSchoonmaker: schoonmaker heeft juiste startpositie
+    // Ik laat de factory een schoonmaker maken; ik verwacht dat de startpositie correct wordt gezet.
     @Test void testMaakSchoonmaker() {
         Hotel hotel = maakHotel();
         PersonenFactory f = new PersonenFactory();
@@ -64,7 +65,7 @@ public class PersonenFactoryTest {
         assertEquals(v, s.huidigVakje);
     }
 
-    // maakSchoonmaker: schoonmaker zonder startvakje heeft null huidigVakje
+    // Ik maak een schoonmaker zonder startvakje; ik verwacht dat hij nog geen huidig vakje heeft.
     @Test void testMaakSchoonmakerZonderStartVakje() {
         Hotel hotel = maakHotel();
         PersonenFactory f = new PersonenFactory();
@@ -72,7 +73,7 @@ public class PersonenFactoryTest {
         assertNull(s.huidigVakje);
     }
 
-    // maakSchoonmaker: pathfinder null geeft geen crash
+    // Ik maak een schoonmaker met een null pathfinder; ik verwacht dat dit geen crash geeft.
     @Test void testMaakSchoonmakerMetNullPathfinder() {
         PersonenFactory f = new PersonenFactory();
         assertDoesNotThrow(() -> f.maakSchoonmaker(null, null));
