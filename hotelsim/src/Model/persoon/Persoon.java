@@ -2,6 +2,7 @@ package Model.persoon;
 
 import Model.Pathfinder;
 import Model.layout.Vakje;
+import Model.persoon.Gast;
 
 import java.util.Queue;
 import java.util.LinkedList;
@@ -54,8 +55,17 @@ public abstract class Persoon {
         v.voegPersoonToe(this);
     }
 
+
+
     // beweeg de persoon 1 stap richting het doelVakje
     public void beweeg() {
+
+        if (this instanceof Model.persoon.Gast g) {
+            if (g.inLift) {
+                return; // lift bestuurt beweging
+            }
+        }
+
         //als doelvakje of tussendoel leeg is dan stopt de methode
         if (doelVakje == null && tussendoelen.isEmpty()) return;
         // persoon staat nergens
@@ -67,8 +77,20 @@ public abstract class Persoon {
 
         if (doelVakje == null || huidigVakje == doelVakje) return;
 
-        
-        //stop als pathfinder niet bestaat
+
+
+        // gast wacht op lift
+        if (this instanceof Model.persoon.Gast) {
+
+            if (((Model.persoon.Gast) this).wachtOpLift) {
+
+                ((Model.persoon.Gast) this).waitingTime++;
+
+                return;
+            }
+        }
+
+//stop als pathfinder niet bestaat
         if (pathfinder == null) return;
         //zoek vakje op nieuwe positie van persoon via pathfinder
         Vakje nieuwVakje = pathfinder.volgendeStap(huidigVakje, doelVakje);
@@ -86,6 +108,7 @@ public abstract class Persoon {
         nieuwVakje.voegPersoonToe(this);
         // voeg persoon toe aan ruimte als dat bestaat
         if (nieuwVakje.ruimte != null) nieuwVakje.ruimte.betreed(this);
+
     }
 
     // wis de huidige route zodat de persoon stopt met bewegen

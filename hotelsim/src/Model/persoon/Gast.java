@@ -18,6 +18,17 @@ public class Gast extends Persoon {
     // of de gast onderweg is naar de lobby om uit te checken
     public boolean uitcheckend = false;
 
+    // totale wachttijd bij lift
+    public int waitingTime = 0;
+
+    // gast wacht momenteel op lift
+    public boolean wachtOpLift = false;
+
+    public boolean inLift = false;
+
+    // gast heeft lift gekozen
+    public boolean gebruiktLift = false;
+
     // constructor: maak een gast aan met een gewenst aantal sterren
     public Gast(int gastId, int gewensteSterren) {
         this.gastId = gastId;
