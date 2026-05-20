@@ -10,21 +10,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class LayoutControllerTest {
 
-    // laadGeldigBestand: id groter dan 0 bij succes
+    // Ik laad een geldig layoutbestand; ik verwacht dat ik een bruikbaar id terugkrijg.
     @Test void testLaadGeldigBestand() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
         assertTrue(id > 0);
     }
 
-    // laadOngeldigBestand: geeft -1 terug bij fout
+    // Ik laad een ongeldig bestand; ik verwacht dat de controller -1 teruggeeft.
     @Test void testLaadOngeldigBestandGeeftMinEen() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("bestaat_niet.json", "test");
         assertEquals(-1, id);
     }
 
-    // getHotel: hotel is niet null na laden
+    // Ik laad eerst een layout en vraag daarna het hotel op; ik verwacht dat dat hotel bestaat.
     @Test void testGetHotelNaLaden() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -32,7 +32,7 @@ public class LayoutControllerTest {
         assertNotNull(h);
     }
 
-    // hotel heeft ruimtes na laden
+    // Ik laad een hotel uit bestand; ik verwacht dat het daarna ruimtes bevat.
     @Test void testHotelHeeftRuimtes() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -40,7 +40,7 @@ public class LayoutControllerTest {
         assertFalse(h.ruimtes.isEmpty());
     }
 
-    // hotel heeft een lift na laden
+    // Ik laad een hotel uit bestand; ik verwacht dat er daarna een lift aanwezig is.
     @Test void testHotelHeeftLift() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -49,7 +49,7 @@ public class LayoutControllerTest {
         assertTrue(h.lift instanceof Lift);
     }
 
-    // hotel heeft een trap na laden
+    // Ik laad een hotel uit bestand; ik verwacht dat er daarna een trap aanwezig is.
     @Test void testHotelHeeftTrap() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -58,7 +58,7 @@ public class LayoutControllerTest {
         assertTrue(h.trap instanceof Trap);
     }
 
-    // hotel heeft een lobby na laden
+    // Ik laad een hotel uit bestand; ik verwacht dat er daarna een lobby aanwezig is.
     @Test void testHotelHeeftLobby() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -67,7 +67,7 @@ public class LayoutControllerTest {
         assertTrue(h.lobby instanceof Lobby);
     }
 
-    // hotel heeft kamers na laden
+    // Ik laad een hotel uit bestand; ik verwacht dat er daarna minstens één kamer aanwezig is.
     @Test void testHotelHeeftKamers() {
         LayoutController lc = new LayoutController();
         int id = lc.laadVanBestand("layout.json", "layout.json");
@@ -75,7 +75,7 @@ public class LayoutControllerTest {
         assertTrue(h.ruimtes.stream().anyMatch(r -> r instanceof Kamer));
     }
 
-    // maakHandmatigeLayout: hotel heeft juiste afmetingen
+    // Ik maak handmatig een layout aan; ik verwacht dat het hotel de opgegeven afmetingen krijgt.
     @Test void testMaakHandmatigeLayout() {
         LayoutController lc = new LayoutController();
         int id = lc.maakHandmatigeLayout("test", 5, 5);
@@ -85,20 +85,20 @@ public class LayoutControllerTest {
         assertEquals(5, h.hoogte);
     }
 
-    // getHotelManager: geeft een HotelManager terug
+    // Ik vraag de hotelmanager op; ik verwacht dat die bestaat en van het juiste type is.
     @Test void testGetHotelManager() {
         LayoutController lc = new LayoutController();
         assertNotNull(lc.getHotelManager());
         assertTrue(lc.getHotelManager() instanceof HotelManager);
     }
 
-    // setLogger: geen crash
+    // Ik stel een logger in op de layoutcontroller; ik verwacht dat dit geen crash geeft.
     @Test void testSetLogger() {
         LayoutController lc = new LayoutController();
         assertDoesNotThrow(() -> lc.setLogger(bericht -> {}));
     }
 
-    // meerdere layouts laden: ids zijn verschillend
+    // Ik laad twee layouts na elkaar; ik verwacht dat beide een verschillend id krijgen.
     @Test void testMeerdereLayoutsLaden() {
         LayoutController lc = new LayoutController();
         int id1 = lc.laadVanBestand("layout.json", "layout1");

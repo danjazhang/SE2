@@ -12,7 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class PersoonTest {
 
-    // hulpmethode: maak een hotel met layout, lift en trap
+    // Ik maak met deze hulpmethode een hotel met layout, lift en trap,
+    // zodat een persoon in de testen echt kan bewegen.
     private Hotel maakHotel(int breedte, int hoogte) {
         Hotel hotel = new Hotel();
         hotel.layout = new Layout(breedte, hoogte);
@@ -35,14 +36,14 @@ public class PersoonTest {
         return hotel;
     }
 
-    // constructor: huidigVakje en doelVakje zijn null bij aanmaken
+    // Ik maak een nieuwe gast aan; ik verwacht dat huidigVakje en doelVakje nog null zijn.
     @Test void testConstructor() {
         Gast p = new Gast(1, 1);
         assertNull(p.huidigVakje);
         assertNull(p.doelVakje);
     }
 
-    // zetDoel: doelVakje wordt correct ingesteld
+    // Ik zet een doelvakje op een persoon; ik verwacht dat dit vakje als doel bewaard wordt.
     @Test void testZetDoel() {
         Gast p = new Gast(1, 1);
         Vakje v = new Vakje();
@@ -50,7 +51,7 @@ public class PersoonTest {
         assertEquals(v, p.doelVakje);
     }
 
-    // zetStartPositie: huidigVakje wordt ingesteld en persoon staat op vakje
+    // Ik geef een persoon een startpositie; ik verwacht dat hij op dat vakje terechtkomt.
     @Test void testZetStartPositie() {
         Gast p = new Gast(1, 1);
         Vakje v = new Vakje();
@@ -59,12 +60,12 @@ public class PersoonTest {
         assertTrue(v.krijgPersonen().contains(p));
     }
 
-    // beweeg: geen crash als doelVakje null is
+    // Ik laat een persoon zonder doel bewegen; ik verwacht dat dit geen crash geeft.
     @Test void testBeweegZonderDoelCrashetNiet() {
         assertDoesNotThrow(() -> new Gast(1, 1).beweeg());
     }
 
-    // beweeg: geen crash als pathfinder null is
+    // Ik laat een persoon zonder pathfinder bewegen; ik verwacht dat dit geen crash geeft.
     @Test void testBeweegZonderPathfinderCrashetNiet() {
         Gast p = new Gast(1, 1);
         Layout layout = new Layout(3, 3);
@@ -73,7 +74,7 @@ public class PersoonTest {
         assertDoesNotThrow(() -> p.beweeg());
     }
 
-    // beweeg: persoon beweegt 1 stap richting doel
+    // Ik laat een persoon naar rechts bewegen; ik verwacht dat hij precies één stap opschuift.
     @Test void testBeweegNaarDoel() {
         Hotel hotel = maakHotel(5, 3);
         Gast p = new Gast(1, 1);
@@ -84,7 +85,7 @@ public class PersoonTest {
         assertEquals(3, p.huidigVakje.x);
     }
 
-    // beweeg: persoon beweegt in y richting als x gelijk is
+    // Ik laat een persoon in de y-richting bewegen; ik verwacht dat zijn y-coördinaat met één verandert.
     @Test void testBeweegInYRichting() {
         Hotel hotel = maakHotel(5, 5);
         Gast p = new Gast(1, 1);
@@ -95,7 +96,7 @@ public class PersoonTest {
         assertEquals(2, p.huidigVakje.y);
     }
 
-    // voegTussendoelToe: tussendoel wordt als doel gezet als doelVakje null is
+    // Ik voeg een tussendoel toe zonder bestaand doel; ik verwacht dat dit tussendoel meteen het doel wordt.
     @Test void testVoegTussendoelToeZonderDoel() {
         Gast p = new Gast(1, 1);
         Vakje v = new Vakje();
@@ -103,7 +104,7 @@ public class PersoonTest {
         assertEquals(v, p.doelVakje);
     }
 
-    // voegTussendoelToe: tussendoel wordt in queue gezet als doel al bestaat
+    // Ik voeg een tussendoel toe terwijl er al een doel is; ik verwacht dat het huidige doel onveranderd blijft.
     @Test void testVoegTussendoelToeMetDoel() {
         Gast p = new Gast(1, 1);
         Vakje v1 = new Vakje();
@@ -113,7 +114,7 @@ public class PersoonTest {
         assertEquals(v1, p.doelVakje);
     }
 
-    // beweeg: tussendoel wordt volgend doel na bereiken huidig doel
+    // Ik bereik een eerste doel met een tussendoel erachter; ik verwacht dat het tussendoel daarna actief wordt.
     @Test void testTussendoelWordtDoelNaAankomen() {
         Hotel hotel = maakHotel(5, 3);
         Gast p = new Gast(1, 1);
@@ -127,7 +128,7 @@ public class PersoonTest {
         assertEquals(tussendoel, p.doelVakje);
     }
 
-    // beweeg: persoon verlaat ruimte bij vertrek van vakje met ruimte
+    // Ik laat een persoon vanuit een kamer vertrekken; ik verwacht dat die kamer hem daarna niet meer bevat.
     @Test void testBeweegVerlaatRuimte() {
         Hotel hotel = maakHotel(5, 3);
         Gast p = new Gast(1, 1);
@@ -142,14 +143,14 @@ public class PersoonTest {
         assertFalse(kamer.getAanwezigen().contains(p));
     }
 
-    // setPathfinder: pathfinder wordt correct ingesteld
+    // Ik stel een pathfinder in op een persoon; ik verwacht dat dit zonder crash lukt.
     @Test void testSetPathfinder() {
         Hotel hotel = maakHotel(5, 3);
         Gast p = new Gast(1, 1);
         assertDoesNotThrow(() -> p.setPathfinder(hotel.pathfinder));
     }
 
-    // voerTaakUit: geen crash
+    // Ik roep voerTaakUit aan op een gast; ik verwacht dat dit geen crash geeft.
     @Test void testVoerTaakUit() {
         assertDoesNotThrow(() -> new Gast(1, 1).voerTaakUit());
     }
