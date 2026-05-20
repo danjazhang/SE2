@@ -48,12 +48,34 @@ public class Lift extends Ruimte {
         } else if (huidigeVerdieping > doel) {
             huidigeVerdieping--;
         }
+        updatePassagierPosities();
 
         // Laat passagiers uitstappen die hier moeten zijn
         uitladen();
 
         // Laad wachtenden in op deze verdieping
         inladen();
+    }
+
+    private void updatePassagierPosities() {
+
+        Vakje liftVakje = hotel.layout.krijgVakje(
+                this.posX,
+                huidigeVerdieping
+        );
+
+        for (Persoon p : passagiers) {
+
+            if (p.huidigVakje != null) {
+                p.huidigVakje.verwijderPersoon(p);
+            }
+
+            p.huidigVakje = liftVakje;
+
+            if (liftVakje != null) {
+                liftVakje.voegPersoonToe(p);
+            }
+        }
     }
 
     private int bepaalDoel() {
@@ -107,43 +129,35 @@ public class Lift extends Ruimte {
     private void inladen() {
 
         Queue<Persoon> q = wachtrijen.get(huidigeVerdieping);
+
         if (q == null) return;
 
         while (!q.isEmpty()) {
 
             Persoon p = q.poll();
+
+            // Zet persoon fysiek IN de lift
+            Vakje liftVakje = hotel.layout.krijgVakje(
+                    this.posX,
+                    huidigeVerdieping
+            );
+
+            if (p.huidigVakje != null) {
+                p.huidigVakje.verwijderPersoon(p);
+            }
+
+            p.huidigVakje = liftVakje;
+
+            if (liftVakje != null) {
+                liftVakje.voegPersoonToe(p);
+            }
+
             passagiers.add(p);
 
             if (p instanceof Gast g) {
 
                 g.inLift = true;
                 g.wachtOpLift = false;
-
-                // Verwijder van kaart tijdens rit
-                /*
-                if (g.huidigVakje != null) {
-                    g.huidigVakje.verwijderPersoon(g);
-                    g.huidigVakje = null;
-                }
-
-                 */
-                // Gast blijft zichtbaar op liftpositie
-                Vakje liftVakje = g.huidigVakje;
-
-                if (liftVakje != null) {
-                    liftVakje.verwijderPersoon(g);
-
-                    Vakje nieuwLiftVakje = hotel.layout.krijgVakje(
-                            this.posX,
-                            huidigeVerdieping
-                    );
-
-                    g.huidigVakje = nieuwLiftVakje;
-
-                    if (nieuwLiftVakje != null) {
-                        nieuwLiftVakje.voegPersoonToe(g);
-                    }
-                }
             }
         }
     }

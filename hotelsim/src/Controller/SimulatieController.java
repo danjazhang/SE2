@@ -146,7 +146,10 @@ public class SimulatieController {
             if (g.huidigVakje == null) continue;
 
             // Check of gast bij lift staat
-            boolean bijLift = g.huidigVakje.ruimte instanceof Lift;
+            //boolean bijLift = g.huidigVakje.ruimte instanceof Lift;
+            boolean bijLift =
+                    g.huidigVakje.x == hotel.lift.posX + 1 &&
+                            g.huidigVakje.y == hotel.lift.getHuidigeVerdieping();
 
             if (bijLift) {
 

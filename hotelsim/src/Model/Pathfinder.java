@@ -78,12 +78,27 @@ public class Pathfinder {
         }
     }
 
+    private Vakje vindLiftWachtplek(int y) {
+
+        for (Ruimte r : hotel.ruimtes) {
+
+            if (r instanceof Lift) {
+
+                // Rechts van lift
+                return layout.krijgVakje(r.posX + 1, y);
+            }
+        }
+
+        return null;
+    }
+
     private void routeViaLift(Persoon p, Vakje start, Vakje doel) {
 
         Gast g = (Gast) p;
 
         // Vind liftvakje op huidige verdieping
-        Vakje liftVakje = vindLift(start.y);
+        //Vakje liftVakje = vindLift(start.y);
+        Vakje liftVakje = vindLiftWachtplek(start.y);
         if (liftVakje == null) {
             routeViaTrap(p, start, doel);
             return;
