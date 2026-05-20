@@ -65,8 +65,10 @@ public class Fitnessruimte extends Ruimte implements IEventListener {
             // verzamel alle gasten die klaar zijn met sporten
             List<Integer> klaar = new ArrayList<>();
             for (Map.Entry<Integer, Integer> entry : sportEindTijden.entrySet()) {
-                if (tijd >= entry.getValue()) {
-                    klaar.add(entry.getKey());
+                int gastId = entry.getKey();
+                int eindTijd = entry.getValue();
+                if (tijd >= eindTijd) {
+                    klaar.add(gastId);
                 }
             }
 

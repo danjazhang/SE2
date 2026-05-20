@@ -67,8 +67,11 @@ public class Restaurant extends Ruimte implements IEventListener {
             // verzamel alle gasten die klaar zijn met eten
             List<Integer> klaar = new ArrayList<>();
             for (Map.Entry<Integer, Integer> entry : eetEindTijden.entrySet()) {
-                if (tijd >= entry.getValue()) {
-                    klaar.add(entry.getKey());
+
+                int gastId = entry.getKey();
+                int eindTijd = entry.getValue();
+                if (tijd >= eindTijd) {
+                    klaar.add(gastId);
                 }
             }
 
