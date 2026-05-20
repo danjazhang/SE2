@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 // Erft van Ruimte en heeft een aantal sterren, een gast en een schoon-status
 public class Kamer extends Ruimte {
 
@@ -42,17 +41,13 @@ public class Kamer extends Ruimte {
 
     // ontkoppelen van kamer
     public void ontkoppelGast(Gast g) {
-        //key is de sleutel/ eerste waarde in een hashmap in dit geval gast
         if (ingecheckteGasten.containsKey(g)) {
-            //als gast nog fysiek in de kamer is, verwijder uit aanwezigen
             if (ingecheckteGasten.get(g)) {
                 verlaat(g);
             }
             ingecheckteGasten.remove(g);
             g.kamer = null;
         }
-
-        //kamer is vies na uitchecken van gasten
         if (ingecheckteGasten.isEmpty()) {
             zetBezet(false);
             schoon = false;
@@ -91,7 +86,6 @@ public class Kamer extends Ruimte {
 
     //is een specifieke gast in de kamer?
     public boolean isGastAanwezig(Gast g) {
-        //haal waarde op via sleutel (g) als die niet bestaat geeft die (g,false) terug ipv null
         return ingecheckteGasten.getOrDefault(g, false);
     }
 
@@ -111,6 +105,15 @@ public class Kamer extends Ruimte {
             return this;
         }
         return null;
+    }
+
+    // geef een label terug met sterren op basis van het aantal sterren van de kamer
+    public String getSterrenLabel() {
+        String label = "";
+        for (int i = 0; i < sterren; i++) {
+            label += "★";
+        }
+        return label;
     }
 
     public int getKamernummer() {

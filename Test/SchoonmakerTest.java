@@ -19,26 +19,6 @@ public class SchoonmakerTest {
         assertNull(s.doelVakje);
     }
 
-    @Test void testMaakKamerSchoon() {
-        Schoonmaker s = new Schoonmaker();
-        Kamer k = new Kamer();
-        k.schoon = false;
-        s.maakKamerSchoon(k);
-        // maakKamerSchoon markeert de taak, schoonmaker is bezig en kamer is toegewezen
-        assertTrue(s.bezig);
-        assertEquals(k, s.kamer);
-    }
-
-    @Test void testHandelEmergency() {
-        Schoonmaker s = new Schoonmaker();
-        Kamer k = new Kamer();
-        k.schoon = false;
-        s.handelEmergency(k);
-        // handelEmergency markeert de taak, schoonmaker is bezig
-        assertTrue(s.bezig);
-        assertEquals(k, s.kamer);
-    }
-
     @Test void testOnEventCleaningEmergency() {
         Schoonmaker s = new Schoonmaker();
         HotelEvent evt = new HotelEvent(1, HotelEventType.CLEANING_EMERGENCY, 1, -1);

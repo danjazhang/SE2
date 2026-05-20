@@ -21,6 +21,7 @@ public class GastRoutingService {
 
     // stuur een gast naar het dichtstbijzijnde restaurant en geef dat restaurant terug
     public Restaurant stuurNaarRestaurant(int gastId) {
+
         Gast gast = vindGast(gastId);
         if (gast == null || gast.huidigVakje == null) return null;
         Ruimte doelRuimte = vindDichtstbijzijndeRuimte(gast, "restaurant");
