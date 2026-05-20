@@ -68,7 +68,7 @@ public class LayoutController {
         }
 
         // maak lift aan links
-        Lift lift = new Lift();
+        Lift lift = new Lift(nieuwHotel);
         lift.posX = 1;
         lift.posY = 1;
         lift.breedte = 1;

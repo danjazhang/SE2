@@ -1,5 +1,6 @@
 package Model.ruimte;
 
+import Model.Hotel;
 import Model.layout.Vakje;
 import Model.persoon.Gast;
 import Model.persoon.Persoon;
@@ -10,20 +11,16 @@ public class Lift extends Ruimte {
 
     private int huidigeVerdieping = 1;
     private int lobbyVerdieping = 1;
-    private int doelVerdieping = 1;
-
-    public static final int TICKS_PER_VERDIEPING = 2;
-    public static final int TICKS_INSTAPPEN = 1;
 
     private List<Persoon> passagiers = new ArrayList<>();
-
-    // wachtrij per verdieping (simpel en stabiel)
     private Map<Integer, Queue<Persoon>> wachtrijen = new HashMap<>();
 
-    public Lift() {
+    private Hotel hotel;
+
+    public Lift(Hotel hotel) {
+        this.hotel = hotel;
         this.huidigeVerdieping = 1;
         this.lobbyVerdieping = 1;
-        this.doelVerdieping = 1;
     }
 
     public void initWachtrijen(int maxVerdiepingen) {
@@ -35,7 +32,6 @@ public class Lift extends Ruimte {
     public void roep(Persoon p, int verdieping) {
         wachtrijen.putIfAbsent(verdieping, new LinkedList<>());
         Queue<Persoon> q = wachtrijen.get(verdieping);
-
         if (!q.contains(p)) {
             q.add(p);
         }
@@ -43,128 +39,113 @@ public class Lift extends Ruimte {
 
     public void tik() {
 
-        // als er passagiers in lift zitten:
-        // rij naar doelverdieping
-        if (!passagiers.isEmpty()) {
+        // Bepaal doel: eerste passagier of eerste wachtende
+        int doel = bepaalDoel();
 
-            beweeg();
-
-            // aangekomen → gasten uitstappen
-            if (huidigeVerdieping == doelVerdieping) {
-                uitladen();
-            }
-
-            return;
+        // Beweeg één verdieping richting doel
+        if (huidigeVerdieping < doel) {
+            huidigeVerdieping++;
+        } else if (huidigeVerdieping > doel) {
+            huidigeVerdieping--;
         }
 
-        // niemand in lift:
-        // zoek volgende verdieping met wachtenden
-        int next = vindVolgende();
+        // Laat passagiers uitstappen die hier moeten zijn
+        uitladen();
 
-        // niemand wacht → terug naar lobby
-        if (next == -1) {
-
-            doelVerdieping = lobbyVerdieping;
-        }
-        else {
-
-            doelVerdieping = next;
-        }
-
-        // bewegen richting doel
-        beweeg();
-
-        // aangekomen bij wachtende gasten
-        if (huidigeVerdieping == doelVerdieping) {
-
-            inladen();
-        }
+        // Laad wachtenden in op deze verdieping
+        inladen();
     }
 
-    private void beweeg() {
-        if (huidigeVerdieping < doelVerdieping) huidigeVerdieping++;
-        else if (huidigeVerdieping > doelVerdieping) huidigeVerdieping--;
-    }
+    private int bepaalDoel() {
 
-
-    private void uitladen() {
-
-        List<Persoon> copy = new ArrayList<>(passagiers);
-
-        for (Persoon p : copy) {
-
-            passagiers.remove(p);
-
-            if (p instanceof Model.persoon.Gast g) {
-
-                g.inLift = false;
+        // Passagiers hebben voorrang
+        for (Persoon p : passagiers) {
+            if (p instanceof Gast g) {
+                return g.gewensteVerdieping;
             }
         }
-    }
 
+        // Anders: dichtstbijzijnde wachtende
+        int best = lobbyVerdieping;
+        int minDist = Integer.MAX_VALUE;
 
-    private void inladen() {
-
-        Queue<Persoon> q = wachtrijen.get(huidigeVerdieping);
-
-        if (q == null) return;
-
-        while (!q.isEmpty()) {
-
-            Persoon p = q.poll();
-
-            passagiers.add(p);
-
-            // gast zit nu in lift
-            if (p instanceof Model.persoon.Gast g) {
-
-                g.inLift = true;
-
-                // gast tijdelijk van kaart halen
-                if (g.huidigVakje != null) {
-                    g.huidigVakje.verwijderPersoon(g);
-                }
-
-                g.huidigVakje = null;
-
-                // BELANGRIJK:
-                // lift weet nu waarheen
-                if (g.kamer != null) {
-                    doelVerdieping = g.kamer.posY;
-                }
-            }
-        }
-    }
-
-    public void board(Persoon p) {
-        if (!passagiers.contains(p)) {
-            passagiers.add(p);
-        }
-    }
-
-    public void unboardAll() {
-        passagiers.clear();
-    }
-
-    private int vindVolgende() {
-
-        int best = -1;
-        int dist = Integer.MAX_VALUE;
-
-        for (int f : wachtrijen.keySet()) {
-
-            if (!wachtrijen.get(f).isEmpty()) {
-
-                int d = Math.abs(huidigeVerdieping - f);
-
-                if (d < dist) {
-                    dist = d;
-                    best = f;
+        for (int verdieping : wachtrijen.keySet()) {
+            if (!wachtrijen.get(verdieping).isEmpty()) {
+                int dist = Math.abs(huidigeVerdieping - verdieping);
+                if (dist < minDist) {
+                    minDist = dist;
+                    best = verdieping;
                 }
             }
         }
 
         return best;
+    }
+
+    private void uitladen() {
+
+        Iterator<Persoon> it = passagiers.iterator();
+
+        while (it.hasNext()) {
+
+            Persoon p = it.next();
+
+            if (p instanceof Gast g) {
+
+                if (g.gewensteVerdieping == huidigeVerdieping) {
+
+                    it.remove();
+
+                    g.inLift = false;
+                    g.gebruiktLift = false;
+                    g.moetUitstappen = true;
+                }
+            }
+        }
+    }
+
+    private void inladen() {
+
+        Queue<Persoon> q = wachtrijen.get(huidigeVerdieping);
+        if (q == null) return;
+
+        while (!q.isEmpty()) {
+
+            Persoon p = q.poll();
+            passagiers.add(p);
+
+            if (p instanceof Gast g) {
+
+                g.inLift = true;
+                g.wachtOpLift = false;
+
+                // Verwijder van kaart tijdens rit
+                /*
+                if (g.huidigVakje != null) {
+                    g.huidigVakje.verwijderPersoon(g);
+                    g.huidigVakje = null;
+                }
+
+                 */
+                // Gast blijft zichtbaar op liftpositie
+                Vakje liftVakje = g.huidigVakje;
+
+                if (liftVakje != null) {
+                    liftVakje.verwijderPersoon(g);
+
+                    Vakje nieuwLiftVakje = hotel.layout.krijgVakje(
+                            this.posX,
+                            huidigeVerdieping
+                    );
+
+                    g.huidigVakje = nieuwLiftVakje;
+
+                    if (nieuwLiftVakje != null) {
+                        nieuwLiftVakje.voegPersoonToe(g);
+                    }
+                }
+            }
+        }
     }
 
     public int getHuidigeVerdieping() {

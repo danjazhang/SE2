@@ -1,54 +1,50 @@
 package Model.persoon;
 
 import Model.ruimte.Kamer;
+import Model.ruimte.Ruimte;
 
-
-// Erft van Persoon en heeft een gewenst aantal sterren en een kamer
+// Gast
 public class Gast extends Persoon {
 
-    //gastid die we van de library ophalen
     public int gastId;
 
-    // het aantal sterren dat de gast wil in een kamer
     public int gewensteSterren;
 
-    // de kamer waar de gast momenteel verblijft
     public Kamer kamer;
 
-    // of de gast onderweg is naar de lobby om uit te checken
     public boolean uitcheckend = false;
 
-    // totale wachttijd bij lift
-    public int waitingTime = 0;
-
-    // gast wacht momenteel op lift
-    public boolean wachtOpLift = false;
-
+    // lift flags
     public boolean inLift = false;
 
-    // gast heeft lift gekozen
     public boolean gebruiktLift = false;
 
-    // constructor: maak een gast aan met een gewenst aantal sterren
+    // gewenste verdieping voor lift
+    public int gewensteVerdieping = 1;
+
+    public boolean wachtOpLift = false;
+    public boolean moetUitstappen = false;
+    public Ruimte eindbestemming = null;
+
     public Gast(int gastId, int gewensteSterren) {
+
         this.gastId = gastId;
         this.gewensteSterren = gewensteSterren;
         this.kamer = null;
     }
 
-    // ga naar een activiteit in het hotel
     public void gaNaarActiviteit() {}
 
-    // ga fysiek de kamer binnen
-    public void gaNaarkamer(){
+    public void gaNaarkamer() {
+
         if (kamer != null) {
             kamer.gastKomtBinnen(this);
         }
     }
 
-    //ga fysiek de kamer uit
-    public void verlaatKamer(){
-        if (kamer != null){
+    public void verlaatKamer() {
+
+        if (kamer != null) {
             kamer.gastVerlaatKamer(this);
         }
     }

@@ -21,173 +21,121 @@ public class Pathfinder {
 
     public Vakje volgendeStap(Vakje huidig, Vakje doel) {
 
+        if (huidig == null || doel == null) return null;
+
         int x = huidig.x;
         int y = huidig.y;
 
-        // =========================
-        // zelfde verdieping
-        // =========================
-        if (huidig.y == doel.y) {
-
+        // Zelfde verdieping: loop horizontaal
+        if (y == doel.y) {
             if (x < doel.x) x++;
             else if (x > doel.x) x--;
-
             return layout.krijgVakje(x, y);
         }
 
-        // =========================
-        // TRAP → altijd toegestaan
-        // =========================
-        if (huidig.ruimte instanceof Model.ruimte.Trap) {
-
+        // Op trap: beweeg verticaal
+        if (huidig.ruimte instanceof Trap) {
             if (y < doel.y) y++;
             else if (y > doel.y) y--;
-
-            return layout.krijgVakje(x, y);
-        }
-
-        // =========================
-        // LIFT → alleen als persoon in passagierslijst zit
-        // =========================
-        if (huidig.ruimte instanceof Model.ruimte.Lift) {
-
-            Lift lift = hotel.lift;
-
-            // zoek of iemand op dit vakje echt in lift zit
-            boolean zitInLift = false;
-
-            for (Persoon p : lift.getPassagiers()) {
-
-                if (p.huidigVakje == huidig) {
-                    zitInLift = true;
-                    break;
-                }
-            }
-
-            if (!zitInLift) {
-                return null;
-            }
-
-            if (y < doel.y) y++;
-            else if (y > doel.y) y--;
-
             return layout.krijgVakje(x, y);
         }
 
         return null;
     }
 
-    public void zetRoute(Persoon p, Ruimte r) {
+    public void zetRoute(Persoon p, Ruimte bestemming) {
 
         Vakje start = p.huidigVakje;
-        Vakje doel = layout.krijgVakje(r.posX, r.posY);
+        Vakje doel = layout.krijgVakje(bestemming.posX, bestemming.posY);
 
         if (start == null || doel == null) return;
 
-        List<Vakje> route;
+        // Sla eindbestemming op bij gast
+        if (p instanceof Gast g) {
+            g.eindbestemming = bestemming;
+        }
 
+        // Zelfde verdieping: direct lopen
         if (start.y == doel.y) {
+            p.zetDoel(doel);
+            return;
+        }
 
-            route = List.of(doel);
+        // Schoonmaker gebruikt altijd trap
+        if (p instanceof Schoonmaker) {
+            routeViaTrap(p, start, doel);
+            return;
+        }
 
-        } else if (p instanceof Schoonmaker) {
+        // Gast: kies lift of trap
+        int trapTijd = Math.abs(start.y - doel.y) * hotel.trap.tijdperverdieping;
+        int liftTijd = schatLiftTijd(start, doel);
 
-            route = trap(start, doel);
-
+        if (liftTijd < trapTijd || Math.abs(start.y - doel.y) > 4) {
+            routeViaLift(p, start, doel);
         } else {
-
-            int trap = trapTijd(start, doel);
-            int lift = liftTijd(start, doel);
-
-            // lichte menselijke onzekerheid
-            trap += Math.random() * 2;
-            lift += Math.random() * 2;
-
-            boolean liftBeter = lift < trap;
-
-            if (Math.abs(start.y - doel.y) > 6) {
-                liftBeter = true;
-            }
-
-            if (liftBeter) {
-
-                route = lift(start, doel);
-
-                if (p instanceof Gast g) {
-                    g.gebruiktLift = true;
-                }
-
-                if (hotel.lift != null) {
-                    hotel.lift.roep(p, start.y);
-                }
-
-            } else {
-                route = trap(start, doel);
-            }
-        }
-
-        if (route.isEmpty()) return;
-
-        p.zetDoel(route.get(0));
-
-        for (int i = 1; i < route.size(); i++) {
-            p.voegTussendoelToe(route.get(i));
+            routeViaTrap(p, start, doel);
         }
     }
 
-    private List<Vakje> lift(Vakje start, Vakje doel) {
+    private void routeViaLift(Persoon p, Vakje start, Vakje doel) {
 
-        List<Vakje> r = new ArrayList<>();
+        Gast g = (Gast) p;
 
-        Vakje lift = vindLift(start.y);
-        if (lift != null) r.add(lift);
+        // Vind liftvakje op huidige verdieping
+        Vakje liftVakje = vindLift(start.y);
+        if (liftVakje == null) {
+            routeViaTrap(p, start, doel);
+            return;
+        }
 
-        r.add(doel);
+        g.gebruiktLift = true;
+        g.gewensteVerdieping = doel.y;
 
-        return r;
+        // Loop eerst naar lift
+        p.zetDoel(liftVakje);
+
+        // Roep lift
+        hotel.lift.roep(p, start.y);
     }
 
-    private List<Vakje> trap(Vakje start, Vakje doel) {
+    private void routeViaTrap(Persoon p, Vakje start, Vakje doel) {
 
-        List<Vakje> r = new ArrayList<>();
+        Vakje trap1 = vindTrap(start.y);
+        Vakje trap2 = vindTrap(doel.y);
 
-        Vakje t1 = vindTrap(start.y);
-        Vakje t2 = vindTrap(doel.y);
-
-        if (t1 != null) r.add(t1);
-        if (t2 != null && !t2.equals(t1)) r.add(t2);
-
-        r.add(doel);
-
-        return r;
+        if (trap1 != null) {
+            p.zetDoel(trap1);
+        }
+        if (trap2 != null && !trap2.equals(trap1)) {
+            p.voegTussendoelToe(trap2);
+        }
+        p.voegTussendoelToe(doel);
     }
 
-    private int trapTijd(Vakje s, Vakje d) {
-        return Math.abs(s.y - d.y) * hotel.trap.tijdperverdieping;
-    }
-
-    private int liftTijd(Vakje s, Vakje d) {
-
-        Lift l = hotel.lift;
-
-        int afstandLift = Math.abs(l.getHuidigeVerdieping() - s.y);
-        int rit = Math.abs(s.y - d.y);
-        int wachtrij = l.aantalWachtend(s.y);
-
-        return afstandLift + rit + wachtrij;
+    private int schatLiftTijd(Vakje start, Vakje doel) {
+        Lift lift = hotel.lift;
+        int wacht = Math.abs(lift.getHuidigeVerdieping() - start.y);
+        int rit = Math.abs(start.y - doel.y);
+        int queue = lift.aantalWachtend(start.y);
+        return wacht + rit + queue;
     }
 
     private Vakje vindLift(int y) {
-        for (Ruimte r : hotel.ruimtes)
-            if (r instanceof Lift)
+        for (Ruimte r : hotel.ruimtes) {
+            if (r instanceof Lift) {
                 return layout.krijgVakje(r.posX, y);
+            }
+        }
         return null;
     }
 
     private Vakje vindTrap(int y) {
-        for (Ruimte r : hotel.ruimtes)
-            if (r instanceof Trap)
+        for (Ruimte r : hotel.ruimtes) {
+            if (r instanceof Trap) {
                 return layout.krijgVakje(r.posX, y);
+            }
+        }
         return null;
     }
 }
