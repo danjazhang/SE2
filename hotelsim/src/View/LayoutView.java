@@ -76,10 +76,11 @@ public class LayoutView extends JPanel implements ModelListener {
                 g.setColor(Color.BLACK);
                 g.drawRect(tekenX, tekenY, tekenB, tekenH);
 
-                // teken rode rand als de ruimte druk bezet is
+                // teken licht rode overlay als de ruimte druk bezet is
                 if (r.getAanwezigen().size() >= DREMPEL_BEZET) {
-                    g.setColor(Color.RED);
-                    g.drawRect(tekenX + 2, tekenY + 2, tekenB - 4, tekenH - 4);
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.setColor(new Color(220, 50, 50, 80));
+                    g2d.fillRect(tekenX, tekenY, tekenB, tekenH);
                 }
 
                 g.setColor(Color.BLACK);
