@@ -58,7 +58,16 @@ public class LayoutView extends JPanel implements ModelListener {
                 getekend.add(r);
 
                 // kies kleur op basis van ruimtetype
-                if (r instanceof Kamer) g.setColor(new Color(222, 229, 240));
+                if (r instanceof Kamer) {
+                    Kamer kamer = (Kamer) r;
+                    if (kamer.isBezet()){
+                        g.setColor(new Color(220, 80, 80));//bezet
+                    }else {
+                        g.setColor(new Color(222, 229, 240)); //vrij
+                    }
+                }
+
+
                 else if (r instanceof Restaurant) g.setColor(new Color(228, 223, 235));
                 else if (r instanceof Bioscoop) g.setColor(new Color(247, 234, 219));
                 else if (r instanceof Fitnessruimte) g.setColor(new Color(235, 241, 223));
