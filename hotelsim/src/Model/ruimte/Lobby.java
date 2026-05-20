@@ -76,9 +76,10 @@ public class Lobby extends Ruimte implements IEventListener {
             //stuur schoonmaker naar de kamer via een route
             hotel.pathfinder.zetRoute(schoonmaker, kamer);
         }
-        // markeer gast als uitcheckend en stuur naar de lobby
+        // markeer gast als uitcheckend, wis oude route en stuur naar de lobby
         // zodra de gast de lobby bereikt wordt hij grafisch verwijderd via betreed()
         gast.uitcheckend = true;
+        gast.wisRoute();
         hotel.pathfinder.zetRoute(gast, this);
         if (logger != null) {
             if (kamer != null) {

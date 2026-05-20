@@ -13,6 +13,10 @@ public class SimulatieView extends JPanel {
     private JComboBox<String> snelheidSelector =
             new JComboBox<>(new String[]{"Langzaam", "Normaal", "Snel"});
 
+    // dropdown voor het kiezen van een scenario
+    private JComboBox<String> scenarioSelector =
+            new JComboBox<>(new String[]{"Scenario 1", "Scenario 2", "Scenario 3", "Scenario 4"});
+
     public SimulatieView(SimulatieController simulatieController) {
         this.simulatieController = simulatieController;
 
@@ -37,10 +41,17 @@ public class SimulatieView extends JPanel {
         // stop knop
         stopButton.addActionListener((ActionEvent e) -> simulatieController.stop());
 
+        add(new JLabel("Scenario:"));
+        add(scenarioSelector);
         add(new JLabel("Snelheid:"));
         add(snelheidSelector);
         add(pauseButton);
         add(stopButton);
+    }
+
+    // geef het gekozen scenario terug als getal (1 t/m 4)
+    public int getGekozenScenario() {
+        return scenarioSelector.getSelectedIndex() + 1;
     }
 
     // view geeft alleen de keuze door

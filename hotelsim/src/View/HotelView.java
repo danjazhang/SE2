@@ -115,8 +115,9 @@ public class HotelView extends JFrame {
             }
             //zorg dat de actuele snelheid uit de GUI wordt gebruikt bij de start
             simulatieView.pasSnelheidToe();
-            //start de simulatie
-            simulatieController.start();
+            //haal het gekozen scenario op uit de simulatieview en start daarmee
+            int scenario = simulatieView.getGekozenScenario();
+            simulatieController.start(scenario);
         });
 
         // =========================
