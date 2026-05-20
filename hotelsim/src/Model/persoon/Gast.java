@@ -3,27 +3,37 @@ package Model.persoon;
 import Model.ruimte.Kamer;
 import Model.ruimte.Ruimte;
 
-// Gast
+// Klasse voor hotelgast
 public class Gast extends Persoon {
 
+    // Unieke id
     public int gastId;
 
+    // Gewenste sterrenniveau
     public int gewensteSterren;
 
+    // Kamer van de gast
     public Kamer kamer;
 
+    // Check-out status
     public boolean uitcheckend = false;
 
-    // lift flags
+    // Lift status
     public boolean inLift = false;
 
+    // Gebruikt lift of niet
     public boolean gebruiktLift = false;
 
-    // gewenste verdieping voor lift
+    // Gewenste verdieping voor lift
     public int gewensteVerdieping = 1;
 
+    // Wacht op lift
     public boolean wachtOpLift = false;
+
+    // Moet uitstappen uit lift
     public boolean moetUitstappen = false;
+
+    // Eindbestemming na lift
     public Ruimte eindbestemming = null;
 
     public Gast(int gastId, int gewensteSterren) {
@@ -33,8 +43,10 @@ public class Gast extends Persoon {
         this.kamer = null;
     }
 
+    // Placeholder activiteit
     public void gaNaarActiviteit() {}
 
+    // Laat gast naar kamer gaan
     public void gaNaarkamer() {
 
         if (kamer != null) {
@@ -42,6 +54,7 @@ public class Gast extends Persoon {
         }
     }
 
+    // Laat gast kamer verlaten
     public void verlaatKamer() {
 
         if (kamer != null) {

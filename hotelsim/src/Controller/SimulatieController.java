@@ -1,52 +1,62 @@
 package Controller;
-
 import Model.Hotel;
 import Model.layout.Vakje;
 import Model.persoon.Gast;
 import Model.persoon.Persoon;
 import Model.ruimte.Lift;
 import hotelevents.HotelEventManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class SimulatieController {
 
+    // Verantwoordelijk voor het starten/pauzeren/stoppen van events
     private HotelEventManager eventManager;
+
+    // Controller voor events
     private EventController eventController;
+
+    // Controller die het hotel beheert
     private HotelController hotelController;
 
+    // Simulatiesnelheid
     private int snelheid = 1;
+
+    // Teller voor ticks
     private int tikTeller = 0;
 
-    public SimulatieController(
-            HotelEventManager eventManager,
-            EventController eventController,
-            HotelController hotelController
+    public SimulatieController(HotelEventManager eventManager, EventController eventController,HotelController hotelController
     ) {
         this.eventManager = eventManager;
         this.eventController = eventController;
         this.hotelController = hotelController;
     }
 
+    // Start de simulatie
     public void start() {
         eventManager.start(1);
     }
 
+    // Pauzeer de simulatie
     public void pauzeer() {
         eventManager.pauze();
     }
 
+    // Stop de simulatie
     public void stop() {
         eventManager.stop();
     }
 
+    // Zet snelheid direct
     public void setSnelheid(int snelheid) {
         this.snelheid = snelheid;
     }
 
+    // Zet snelheid op basis van tekst
     public void pasSnelheidToe(String keuze) {
+
         switch (keuze) {
+
             case "Langzaam" -> snelheid = 0;
             case "Normaal" -> snelheid = 1;
             case "Snel" -> snelheid = 4;
@@ -54,64 +64,90 @@ public class SimulatieController {
         }
     }
 
+    // Wordt elke simulatie-tick uitgevoerd
     public void tik() {
 
+        // Haal hotel op
         Hotel hotel = hotelController.getHotel();
-        if (hotel == null) return;
 
+        // Stop als hotel niet bestaat
+        if (hotel == null) {
+            return;
+        }
+
+        // Verhoog teller
         tikTeller++;
 
+        // Aantal simulatiestappen per tick
         int stappen = 1;
 
+        // Langzame modus
+        // Alleen elke 2 ticks uitvoeren
         if (snelheid <= 0) {
+
             if (tikTeller % 2 != 0) {
                 hotelController.notifyListeners();
                 return;
             }
+
+            // Snelle modus
         } else if (snelheid >= 4) {
+
             stappen = snelheid;
         }
 
+        // Voer stappen uit
         for (int i = 0; i < stappen; i++) {
 
-            // Lift tick
+            // Laat lift bewegen
             if (hotel.lift != null) {
                 hotel.lift.tik();
             }
 
-            // Verwerk gasten die uit lift stappen
+            // Verwerk gasten die uit de lift stappen
             verwerkUitstappendeGasten(hotel);
 
-            // Verwerk gasten die wachten op lift
+            // Verwerk gasten die op de lift wachten
             verwerkWachtendeGasten(hotel);
 
-            // Normale beweging
+            // Maak kopie om concurrent modification te voorkomen
             List<Persoon> copy = new ArrayList<>(hotel.personen);
+
+            // Laat alle personen bewegen
             for (Persoon p : copy) {
                 p.beweeg();
             }
         }
 
+        // Update listeners / UI
         hotelController.notifyListeners();
     }
 
+    // Verwerk gasten die net uit de lift zijn gekomen
     private void verwerkUitstappendeGasten(Hotel hotel) {
 
         for (Persoon p : hotel.personen) {
 
-            if (!(p instanceof Gast g)) continue;
+            // Alleen gasten
+            if (!(p instanceof Gast g)) {
+                continue;
+            }
 
+            // Alleen gasten die moeten uitstappen
             if (g.moetUitstappen) {
 
+                // Reset flag
                 g.moetUitstappen = false;
 
-                // Zet gast terug op kaart bij lift
+                // Pak vakje naast lift
                 Vakje liftVakje = hotel.layout.krijgVakje(
                         hotel.lift.posX,
                         hotel.lift.getHuidigeVerdieping()
                 );
 
+                // Zet gast op kaart
                 if (liftVakje != null) {
+
                     g.huidigVakje = liftVakje;
                     liftVakje.voegPersoonToe(g);
                 }
@@ -132,36 +168,54 @@ public class SimulatieController {
         }
     }
 
+    // Verwerk gasten die op de lift wachten
     private void verwerkWachtendeGasten(Hotel hotel) {
 
         Lift lift = hotel.lift;
-        if (lift == null) return;
+
+        // Stop als lift niet bestaat
+        if (lift == null) {
+            return;
+        }
 
         for (Persoon p : hotel.personen) {
 
-            if (!(p instanceof Gast g)) continue;
+            // Alleen gasten
+            if (!(p instanceof Gast g)) {
+                continue;
+            }
 
-            if (!g.gebruiktLift) continue;
-            if (g.inLift) continue;
-            if (g.huidigVakje == null) continue;
+            // Gast gebruikt geen lift
+            if (!g.gebruiktLift) {
+                continue;
+            }
 
-            // Check of gast bij lift staat
-            //boolean bijLift = g.huidigVakje.ruimte instanceof Lift;
+            // Gast zit al in lift
+            if (g.inLift) {
+                continue;
+            }
+
+            // Geen positie
+            if (g.huidigVakje == null) {
+                continue;
+            }
+
+            // Controleer of gast naast de lift staat
             boolean bijLift =
                     g.huidigVakje.x == hotel.lift.posX + 1 &&
                             g.huidigVakje.y == hotel.lift.getHuidigeVerdieping();
 
             if (bijLift) {
 
-                // Lift is op deze verdieping
+                // Lift staat op dezelfde verdieping
                 if (lift.getHuidigeVerdieping() == g.huidigVakje.y) {
 
+                    // Gast hoeft niet meer te wachten
                     g.wachtOpLift = false;
-                    // Lift laadt automatisch in via inladen()
 
                 } else {
 
-                    // Wacht op lift
+                    // Gast wacht op lift
                     g.wachtOpLift = true;
                 }
             }

@@ -26,7 +26,8 @@ public class LobbyTest {
         hotel.breedte = 6;
         hotel.hoogte = 4;
 
-        Lift lift = new Lift();
+        Hotel hotel = new Hotel();
+        Lift lift = new Lift(hotel);
         lift.posX = 1; lift.posY = 1; lift.breedte = 1; lift.hoogte = 4;
         hotel.lift = lift;
         hotel.ruimtes.add(lift);
