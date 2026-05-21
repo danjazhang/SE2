@@ -4,8 +4,7 @@ import Model.events.IEventListener;
 import Model.ILogger;
 import Model.persoon.Gast;
 import Model.events.FilmEindEvent;
-
-import Model.GastTerugService;
+import Model.GastRoutingService;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 import java.util.ArrayList;
@@ -13,10 +12,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
-// Bij GOTO_CINEMA logt hij dat een gast binnenkomt
+// Bij GOTO_CINEMA registreert hij de gast
 // Bij START_CINEMA slaat hij de eindtijd op
-// Bij NONE checkt hij elke tick of de film eindigt en maakt FilmEindEvent aan
+// Bij NONE checkt hij elke tick of de film klaar is
 public class Bioscoop extends Ruimte implements IEventListener {
 
     // of er momenteel een film bezig is
@@ -41,7 +39,7 @@ public class Bioscoop extends Ruimte implements IEventListener {
     private ILogger logger;
 
     // service voor het terugsturen van gasten naar hun kamer
-    private GastTerugService gastTerugService;
+    private GastRoutingService gastTerugService;
 
     // constructor met logger
     public Bioscoop(ILogger logger) {
@@ -61,32 +59,32 @@ public class Bioscoop extends Ruimte implements IEventListener {
     }
 
     // stel de terugservice in
-    public void setGastTerugService(GastTerugService gastTerugService) {
+    public void setGastTerugService(GastRoutingService gastTerugService) {
         this.gastTerugService = gastTerugService;
     }
 
     // wordt aangeroepen door EventController als er een library event binnenkomt
     @Override
     public void onEvent(HotelEvent event) {
-        // GOTO_CINEMA: een gast gaat naar de bioscoop, log dat en registreer hem
+        // GOTO_CINEMA: gast komt binnen, registreer hem en log
         if (event.getEventType() == HotelEventType.GOTO_CINEMA) {
             aanwezigeGastIds.add(event.getGuestId());
             if (logger != null) logger.log("[" + event.getTime() + "] Bioscoop: gast " + event.getGuestId() + " komt binnen");
         }
-        // START_CINEMA: film start officieel, sla eindtijd op en log film start
+        // START_CINEMA: film start, sla eindtijd op en log
         else if (event.getEventType() == HotelEventType.START_CINEMA) {
             filmBezig = true;
             filmEindTijd = event.getTime() + FILMDUUR;
             if (logger != null) logger.log("[" + event.getTime() + "] Bioscoop: film start");
         }
-        // NONE: elke tick checkt de bioscoop of de film al voorbij is
+        // NONE: elke tick checkt de bioscoop of de film klaar is
         else if (event.getEventType() == HotelEventType.NONE) {
             int tijd = event.getTime();
-            // als de film bezig is en de eindtijd is bereikt
             if (filmBezig && tijd >= filmEindTijd) {
                 filmBezig = false;
                 FilmEindEvent eindEvent = new FilmEindEvent(tijd, -1);
                 if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Bioscoop: film eindigt");
+
                 // stuur alle aanwezige gasten terug naar hun kamer
                 if (gastTerugService != null) {
                     for (int gastId : aanwezigeGastIds) {

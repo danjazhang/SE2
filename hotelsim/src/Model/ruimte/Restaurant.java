@@ -4,17 +4,16 @@ import Model.events.IEventListener;
 import Model.ILogger;
 import Model.events.RestaurantEindEvent;
 import Model.persoon.Gast;
-
-import Model.GastTerugService;
+import Model.GastRoutingService;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-
-
-// Bij NEED_FOOD slaat hij de eindtijd op
-// Bij NONE checkt hij elke tick of gasten klaar zijn en maakt RestaurantEindEvent aan
+// Bij NEED_FOOD slaat hij de eindtijd op via registreerGast()
+// Bij NONE checkt hij elke tick of gasten klaar zijn
 public class Restaurant extends Ruimte implements IEventListener {
 
     // het maximaal aantal gasten dat het restaurant kan bevatten
@@ -33,7 +32,7 @@ public class Restaurant extends Ruimte implements IEventListener {
     private ILogger logger;
 
     // service voor het terugsturen van gasten naar hun kamer
-    private GastTerugService gastTerugService;
+    private GastRoutingService gastTerugService;
 
     // constructor met logger
     public Restaurant(ILogger logger) {
@@ -47,37 +46,42 @@ public class Restaurant extends Ruimte implements IEventListener {
     }
 
     // stel de terugservice in
-    public void setGastTerugService(GastTerugService gastTerugService) {
+    public void setGastTerugService(GastRoutingService gastTerugService) {
         this.gastTerugService = gastTerugService;
     }
 
     // wordt aangeroepen door GastRoutingService als een gast naar dit restaurant gestuurd wordt
-    // registreert de gast en logt dat hij eten bestelt
     public void registreerGast(int gastId, int tijd) {
         if (eetEindTijden.containsKey(gastId)) return;
-        int eindTijd = tijd + EETDUUR;
-        eetEindTijden.put(gastId, eindTijd);
+        eetEindTijden.put(gastId, tijd + EETDUUR);
         if (logger != null) logger.log("[" + tijd + "] Restaurant: gast " + gastId + " gaat naar restaurant");
     }
 
     // wordt aangeroepen door EventController als er een library event binnenkomt
     @Override
     public void onEvent(HotelEvent event) {
-        // NEED_FOOD: wordt afgehandeld via registreerGast() vanuit GastRoutingService
-        // zodat alleen het restaurant waar de gast naartoe gestuurd wordt logt
-        // NONE: elke tick checkt het restaurant of gasten klaar zijn
+        // NONE: elke tick checkt het restaurant of gasten klaar zijn met eten
         if (event.getEventType() == HotelEventType.NONE) {
             int tijd = event.getTime();
-            eetEindTijden.entrySet().removeIf(entry -> {
-                if (tijd >= entry.getValue()) {
-                    // maak een RestaurantEindEvent aan en log gast klaar
-                    RestaurantEindEvent eindEvent = new RestaurantEindEvent(tijd, entry.getKey());
-                    if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Restaurant: gast " + eindEvent.getGastId() + " klaar");
-                    if (gastTerugService != null) gastTerugService.stuurTerugNaarKamer(eindEvent.getGastId());
-                    return true;
+
+            // verzamel alle gasten die klaar zijn met eten
+            List<Integer> klaar = new ArrayList<>();
+            for (Map.Entry<Integer, Integer> entry : eetEindTijden.entrySet()) {
+
+                int gastId = entry.getKey();
+                int eindTijd = entry.getValue();
+                if (tijd >= eindTijd) {
+                    klaar.add(gastId);
                 }
-                return false;
-            });
+            }
+
+            // verwerk elke klare gast: verwijder uit lijst, log en stuur terug
+            for (int gastId : klaar) {
+                eetEindTijden.remove(gastId);
+                RestaurantEindEvent eindEvent = new RestaurantEindEvent(tijd, gastId);
+                if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Restaurant: gast " + eindEvent.getGastId() + " klaar");
+                if (gastTerugService != null) gastTerugService.stuurTerugNaarKamer(gastId);
+            }
         }
     }
 

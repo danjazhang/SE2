@@ -1,13 +1,13 @@
 package Controller;
 
-import hotelevents.HotelEvent;
-import hotelevents.HotelEventManager;
-import hotelevents.HotelEventListener;
-import hotelevents.HotelEventType;
+
 import Model.*;
 import Model.events.IEventListener;
-import Model.GastTerugService;
 import Model.persoon.Persoon;
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventListener;
+import hotelevents.HotelEventManager;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -76,12 +76,11 @@ public class EventController implements HotelEventListener {
         listeners.clear();
         gastRoutingService = new GastRoutingService(hotel);
         if (hotel == null) return;
-        GastTerugService gastTerugService = new GastTerugService(hotel);
         for (Model.ruimte.Ruimte r : hotel.ruimtes) {
             if (r instanceof IEventListener) registreerListener((IEventListener) r);
-            if (r instanceof Model.ruimte.Restaurant) ((Model.ruimte.Restaurant) r).setGastTerugService(gastTerugService);
-            if (r instanceof Model.ruimte.Fitnessruimte) ((Model.ruimte.Fitnessruimte) r).setGastTerugService(gastTerugService);
-            if (r instanceof Model.ruimte.Bioscoop) ((Model.ruimte.Bioscoop) r).setGastTerugService(gastTerugService);
+            if (r instanceof Model.ruimte.Restaurant) ((Model.ruimte.Restaurant) r).setGastTerugService(gastRoutingService);
+            if (r instanceof Model.ruimte.Fitnessruimte) ((Model.ruimte.Fitnessruimte) r).setGastTerugService(gastRoutingService);
+            if (r instanceof Model.ruimte.Bioscoop) ((Model.ruimte.Bioscoop) r).setGastTerugService(gastRoutingService);
         }
         for (Persoon p : hotel.personen) {
             if (p instanceof IEventListener) registreerListener((IEventListener) p);

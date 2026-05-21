@@ -7,15 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 // Erft van Ruimte en heeft een aantal sterren, een gast en een schoon-status
 public class Kamer extends Ruimte {
 
     // het aantal sterren van de kamer (1 t/m 5)
     public int sterren;
-
-    //kamernummer
     public int kamernummer;
+
 
     // gasten die aan deze kamer gekoppeld zijn (ingecheckt)
     //true = gast is fysiek in de kamer, false = gast is ergens anders maar nog ingecheckt
@@ -26,6 +24,15 @@ public class Kamer extends Ruimte {
 
     // of de kamer bezet is
     private boolean bezet = false;
+    //is de kamer bezet?
+    public boolean isBezet() {
+        return bezet;
+    }
+
+    // zet de kamer als bezet of vrij
+    public void zetBezet(boolean bezet) {
+        this.bezet = bezet;
+    }
 
     // constructor: kamer begint schoon en zonder gast
     public Kamer() {
@@ -42,17 +49,13 @@ public class Kamer extends Ruimte {
 
     // ontkoppelen van kamer
     public void ontkoppelGast(Gast g) {
-        //key is de sleutel/ eerste waarde in een hashmap in dit geval gast
         if (ingecheckteGasten.containsKey(g)) {
-            //als gast nog fysiek in de kamer is, verwijder uit aanwezigen
             if (ingecheckteGasten.get(g)) {
                 verlaat(g);
             }
             ingecheckteGasten.remove(g);
             g.kamer = null;
         }
-
-        //kamer is vies na uitchecken van gasten
         if (ingecheckteGasten.isEmpty()) {
             zetBezet(false);
             schoon = false;
@@ -79,19 +82,9 @@ public class Kamer extends Ruimte {
         this.schoon = true;
     }
 
-    //is de kamer bezet?
-    public boolean isBezet() {
-        return bezet;
-    }
-
-    // zet de kamer als bezet of vrij
-    public void zetBezet(boolean bezet) {
-        this.bezet = bezet;
-    }
 
     //is een specifieke gast in de kamer?
     public boolean isGastAanwezig(Gast g) {
-        //haal waarde op via sleutel (g) als die niet bestaat geeft die (g,false) terug ipv null
         return ingecheckteGasten.getOrDefault(g, false);
     }
 
@@ -111,6 +104,15 @@ public class Kamer extends Ruimte {
             return this;
         }
         return null;
+    }
+
+    // geef een label terug met sterren op basis van het aantal sterren van de kamer
+    public String getSterrenLabel() {
+        String label = "";
+        for (int i = 0; i < sterren; i++) {
+            label += "★";
+        }
+        return label;
     }
 
     public int getKamernummer() {

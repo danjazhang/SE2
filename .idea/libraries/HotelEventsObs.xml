@@ -1,10 +1,9 @@
 <component name="libraryTable">
   <library name="HotelEventsObs">
     <CLASSES>
-      <root url="file://$USER_HOME$/Downloads/HotelEventsObs" />
+      <root url="jar://$PROJECT_DIR$/libs/HotelEventsObs 1/HotelEventsObs.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
-    <jarDirectory url="file://$USER_HOME$/Downloads/HotelEventsObs" recursive="false" />
   </library>
 </component>

@@ -5,7 +5,7 @@ import Model.persoon.Gast;
 import Model.persoon.Persoon;
 import Model.persoon.Schoonmaker;
 
-// Verantwoordelijkheid: personen beheren, aanmaken en zoeken
+// Verantwoordelijkheid: personen beheren
 public class PersonenService {
 
     private Hotel hotel;
@@ -16,9 +16,9 @@ public class PersonenService {
         this.factory = new PersonenFactory();
     }
 
-    // maak een gast aan en voeg toe aan hotel
-    public Gast maakGast(int gastId, Vakje startVakje) {
-        Gast gast = factory.maakGast(gastId, 1, hotel.pathfinder, startVakje);
+    // maak een gast aan met gewenste sterren en voeg toe aan hotel
+    public Gast maakGast(int gastId, int gewensteSterren, Vakje startVakje) {
+        Gast gast = factory.maakGast(gastId, gewensteSterren, hotel.pathfinder, startVakje);
         hotel.voegPersoonToe(gast);
         return gast;
     }

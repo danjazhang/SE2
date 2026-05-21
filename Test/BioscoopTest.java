@@ -1,4 +1,5 @@
 import Model.*;
+import Model.ruimte.Bioscoop;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 import org.junit.jupiter.api.Test;
@@ -6,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BioscoopTest {
+public class BioscoopTest  {
 
     // hulpklasse om logs op te vangen in de test
     static class TestLogger implements ILogger {

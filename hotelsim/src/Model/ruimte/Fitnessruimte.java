@@ -4,8 +4,7 @@ import Model.events.FitnessEindEvent;
 import Model.events.IEventListener;
 import Model.ILogger;
 import Model.persoon.Gast;
-
-import Model.GastTerugService;
+import Model.GastRoutingService;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 import java.util.ArrayList;
@@ -13,9 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 // Bij GOTO_FITNESS slaat hij de eindtijd op
-// Bij NONE checkt hij elke tick of gasten klaar zijn en maakt FitnessEindEvent aan
+// Bij NONE checkt hij elke tick of gasten klaar zijn
 public class Fitnessruimte extends Ruimte implements IEventListener {
 
     // de gasten die momenteel in de fitnessruimte zijn
@@ -31,7 +29,7 @@ public class Fitnessruimte extends Ruimte implements IEventListener {
     private ILogger logger;
 
     // service voor het terugsturen van gasten naar hun kamer
-    private GastTerugService gastTerugService;
+    private GastRoutingService gastTerugService;
 
     // constructor met logger
     public Fitnessruimte(ILogger logger) {
@@ -47,33 +45,40 @@ public class Fitnessruimte extends Ruimte implements IEventListener {
     }
 
     // stel de terugservice in
-    public void setGastTerugService(GastTerugService gastTerugService) {
+    public void setGastTerugService(GastRoutingService gastTerugService) {
         this.gastTerugService = gastTerugService;
     }
 
     // wordt aangeroepen door EventController als er een library event binnenkomt
     @Override
     public void onEvent(HotelEvent event) {
-        // GOTO_FITNESS: een gast gaat sporten, log dat en sla eindtijd op
+        // GOTO_FITNESS: gast gaat sporten, sla eindtijd op en log
         if (event.getEventType() == HotelEventType.GOTO_FITNESS) {
             int gastId = event.getGuestId();
-            int eindTijd = event.getTime() + SPORTDUUR;
-            sportEindTijden.put(gastId, eindTijd);
+            sportEindTijden.put(gastId, event.getTime() + SPORTDUUR);
             if (logger != null) logger.log("[" + event.getTime() + "] Fitness: gast " + gastId + " gaat sporten");
         }
         // NONE: elke tick checkt de fitnessruimte of gasten klaar zijn
         else if (event.getEventType() == HotelEventType.NONE) {
             int tijd = event.getTime();
-            sportEindTijden.entrySet().removeIf(entry -> {
-                if (tijd >= entry.getValue()) {
-                    // maak een FitnessEindEvent aan en log gast klaar
-                    FitnessEindEvent eindEvent = new FitnessEindEvent(tijd, entry.getKey());
-                    if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Fitness: gast " + eindEvent.getGastId() + " klaar");
-                    if (gastTerugService != null) gastTerugService.stuurTerugNaarKamer(eindEvent.getGastId());
-                    return true;
+
+            // verzamel alle gasten die klaar zijn met sporten
+            List<Integer> klaar = new ArrayList<>();
+            for (Map.Entry<Integer, Integer> entry : sportEindTijden.entrySet()) {
+                int gastId = entry.getKey();
+                int eindTijd = entry.getValue();
+                if (tijd >= eindTijd) {
+                    klaar.add(gastId);
                 }
-                return false;
-            });
+            }
+
+            // verwerk elke klare gast: verwijder uit lijst, log en stuur terug
+            for (int gastId : klaar) {
+                sportEindTijden.remove(gastId);
+                FitnessEindEvent eindEvent = new FitnessEindEvent(tijd, gastId);
+                if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Fitness: gast " + eindEvent.getGastId() + " klaar");
+                if (gastTerugService != null) gastTerugService.stuurTerugNaarKamer(gastId);
+            }
         }
     }
 

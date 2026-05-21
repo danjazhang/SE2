@@ -1,7 +1,8 @@
 import Model.Hotel;
 import Model.Pathfinder;
 import Model.layout.Layout;
-import Model.persoon.Schoonmaker;
+import Model.persoon.Gast;
+import Model.persoon.Persoon;
 import Model.ruimte.Kamer;
 import Model.ruimte.Lift;
 import Model.ruimte.Lobby;
@@ -10,6 +11,7 @@ import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LobbyTest {
@@ -18,28 +20,47 @@ public class LobbyTest {
     private Kamer kamer;
     private Lobby lobby;
 
-    // maak een hotel met lift, trap, kamer en lobby voor elke test
+    // =========================================================
+    // SETUP: minimale hotelconfiguratie voor alle tests
+    // =========================================================
     @BeforeEach
     void setUp() {
+
+        // ik doe dit: ik maak een nieuw hotel + basis layout + ruimtes (lift, trap, kamer, lobby)
+        // ik verwacht: dat elke test start met een volledig werkende hotelomgeving zonder afhankelijkheden
+
         hotel = new Hotel();
         hotel.layout = new Layout(6, 4);
         hotel.breedte = 6;
         hotel.hoogte = 4;
 
-        Lift lift = new Lift();
-        lift.posX = 1; lift.posY = 1; lift.breedte = 1; lift.hoogte = 4;
+        Lift lift = new Lift(hotel);
+        lift.posX = 1;
+        lift.posY = 1;
+        lift.breedte = 1;
+        lift.hoogte = 4;
+
         hotel.lift = lift;
         hotel.ruimtes.add(lift);
         hotel.layout.plaatsRuimte(lift);
 
         Trap trap = new Trap(2);
-        trap.posX = 6; trap.posY = 1; trap.breedte = 1; trap.hoogte = 4;
+        trap.posX = 6;
+        trap.posY = 1;
+        trap.breedte = 1;
+        trap.hoogte = 4;
+
         hotel.trap = trap;
         hotel.ruimtes.add(trap);
         hotel.layout.plaatsRuimte(trap);
 
         kamer = new Kamer();
-        kamer.posX = 3; kamer.posY = 1; kamer.breedte = 1; kamer.hoogte = 1;
+        kamer.posX = 3;
+        kamer.posY = 1;
+        kamer.breedte = 1;
+        kamer.hoogte = 1;
+        kamer.sterren = 1;
+
         hotel.ruimtes.add(kamer);
         hotel.layout.plaatsRuimte(kamer);
 
@@ -51,84 +72,196 @@ public class LobbyTest {
         hotel.layout.plaatsRuimte(lobby);
     }
 
-    // constructor: balieX en balieY worden correct ingesteld
-    @Test void testConstructor() {
-        Lobby l = new Lobby(1, 1, 2, 2, 3, 4, null, null);
-        assertEquals(3, l.getBalieX());
-        assertEquals(4, l.getBalieY());
+    // =========================================================
+    // CONSTRUCTOR TEST
+    // =========================================================
+
+    // ik doe dit: ik maak een nieuwe Lobby met vaste waarden
+    // ik verwacht: dat alle properties correct worden opgeslagen (positie, grootte en baliepositie)
+    @Test
+    void testConstructor() {
+
+        Lobby l = new Lobby(1, 2, 3, 4, 5, 6, hotel, null);
+
+        assertEquals(1, l.posX);
+        assertEquals(2, l.posY);
+        assertEquals(3, l.breedte);
+        assertEquals(4, l.hoogte);
+
+        assertEquals(5, l.getBalieX());
+        assertEquals(6, l.getBalieY());
     }
 
-    // erft van Ruimte: posX en posY zijn correct
-    @Test void testErftVanRuimte() {
-        Lobby l = new Lobby(2, 3, 4, 5, 1, 1, null, null);
-        assertEquals(2, l.posX);
-        assertEquals(3, l.posY);
-        assertEquals(4, l.breedte);
-        assertEquals(5, l.hoogte);
-    }
+    // =========================================================
+    // CHECK-IN BRANCH: kamer beschikbaar
+    // =========================================================
 
-    // checkIn: gast wordt aangemaakt en toegevoegd aan hotel
-    @Test void testCheckInMaaktGastAan() {
+    // ik doe dit: ik stuur een CHECK_IN event naar de lobby
+    // ik verwacht: dat er een gast wordt aangemaakt en toegevoegd aan het hotel
+    @Test
+    void testCheckInMaaktGastAan() {
+
         lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+
         assertEquals(1, hotel.personen.size());
+        assertTrue(hotel.personen.get(0) instanceof Gast);
     }
 
-    // checkIn: kamer wordt bezet na check-in
-    @Test void testCheckInZetKamerBezet() {
+    // ik doe dit: ik check een gast in
+    // ik verwacht: dat de kamer direct bezet wordt gezet
+    @Test
+    void testCheckInZetKamerBezet() {
+
         lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+
         assertTrue(kamer.isBezet());
     }
 
-    // checkIn: gast krijgt route naar kamer
-    @Test void testCheckInZetRouteOpGast() {
+    // ik doe dit: ik check een gast in
+    // ik verwacht: dat de gast gekoppeld wordt aan een kamer
+    @Test
+    void testCheckInGastKrijgtKamer() {
+
         lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
-        assertNotNull(hotel.personen.get(0).doelVakje);
+
+        Gast g = (Gast) hotel.personen.get(0);
+        assertEquals(kamer, g.kamer);
     }
 
-    // checkOut: kamer wordt vrijgemaakt na check-out
-    @Test void testCheckOutOntkoppeltGast() {
+    // =========================================================
+    // CHECK-IN BRANCH: geen kamer beschikbaar
+    // =========================================================
+
+    // ik doe dit: ik blokkeer alle kamers zodat geen enkele geldig is
+    // ik verwacht: dat er geen gast wordt aangemaakt omdat geen kamer beschikbaar is
+    @Test
+    void testCheckInGeenKamer() {
+
+        kamer.koppelGast(new Gast(999, 1));
+        kamer.schoon = false;
+
+        Kamer tweede = new Kamer();
+        tweede.sterren = 1;
+        tweede.koppelGast(new Gast(1000, 1));
+        hotel.ruimtes.add(tweede);
+
+        lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 2, 1));
+
+        assertEquals(0, hotel.personen.size());
+    }
+
+    // =========================================================
+    // CHECK-OUT BRANCH
+    // =========================================================
+
+    // ik doe dit: ik check een gast in en daarna uit
+    // ik verwacht: dat de kamer weer vrij wordt
+    @Test
+    void testCheckOutMaaktKamerVrij() {
+
         lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
         lobby.onEvent(new HotelEvent(2, HotelEventType.CHECK_OUT, 1, -1));
+
         assertFalse(kamer.isBezet());
     }
 
-    // checkOut: kamer is vies na check-out
-    @Test void testCheckOutMaaktKamerVies() {
+    // ik doe dit: ik check een gast uit
+    // ik verwacht: dat de kamer vuil wordt na checkout
+    @Test
+    void testCheckOutMaaktKamerVies() {
+
         lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
         lobby.onEvent(new HotelEvent(2, HotelEventType.CHECK_OUT, 1, -1));
+
         assertFalse(kamer.isSchoon());
     }
 
-    // checkOut: schoonmaker maakt kamer schoon na check-out
-    @Test void testCheckOutRoeptSchoonmakerAan() {
-        Schoonmaker s = new Schoonmaker();
-        hotel.voegPersoonToe(s);
+    // ik doe dit: ik check een gast uit
+    // ik verwacht: dat de gast als uitcheckend gemarkeerd wordt
+    @Test
+    void testCheckOutZetUitcheckend() {
+
         lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+        Gast g = (Gast) hotel.personen.get(0);
+
         lobby.onEvent(new HotelEvent(2, HotelEventType.CHECK_OUT, 1, -1));
-        assertTrue(kamer.isSchoon());
+
+        assertTrue(g.uitcheckend);
     }
 
-    // checkOut: geen crash als gast niet bestaat
-    @Test void testCheckOutZonderGastCrashetNiet() {
-        assertDoesNotThrow(() -> lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_OUT, 99, -1)));
+    // =========================================================
+    // SAFE BRANCHES (edge cases zonder crash)
+    // =========================================================
+
+    // ik doe dit: ik stuur een checkout voor een niet-bestaande gast
+    // ik verwacht: dat er geen crash optreedt
+    @Test
+    void testCheckOutZonderGastGeenCrash() {
+
+        assertDoesNotThrow(() ->
+                lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_OUT, 999, -1))
+        );
     }
 
-    // logger: wordt aangeroepen bij check-in
-    @Test void testLoggerWordtAangeroepen() {
-        boolean[] logged = {false};
-        Lobby l = new Lobby(2, 4, 3, 1, 3, 4, hotel, bericht -> logged[0] = true);
-        l.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
-        assertTrue(logged[0]);
-    }
+    // ik doe dit: ik stuur een onbekend event type
+    // ik verwacht: dat het genegeerd wordt
+    @Test
+    void testAnderEventWordtGenegeerd() {
 
-    // setLogger: logger wordt correct ingesteld
-    @Test void testSetLogger() {
-        assertDoesNotThrow(() -> lobby.setLogger(bericht -> {}));
-    }
+        lobby.onEvent(new HotelEvent(1, HotelEventType.EVACUATE, -1, -1));
 
-    // onEvent: andere events worden genegeerd
-    @Test void testAndereEventWordtGenegeerd() {
-        assertDoesNotThrow(() -> lobby.onEvent(new HotelEvent(1, HotelEventType.EVACUATE, -1, -1)));
         assertEquals(0, hotel.personen.size());
+    }
+
+    // =========================================================
+    // LOGGER BRANCH
+    // =========================================================
+
+    // ik doe dit: ik geef een logger mee en trigger check-in
+    // ik verwacht: dat de logger wordt aangeroepen
+    @Test
+    void testLoggerWordtAangeroepen() {
+
+        boolean[] log = {false};
+
+        Lobby l = new Lobby(2, 4, 3, 1, 3, 4, hotel, msg -> log[0] = true);
+
+        l.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+
+        assertTrue(log[0]);
+    }
+
+    // =========================================================
+    // BETREED BRANCH
+    // =========================================================
+
+    // ik doe dit: ik laat een uitcheckende gast de lobby betreden
+    // ik verwacht: dat de gast verwijderd wordt uit het hotel
+    @Test
+    void testUitcheckGastWordtVerwijderd() {
+
+        lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+        Gast g = (Gast) hotel.personen.get(0);
+
+        lobby.onEvent(new HotelEvent(2, HotelEventType.CHECK_OUT, 1, -1));
+
+        int before = hotel.personen.size();
+
+        lobby.betreed(g);
+
+        assertEquals(before - 1, hotel.personen.size());
+    }
+
+    // ik doe dit: ik laat een normale gast de lobby betreden
+    // ik verwacht: dat de gast NIET verwijderd wordt
+    @Test
+    void testNormaleGastBlijftBestaan() {
+
+        lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+        Gast g = (Gast) hotel.personen.get(0);
+
+        lobby.betreed(g);
+
+        assertTrue(hotel.personen.contains(g));
     }
 }
