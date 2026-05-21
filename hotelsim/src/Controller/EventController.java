@@ -1,12 +1,13 @@
 package Controller;
 
-import hotelevents.HotelEvent;
-import hotelevents.HotelEventManager;
-import hotelevents.HotelEventListener;
-import hotelevents.HotelEventType;
+
 import Model.*;
 import Model.events.IEventListener;
 import Model.persoon.Persoon;
+import hotelevents.HotelEvent;
+import hotelevents.HotelEventListener;
+import hotelevents.HotelEventManager;
+
 import java.util.List;
 import java.util.ArrayList;
 

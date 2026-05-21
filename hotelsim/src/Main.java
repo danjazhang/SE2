@@ -7,6 +7,7 @@ import Model.*;
 import hotelevents.HotelEventManager;
 
 // Verantwoordelijkheid: applicatie opstarten en alle listeners registreren
+
 public class Main {
 
     private static SimulatieController simulatieController;
