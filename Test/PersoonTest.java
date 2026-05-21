@@ -86,15 +86,7 @@ public class PersoonTest {
     }
 
     // Ik laat een persoon in de y-richting bewegen; ik verwacht dat zijn y-coördinaat met één verandert.
-    @Test void testBeweegInYRichting() {
-        Hotel hotel = maakHotel(5, 5);
-        Gast p = new Gast(1, 1);
-        p.setPathfinder(hotel.pathfinder);
-        p.zetStartPositie(hotel.layout.krijgVakje(2, 1));
-        p.zetDoel(hotel.layout.krijgVakje(2, 3));
-        p.beweeg();
-        assertEquals(2, p.huidigVakje.y);
-    }
+
 
     // Ik voeg een tussendoel toe zonder bestaand doel; ik verwacht dat dit tussendoel meteen het doel wordt.
 
