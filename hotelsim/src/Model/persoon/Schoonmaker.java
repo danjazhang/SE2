@@ -10,7 +10,7 @@ import Model.ruimte.Kamer;
 public class Schoonmaker extends Persoon {
 
     // aantal ticks dat een schoonmaakbeurt duurt
-    private static final int SCHOONMAAKDUUR = 15;
+    private static final int SCHOONMAAKDUUR = 6;
 
     // of de schoonmaker momenteel bezig is
     public boolean bezig;
