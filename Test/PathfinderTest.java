@@ -20,10 +20,13 @@ public class PathfinderTest {
     private Pathfinder pathfinder;
 
     // -------------------------------------------------
-    // Setup: standaard hotel met lift + trap
+    // SETUP
     // -------------------------------------------------
     @BeforeEach
     void setUp() {
+
+        // ik doe dit: ik bouw een volledig hotel met layout, lift, trap en pathfinder
+        // ik verwacht: dat alle route-berekeningen getest kunnen worden zonder null errors
 
         hotel = new Hotel();
 
@@ -32,7 +35,6 @@ public class PathfinderTest {
         hotel.breedte = 6;
         hotel.hoogte = 4;
 
-        // lift setup
         Lift lift = new Lift(hotel);
         lift.posX = 1;
         lift.posY = 1;
@@ -43,7 +45,6 @@ public class PathfinderTest {
         hotel.ruimtes.add(lift);
         hotel.layout.plaatsRuimte(lift);
 
-        // trap setup
         Trap trap = new Trap(2);
         trap.posX = 6;
         trap.posY = 1;
@@ -59,8 +60,11 @@ public class PathfinderTest {
     }
 
     // -------------------------------------------------
-    // Constructor coverage
+    // CONSTRUCTOR
     // -------------------------------------------------
+
+    // ik doe dit: ik controleer of de pathfinder correct is aangemaakt
+    // ik verwacht: dat het object niet null is
     @Test
     void testConstructor() {
 
@@ -68,30 +72,29 @@ public class PathfinderTest {
     }
 
     // -------------------------------------------------
-    // volgendeStap: horizontaal rechts
+    // HORIZONTALE BEWEGING
     // -------------------------------------------------
+
+    // ik doe dit: ik laat een stap naar rechts berekenen
+    // ik verwacht: dat de x-positie 1 stap opschuift richting doel
     @Test
     void testStapRechts() {
 
         Vakje huidig = hotel.layout.krijgVakje(2, 1);
-
         Vakje doel = hotel.layout.krijgVakje(4, 1);
 
         Vakje stap = pathfinder.volgendeStap(huidig, doel);
 
         assertEquals(3, stap.x);
-
         assertEquals(1, stap.y);
     }
 
-    // -------------------------------------------------
-    // volgendeStap: horizontaal links
-    // -------------------------------------------------
+    // ik doe dit: ik laat een stap naar links berekenen
+    // ik verwacht: dat de route correct 1 stap richting links gaat
     @Test
     void testStapLinks() {
 
         Vakje huidig = hotel.layout.krijgVakje(4, 1);
-
         Vakje doel = hotel.layout.krijgVakje(2, 1);
 
         Vakje stap = pathfinder.volgendeStap(huidig, doel);
@@ -100,27 +103,29 @@ public class PathfinderTest {
     }
 
     // -------------------------------------------------
-    // volgendeStap: zelfde positie (geen beweging)
+    // GEEN BEWEGING
     // -------------------------------------------------
+
+    // ik doe dit: ik geef start en doel dezelfde positie
+    // ik verwacht: dat de positie niet verandert
     @Test
     void testStapGeenBeweging() {
 
         Vakje huidig = hotel.layout.krijgVakje(2, 1);
-
         Vakje doel = hotel.layout.krijgVakje(2, 1);
 
         Vakje stap = pathfinder.volgendeStap(huidig, doel);
 
-        // x blijft gelijk
         assertEquals(2, stap.x);
-
-        // y blijft gelijk
         assertEquals(1, stap.y);
     }
 
     // -------------------------------------------------
-    // volgendeStap: null input branch
+    // NULL SAFETY
     // -------------------------------------------------
+
+    // ik doe dit: ik geef null als huidig vakje
+    // ik verwacht: dat de methode null teruggeeft
     @Test
     void testStapNullHuidig() {
 
@@ -129,6 +134,8 @@ public class PathfinderTest {
         assertNull(pathfinder.volgendeStap(null, doel));
     }
 
+    // ik doe dit: ik geef null als doelvakje
+    // ik verwacht: dat de methode null teruggeeft
     @Test
     void testStapNullDoel() {
 
@@ -138,13 +145,15 @@ public class PathfinderTest {
     }
 
     // -------------------------------------------------
-    // verticale beweging via trap
+    // VERTICALE BEWEGING (TRAP LOGICA)
     // -------------------------------------------------
+
+    // ik doe dit: ik simuleer beweging omhoog via trap
+    // ik verwacht: dat y correct omhoog beweegt richting doelverdieping
     @Test
     void testStapOmhoogViaTrap() {
 
         Vakje huidig = hotel.layout.krijgVakje(6, 1);
-
         huidig.ruimte = hotel.trap;
 
         Vakje doel = hotel.layout.krijgVakje(6, 3);
@@ -152,15 +161,15 @@ public class PathfinderTest {
         Vakje stap = pathfinder.volgendeStap(huidig, doel);
 
         assertEquals(6, stap.x);
-
         assertEquals(2, stap.y);
     }
 
+    // ik doe dit: ik simuleer beweging omlaag via trap
+    // ik verwacht: dat de y-positie correct daalt richting doel
     @Test
     void testStapOmlaagViaTrap() {
 
         Vakje huidig = hotel.layout.krijgVakje(6, 3);
-
         huidig.ruimte = hotel.trap;
 
         Vakje doel = hotel.layout.krijgVakje(6, 1);
@@ -171,24 +180,23 @@ public class PathfinderTest {
     }
 
     // -------------------------------------------------
-    // zetRoute: zelfde verdieping branch
+    // ROUTING LOGICA (GAST)
     // -------------------------------------------------
+
+    // ik doe dit: ik zet route voor gast op zelfde verdieping
+    // ik verwacht: dat doelvakje correct wordt ingesteld
     @Test
     void testZetRouteZelfdeVerdieping() {
 
         Gast g = new Gast(1, 1);
-
         g.setPathfinder(pathfinder);
-
         g.zetStartPositie(hotel.layout.krijgVakje(2, 1));
 
         Kamer k = new Kamer();
-
         k.posX = 4;
         k.posY = 1;
 
         hotel.ruimtes.add(k);
-
         hotel.layout.plaatsRuimte(k);
 
         pathfinder.zetRoute(g, k);
@@ -197,15 +205,17 @@ public class PathfinderTest {
     }
 
     // -------------------------------------------------
-    // zetRoute: null start branch
+    // NULL START EDGE CASE
     // -------------------------------------------------
+
+    // ik doe dit: ik probeer route te zetten zonder startpositie
+    // ik verwacht: dat dit geen crash veroorzaakt
     @Test
     void testZetRouteZonderStart() {
 
         Gast g = new Gast(1, 1);
 
         Kamer k = new Kamer();
-
         k.posX = 4;
         k.posY = 1;
 
@@ -213,24 +223,23 @@ public class PathfinderTest {
     }
 
     // -------------------------------------------------
-    // zetRoute: schoonmaker branch (force trap route)
+    // SCHOONMAKER ROUTE LOGICA
     // -------------------------------------------------
+
+    // ik doe dit: ik zet route voor schoonmaker naar kamer
+    // ik verwacht: dat een geldige route wordt aangemaakt
     @Test
     void testZetRouteSchoonmaker() {
 
         Schoonmaker s = new Schoonmaker();
-
         s.setPathfinder(pathfinder);
-
         s.zetStartPositie(hotel.layout.krijgVakje(2, 1));
 
         Kamer k = new Kamer();
-
         k.posX = 4;
         k.posY = 3;
 
         hotel.ruimtes.add(k);
-
         hotel.layout.plaatsRuimte(k);
 
         pathfinder.zetRoute(s, k);
@@ -239,24 +248,23 @@ public class PathfinderTest {
     }
 
     // -------------------------------------------------
-    // zetRoute: lift branch
+    // LIFT BRANCH
     // -------------------------------------------------
+
+    // ik doe dit: ik zet route voor gast naar andere verdieping
+    // ik verwacht: dat lift-logica wordt gebruikt
     @Test
     void testZetRouteViaLift() {
 
         Gast g = new Gast(1, 1);
-
         g.setPathfinder(pathfinder);
-
         g.zetStartPositie(hotel.layout.krijgVakje(2, 1));
 
         Kamer k = new Kamer();
-
         k.posX = 4;
         k.posY = 3;
 
         hotel.ruimtes.add(k);
-
         hotel.layout.plaatsRuimte(k);
 
         pathfinder.zetRoute(g, k);
@@ -264,37 +272,37 @@ public class PathfinderTest {
         assertTrue(g.gebruiktLift);
     }
 
+    // -------------------------------------------------
+    // EDGE CASE
+    // -------------------------------------------------
 
-    // -------------------------------------------------
-    // schatLiftTijd indirect coverage
-    // -------------------------------------------------
+    // ik doe dit: ik test routeberekening indirect met liftgebruik
+    // ik verwacht: dat de route correct blijft werken zonder crash
     @Test
     void testLiftTijdIndirect() {
 
         Gast g = new Gast(1, 1);
-
         g.setPathfinder(pathfinder);
-
         g.zetStartPositie(hotel.layout.krijgVakje(2, 1));
 
         Kamer k = new Kamer();
-
         k.posX = 4;
         k.posY = 4;
 
         hotel.ruimtes.add(k);
-
         hotel.layout.plaatsRuimte(k);
 
         pathfinder.zetRoute(g, k);
 
-        // force lift branch usage
         assertNotNull(g);
     }
 
     // -------------------------------------------------
-    // extreme null safety branch
+    // EXTREME NULL SAFETY
     // -------------------------------------------------
+
+    // ik doe dit: ik geef null aan beide parameters
+    // ik verwacht: dat de methode veilig null teruggeeft
     @Test
     void testExtremeNullSafety() {
 

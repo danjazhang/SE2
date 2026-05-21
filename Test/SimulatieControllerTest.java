@@ -95,7 +95,7 @@ public class SimulatieControllerTest {
     // Constructor tests
     // -------------------------------------------------
 
-    // Test of constructor werkt
+    // ik doe dit: een SimulatieController maken met manager, eventController en hotelController; ik verwacht dat dit zonder exceptions gebeurt
     @Test
     void testConstructor() {
 
@@ -113,7 +113,7 @@ public class SimulatieControllerTest {
     // Start / stop / pauze tests
     // -------------------------------------------------
 
-    // Test start simulatie
+    // ik doe dit: simulatie starten zonder volledig geïnitialiseerd hotel; ik verwacht een RuntimeException omdat scen1.hotel ontbreekt
     @Test
     void testStart() {
 
@@ -124,13 +124,13 @@ public class SimulatieControllerTest {
                         hotelController
                 );
 
-        // Verwacht exception omdat scen1.hotel ontbreekt
         assertThrows(RuntimeException.class, () -> {
 
             sc.start(1);
         });
     }
-    // Test pauzeren
+
+    // ik doe dit: simulatie pauzeren zonder dat er al iets draait; ik verwacht dat dit geen error geeft
     @Test
     void testPauzeer() {
 
@@ -147,7 +147,7 @@ public class SimulatieControllerTest {
         });
     }
 
-    // Test stoppen
+    // ik doe dit: simulatie stoppen zonder actieve simulatie; ik verwacht een exception omdat er niets gestart is
     @Test
     void testStop() {
 
@@ -158,7 +158,6 @@ public class SimulatieControllerTest {
                         hotelController
                 );
 
-        // Verwacht exception omdat simulatie niet gestart is
         assertThrows(Exception.class, () -> {
 
             sc.stop();
@@ -169,7 +168,7 @@ public class SimulatieControllerTest {
     // Snelheid tests
     // -------------------------------------------------
 
-    // Test snelheid langzaam
+    // ik doe dit: snelheid instellen op "Langzaam"; ik verwacht dat dit geen exceptions veroorzaakt
     @Test
     void testPasSnelheidToeLangzaam() {
 
@@ -186,7 +185,7 @@ public class SimulatieControllerTest {
         });
     }
 
-    // Test snelheid normaal
+    // ik doe dit: snelheid instellen op "Normaal"; ik verwacht dat dit correct verwerkt wordt zonder errors
     @Test
     void testPasSnelheidToeNormaal() {
 
@@ -203,7 +202,7 @@ public class SimulatieControllerTest {
         });
     }
 
-    // Test snelheid snel
+    // ik doe dit: snelheid instellen op "Snel"; ik verwacht dat dit zonder exception wordt toegepast
     @Test
     void testPasSnelheidToeSnel() {
 
@@ -220,7 +219,7 @@ public class SimulatieControllerTest {
         });
     }
 
-    // Test onbekende snelheid
+    // ik doe dit: onbekende snelheid invoeren; ik verwacht fallback/default gedrag zonder crash
     @Test
     void testPasSnelheidToeDefault() {
 
@@ -237,7 +236,7 @@ public class SimulatieControllerTest {
         });
     }
 
-    // Test setSnelheid direct
+    // ik doe dit: directe snelheid zetten op 10; ik verwacht dat dit zonder exceptions lukt
     @Test
     void testSetSnelheid() {
 
@@ -258,7 +257,7 @@ public class SimulatieControllerTest {
     // Tik tests
     // -------------------------------------------------
 
-    // Test tik zonder hotel
+    // ik doe dit: tik uitvoeren zonder hotel; ik verwacht dat de methode veilig returnt zonder crash
     @Test
     void testTikZonderHotel() {
 
@@ -278,7 +277,7 @@ public class SimulatieControllerTest {
         });
     }
 
-    // Test tik met leeg hotel
+    // ik doe dit: tik uitvoeren met leeg hotel; ik verwacht dat simulatie veilig draait zonder errors
     @Test
     void testTikLeegHotel() {
 
@@ -299,13 +298,12 @@ public class SimulatieControllerTest {
         });
     }
 
-    // Test tik zonder lift
+    // ik doe dit: tik uitvoeren zonder lift in hotel; ik verwacht dat dit geen crash veroorzaakt
     @Test
     void testTikZonderLift() {
 
         Hotel hotel = maakHotel();
 
-        // Lift verwijderen
         hotel.lift = null;
 
         hotelController.setHotel(hotel);
@@ -323,35 +321,28 @@ public class SimulatieControllerTest {
         });
     }
 
-    // Test beweging van gast
+    // ik doe dit: gast laten bewegen via tik; ik verwacht dat de gast 1 stap vooruit beweegt richting doel
     @Test
     void testGastBeweegtTijdensTik() {
 
         Hotel hotel = maakHotel();
 
-        // Gast maken
         Gast gast = new Gast(1, 3);
 
-        // Pathfinder koppelen
         gast.setPathfinder(
                 hotel.pathfinder
         );
 
-        // Startpositie
         Vakje start =
                 hotel.layout.krijgVakje(3, 1);
 
-        // Eindpositie
         Vakje doel =
                 hotel.layout.krijgVakje(6, 1);
 
-        // Zet start
         gast.zetStartPositie(start);
 
-        // Zet doel
         gast.zetDoel(doel);
 
-        // Voeg toe aan hotel
         hotel.voegPersoonToe(gast);
 
         hotelController.setHotel(hotel);
@@ -363,17 +354,15 @@ public class SimulatieControllerTest {
                         hotelController
                 );
 
-        // Tick uitvoeren
         sc.tik();
 
-        // Gast moet bewogen zijn
         assertEquals(
                 4,
                 gast.huidigVakje.x
         );
     }
 
-    // Test notify listeners
+    // ik doe dit: listeners registreren en tik uitvoeren; ik verwacht dat alle listeners worden aangeroepen
     @Test
     void testNotifyListeners() {
 
@@ -381,10 +370,8 @@ public class SimulatieControllerTest {
 
         hotelController.setHotel(hotel);
 
-        // Controlevariabele
         boolean[] called = {false};
 
-        // Listener toevoegen
         hotelController.voegListenerToe(() -> {
 
             called[0] = true;
@@ -399,7 +386,6 @@ public class SimulatieControllerTest {
 
         sc.tik();
 
-        // Listener moet uitgevoerd zijn
         assertTrue(called[0]);
     }
 
@@ -407,7 +393,7 @@ public class SimulatieControllerTest {
     // Langzame snelheid tests
     // -------------------------------------------------
 
-    // Test langzaam mode
+    // ik doe dit: snelheid op 0 zetten en meerdere tikken uitvoeren; ik verwacht dat eerste tik wordt overgeslagen en tweede wel uitvoert
     @Test
     void testLangzameSnelheid() {
 
@@ -422,16 +408,13 @@ public class SimulatieControllerTest {
                         hotelController
                 );
 
-        // Zet langzaam
         sc.setSnelheid(0);
 
-        // Eerste tik doet niks
         assertDoesNotThrow(() -> {
 
             sc.tik();
         });
 
-        // Tweede tik voert simulatie uit
         assertDoesNotThrow(() -> {
 
             sc.tik();
@@ -442,7 +425,7 @@ public class SimulatieControllerTest {
     // Snelle snelheid tests
     // -------------------------------------------------
 
-    // Test snelle mode
+    // ik doe dit: snelheid op 4 zetten; ik verwacht dat tik direct meerdere stappen verwerkt zonder crash
     @Test
     void testSnelleSnelheid() {
 
@@ -457,7 +440,6 @@ public class SimulatieControllerTest {
                         hotelController
                 );
 
-        // Zet snelle modus
         sc.setSnelheid(4);
 
         assertDoesNotThrow(() -> {
@@ -470,7 +452,7 @@ public class SimulatieControllerTest {
     // Lift tests
     // -------------------------------------------------
 
-    // Test gast wacht op lift
+    // ik doe dit: gast naast lift plaatsen en tik uitvoeren; ik verwacht dat gast niet meer wacht op lift
     @Test
     void testGastWachtOpLift() {
 
@@ -484,7 +466,6 @@ public class SimulatieControllerTest {
                 hotel.pathfinder
         );
 
-        // Zet gast naast lift
         Vakje vakje =
                 hotel.layout.krijgVakje(
                         hotel.lift.posX + 1,
@@ -506,11 +487,10 @@ public class SimulatieControllerTest {
 
         sc.tik();
 
-        // Gast wacht niet meer
         assertFalse(gast.wachtOpLift);
     }
 
-    // Test gast zit al in lift
+    // ik doe dit: gast in lift plaatsen; ik verwacht dat tik geen exceptions veroorzaakt
     @Test
     void testGastInLift() {
 
@@ -541,7 +521,7 @@ public class SimulatieControllerTest {
     // Uitstappen tests
     // -------------------------------------------------
 
-    // Test gast moet uitstappen
+    // ik doe dit: gast laten uitstappen; ik verwacht dat flag moetUitstappen wordt gereset
     @Test
     void testGastMoetUitstappen() {
 
@@ -568,7 +548,6 @@ public class SimulatieControllerTest {
 
         sc.tik();
 
-        // Flag moet gereset zijn
         assertFalse(gast.moetUitstappen);
     }
 
@@ -576,7 +555,7 @@ public class SimulatieControllerTest {
     // Branch coverage tests
     // -------------------------------------------------
 
-    // Test persoon die geen gast is
+    // ik doe dit: normale persoon toevoegen; ik verwacht dat tik dit object overslaat zonder fouten
     @Test
     void testNormalePersoon() {
 
@@ -602,7 +581,7 @@ public class SimulatieControllerTest {
         });
     }
 
-    // Test gast zonder positie
+    // ik doe dit: gast zonder positie laten bewegen; ik verwacht dat dit geen crash veroorzaakt
     @Test
     void testGastZonderPositie() {
 
@@ -628,11 +607,12 @@ public class SimulatieControllerTest {
             sc.tik();
         });
     }
-    // -------------------------------------------------
-// EXTRA BRANCH COVERAGE TESTS (SimulatieController)
-// -------------------------------------------------
 
-    // Test: hotel == null branch (early return)
+    // -------------------------------------------------
+    // EXTRA BRANCH COVERAGE TESTS (SimulatieController)
+    // -------------------------------------------------
+
+    // ik doe dit: hotel is null in controller; ik verwacht dat tik direct veilig returnt
     @Test
     void testTikHotelNullBranchExtra() {
 
@@ -640,15 +620,13 @@ public class SimulatieControllerTest {
                 new SimulatieController(
                         manager,
                         eventController,
-                        new HotelController() // geen hotel gezet
+                        new HotelController()
                 );
 
-        // Moet direct return doen
         assertDoesNotThrow(sc::tik);
     }
 
-
-    // Test: snelheid = 0 (skip branch in eerste tick)
+    // ik doe dit: langzame snelheid skip branch; ik verwacht dat eerste tick niets doet en tweede wel
     @Test
     void testLangzameSnelheidSkipBranchExtra() {
 
@@ -664,15 +642,12 @@ public class SimulatieControllerTest {
 
         sc.setSnelheid(0);
 
-        // eerste tick -> skip pad (tikTeller % 2 != 0)
         sc.tik();
 
-        // tweede tick -> mag wel uitvoeren
         assertDoesNotThrow(sc::tik);
     }
 
-
-    // Test: snelheid >= 4 (stappen = snelheid branch)
+    // ik doe dit: snelle snelheid branch testen; ik verwacht dat meerdere stappen correct worden uitgevoerd
     @Test
     void testSnelleSnelheidStappenBranchExtra() {
 
@@ -688,18 +663,15 @@ public class SimulatieControllerTest {
 
         sc.setSnelheid(4);
 
-        // raakt: stappen = snelheid
         assertDoesNotThrow(sc::tik);
     }
 
-
-    // Test: geen lift branch (lift == null)
+    // ik doe dit: hotel zonder lift; ik verwacht dat alle lift-logica wordt overgeslagen zonder errors
     @Test
     void testGeenLiftBranchExtra() {
 
         Hotel hotel = maakHotel();
 
-        // BELANGRIJK: lift null branch in beide methods
         hotel.lift = null;
 
         hotelController.setHotel(hotel);
@@ -714,14 +686,12 @@ public class SimulatieControllerTest {
         assertDoesNotThrow(sc::tik);
     }
 
-
-    // Test: persoon is GEEN gast branch (instanceof skip)
+    // ik doe dit: persoon die geen gast is; ik verwacht dat alleen generieke tick logica wordt uitgevoerd
     @Test
     void testNietGastBranchExtra() {
 
         Hotel hotel = maakHotel();
 
-        // Voeg "lege persoon" toe → moet alle Gast-branches skippen
         Persoon p = new Persoon() {};
         hotel.voegPersoonToe(p);
 
@@ -737,8 +707,7 @@ public class SimulatieControllerTest {
         assertDoesNotThrow(sc::tik);
     }
 
-
-    // Test: gast zonder lift gebruik → skip branch
+    // ik doe dit: gast zonder liftgebruik; ik verwacht dat lift-branches worden overgeslagen
     @Test
     void testGastZonderLiftGebruikBranchExtra() {
 
@@ -746,7 +715,7 @@ public class SimulatieControllerTest {
 
         Gast g = new Gast(1, 1);
 
-        g.gebruiktLift = false; // skip branch hier
+        g.gebruiktLift = false;
 
         g.huidigVakje = hotel.layout.krijgVakje(2, 2);
 
@@ -764,8 +733,7 @@ public class SimulatieControllerTest {
         assertDoesNotThrow(sc::tik);
     }
 
-
-    // Test: gast zit al in lift branch (inLift == true)
+    // ik doe dit: gast al in lift; ik verwacht dat lift-logica wordt geskipt zonder fouten
     @Test
     void testGastAlInLiftBranchExtra() {
 
@@ -773,7 +741,7 @@ public class SimulatieControllerTest {
 
         Gast g = new Gast(1, 1);
 
-        g.inLift = true; // skip branch
+        g.inLift = true;
 
         g.gebruiktLift = true;
 
@@ -793,8 +761,7 @@ public class SimulatieControllerTest {
         assertDoesNotThrow(sc::tik);
     }
 
-
-    // Test: gast zonder huidigVakje branch (null guard)
+    // ik doe dit: gast zonder huidig vakje; ik verwacht dat null-safe branches worden geraakt
     @Test
     void testGastZonderVakjeBranchExtra() {
 
@@ -804,7 +771,7 @@ public class SimulatieControllerTest {
 
         g.gebruiktLift = true;
 
-        g.huidigVakje = null; // raakt continue branch
+        g.huidigVakje = null;
 
         hotel.voegPersoonToe(g);
 
@@ -820,8 +787,7 @@ public class SimulatieControllerTest {
         assertDoesNotThrow(sc::tik);
     }
 
-
-    // Test: notifyListeners altijd uitgevoerd branch
+    // ik doe dit: listeners toevoegen en tik uitvoeren; ik verwacht dat notifyListeners altijd wordt uitgevoerd
     @Test
     void testNotifyListenersExtraBranch() {
 
@@ -844,8 +810,7 @@ public class SimulatieControllerTest {
         assertTrue(called[0]);
     }
 
-
-    // Test: meerdere ticks → for-loop branch coverage
+    // ik doe dit: meerdere ticks uitvoeren; ik verwacht volledige for-loop coverage van stappen logica
     @Test
     void testMeerdereStappenBranch() {
 
@@ -861,7 +826,6 @@ public class SimulatieControllerTest {
 
         sc.setSnelheid(4);
 
-        // raakt for (int i = 0; i < stappen; i++)
         sc.tik();
 
         sc.tik();

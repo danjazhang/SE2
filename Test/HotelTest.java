@@ -18,7 +18,7 @@ public class HotelTest {
     // Constructor tests
     // -------------------------------------------------
 
-    // Hotel start met lege lijsten
+    // ik maak een nieuw Hotel object aan; ik verwacht dat de lijsten ruimtes en personen leeg zijn
     @Test
     void testConstructor() {
 
@@ -33,7 +33,7 @@ public class HotelTest {
     // Persoon toevoegen
     // -------------------------------------------------
 
-    // 1 persoon toevoegen
+    // ik voeg één gast toe aan het hotel; ik verwacht dat de personenlijst 1 persoon bevat en dat de gast erin zit
     @Test
     void testVoegPersoonToe() {
 
@@ -48,7 +48,7 @@ public class HotelTest {
         assertTrue(h.personen.contains(g));
     }
 
-    // meerdere personen toevoegen (branch uitbreiding)
+    // ik voeg meerdere gasten toe aan het hotel; ik verwacht dat de personenlijst groeit naar 2
     @Test
     void testVoegMeerderePersonenToe() {
 
@@ -69,7 +69,7 @@ public class HotelTest {
     // Ruimte ophalen (krijgRuimteOp)
     // -------------------------------------------------
 
-    // kamer op correcte positie
+    // ik plaats een kamer op een specifieke positie in de layout; ik verwacht dat die kamer wordt teruggegeven bij dezelfde coördinaten
     @Test
     void testKrijgRuimteOp() {
 
@@ -94,7 +94,7 @@ public class HotelTest {
         assertEquals(k, h.krijgRuimteOp(2, 2));
     }
 
-    // lege plek -> null return branch
+    // ik vraag een vakje op waar geen ruimte ligt; ik verwacht null als resultaat
     @Test
     void testKrijgRuimteOpLeegVakje() {
 
@@ -105,13 +105,11 @@ public class HotelTest {
         assertNull(h.krijgRuimteOp(3, 3));
     }
 
-    // layout is null -> extra branch coverage (null check in methode)
+    // ik roep krijgRuimteOp aan zonder dat er een layout is gezet; ik verwacht een NullPointerException
     @Test
     void testKrijgRuimteOpZonderLayout() {
 
         Hotel h = new Hotel();
-
-        // layout is null
 
         assertThrows(NullPointerException.class, () -> {
 
@@ -119,7 +117,11 @@ public class HotelTest {
         });
     }
 
-    // meerdere ruimtes maar andere positie
+    // extra uitleg:
+    // deze test laat zien dat alleen exact geplaatste ruimtes worden gevonden,
+    // andere posities geven null terug
+
+    // ik plaats een kamer op positie (1,1) maar vraag (2,2) op; ik verwacht null
     @Test
     void testKrijgRuimteOpVerkeerdePositie() {
 
@@ -137,7 +139,6 @@ public class HotelTest {
 
         h.layout.plaatsRuimte(k);
 
-        // andere positie -> null branch
         assertNull(h.krijgRuimteOp(2, 2));
     }
 
@@ -145,7 +146,7 @@ public class HotelTest {
     // Pathfinder tests
     // -------------------------------------------------
 
-    // pathfinder wordt correct gezet
+    // ik initialiseer een pathfinder met een geldig hotel; ik verwacht dat dit zonder errors lukt en niet null is
     @Test
     void testPathfinderInstellen() {
 
@@ -193,13 +194,11 @@ public class HotelTest {
         assertNotNull(h.pathfinder);
     }
 
-    // pathfinder null branch scenario
+    // ik heb nog geen pathfinder gezet in het hotel; ik verwacht dat de waarde null is
     @Test
     void testPathfinderNull() {
 
         Hotel h = new Hotel();
-
-        // nog geen layout of ruimtes
 
         assertNull(h.pathfinder);
     }
@@ -208,7 +207,7 @@ public class HotelTest {
     // Ruimtes lijst branches
     // -------------------------------------------------
 
-    // lege ruimtes lijst branch
+    // ik maak een hotel zonder ruimtes toe te voegen; ik verwacht dat de ruimteslijst leeg is
     @Test
     void testLegeRuimtes() {
 
@@ -223,7 +222,7 @@ public class HotelTest {
     // Personen null/edge cases
     // -------------------------------------------------
 
-    // null persoon toevoegen (branch in add)
+    // ik voeg een null persoon toe aan het hotel; ik verwacht dat de lijst dit accepteert en null bevat
     @Test
     void testVoegNullPersoonToe() {
 
@@ -231,11 +230,10 @@ public class HotelTest {
 
         h.voegPersoonToe(null);
 
-        // lijst accepteert null (Java List gedrag)
         assertTrue(h.personen.contains(null));
     }
 
-    // meerdere null + echte personen
+    // ik voeg een geldige gast en een null waarde toe; ik verwacht dat de lijst beide entries bevat
     @Test
     void testGemengdePersonen() {
 
@@ -254,7 +252,7 @@ public class HotelTest {
     // Layout null branches
     // -------------------------------------------------
 
-    // layout niet gezet -> crash branch
+    // ik voeg een kamer toe zonder layout te zetten; ik verwacht dat krijgRuimteOp een NullPointerException gooit
     @Test
     void testLayoutNullBranch() {
 

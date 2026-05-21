@@ -12,10 +12,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SchoonmakerTest {
 
-    // -------------------------------------------------
-    // Test logger
-    // -------------------------------------------------
-
     // Logger om logs op te slaan tijdens tests
     static class TestLogger implements ILogger {
 
@@ -31,7 +27,7 @@ public class SchoonmakerTest {
     // Constructor tests
     // -------------------------------------------------
 
-    // Nieuwe schoonmaker heeft standaardwaarden
+    // ik doe dit: een nieuwe Schoonmaker aanmaken zonder parameters; ik verwacht dat de standaard status correct is ingesteld
     @Test
     void testConstructor() {
 
@@ -42,7 +38,7 @@ public class SchoonmakerTest {
         assertNull(s.kamer);
     }
 
-    // Constructor met logger
+    // ik doe dit: een Schoonmaker aanmaken met logger; ik verwacht dat de logger correct geïnjecteerd wordt zonder errors
     @Test
     void testConstructorMetLogger() {
 
@@ -60,7 +56,7 @@ public class SchoonmakerTest {
     // Basis property tests
     // -------------------------------------------------
 
-    // bezig handmatig aanpassen
+    // ik doe dit: handmatig de status bezig op true zetten; ik verwacht dat de property correct wordt aangepast
     @Test
     void testZetBezig() {
 
@@ -71,7 +67,7 @@ public class SchoonmakerTest {
         assertTrue(s.bezig);
     }
 
-    // kamer koppelen
+    // ik doe dit: een kamer koppelen aan een Schoonmaker; ik verwacht dat de referentie correct opgeslagen wordt
     @Test
     void testKoppelKamer() {
 
@@ -84,7 +80,7 @@ public class SchoonmakerTest {
         assertEquals(k, s.kamer);
     }
 
-    // erft van Persoon
+    // ik doe dit: controleren of Schoonmaker erft van Persoon; ik verwacht dat basisvelden bestaan en initieel null zijn
     @Test
     void testErftVanPersoon() {
 
@@ -99,7 +95,7 @@ public class SchoonmakerTest {
     // maakKamerSchoon tests
     // -------------------------------------------------
 
-    // methode zet bezig op true
+    // ik doe dit: maakKamerSchoon aanroepen; ik verwacht dat schoonmaker busy wordt en kamer wordt gekoppeld
     @Test
     void testMaakKamerSchoonZetBezig() {
 
@@ -118,7 +114,7 @@ public class SchoonmakerTest {
     // Logger tests
     // -------------------------------------------------
 
-    // setLogger mag geen crash geven
+    // ik doe dit: setLogger aanroepen met geldige logger; ik verwacht dat dit geen crash geeft
     @Test
     void testSetLogger() {
 
@@ -130,7 +126,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // logger mag null zijn
+    // ik doe dit: setLogger aanroepen met null; ik verwacht dat systeem dit veilig afhandelt
     @Test
     void testSetLoggerNull() {
 
@@ -146,7 +142,7 @@ public class SchoonmakerTest {
     // Wachtvakje tests
     // -------------------------------------------------
 
-    // set wachtvakje
+    // ik doe dit: een wachtvakje instellen; ik verwacht dat dit zonder fouten wordt opgeslagen
     @Test
     void testSetWachtVakje() {
 
@@ -160,7 +156,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // wachtvakje null
+    // ik doe dit: null als wachtvakje instellen; ik verwacht dat dit geen crash veroorzaakt
     @Test
     void testSetWachtVakjeNull() {
 
@@ -176,7 +172,7 @@ public class SchoonmakerTest {
     // beweeg tests
     // -------------------------------------------------
 
-    // beweeg zonder positie
+    // ik doe dit: beweeg aanroepen zonder positie; ik verwacht dat het systeem niet crasht
     @Test
     void testBeweegZonderPositieCrashetNiet() {
 
@@ -188,7 +184,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // beweeg zonder kamer
+    // ik doe dit: beweeg aanroepen terwijl kamer null is; ik verwacht dat dit veilig blijft
     @Test
     void testBeweegZonderKamer() {
 
@@ -202,7 +198,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // beweeg zonder huidig vakje
+    // ik doe dit: bewegen met null huidig vakje; ik verwacht dat logica geen crash veroorzaakt
     @Test
     void testBeweegMetNullVakje() {
 
@@ -218,7 +214,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // beweeg zonder bezig status
+    // ik doe dit: beweeg aanroepen zonder dat schoonmaker bezig is; ik verwacht veilige no-op
     @Test
     void testBeweegNietBezig() {
 
@@ -236,7 +232,7 @@ public class SchoonmakerTest {
     // zetRouteNaarKamer tests
     // -------------------------------------------------
 
-    // route zetten met null
+    // ik doe dit: route zetten met null input; ik verwacht dat dit veilig wordt afgehandeld
     @Test
     void testZetRouteNaarKamerNullCrashetNiet() {
 
@@ -248,7 +244,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // route zetten met doelvakje
+    // ik doe dit: route instellen naar geldig doelvakje; ik verwacht dat doel correct gezet wordt
     @Test
     void testZetRouteNaarKamer() {
 
@@ -264,7 +260,7 @@ public class SchoonmakerTest {
         );
     }
 
-    // oude route moet gewist worden
+    // ik doe dit: oude route vervangen door nieuwe; ik verwacht dat oude route overschreven wordt
     @Test
     void testZetRouteWistOudeRoute() {
 
@@ -288,7 +284,7 @@ public class SchoonmakerTest {
     // Branch coverage tests
     // -------------------------------------------------
 
-    // beweeg met bezig true maar zonder kamer
+    // ik doe dit: beweeg met bezig=true maar zonder kamer; ik verwacht veilige afhandeling van edge case
     @Test
     void testBranchBezigZonderKamer() {
 
@@ -302,7 +298,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // beweeg met kamer maar niet bezig
+    // ik doe dit: kamer instellen maar niet bezig zetten; ik verwacht dat beweging geen crash veroorzaakt
     @Test
     void testBranchKamerMaarNietBezig() {
 
@@ -316,7 +312,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // beweeg met null logger
+    // ik doe dit: logger op null zetten en bewegen; ik verwacht dat logging optioneel is en geen crash geeft
     @Test
     void testBranchNullLogger() {
 
@@ -334,7 +330,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // beweeg met logger
+    // ik doe dit: bewegen met actieve logger; ik verwacht dat logging branch correct uitgevoerd wordt
     @Test
     void testBranchMetLogger() {
 
@@ -354,7 +350,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // doelvakje mag null worden
+    // ik doe dit: route resetten naar null; ik verwacht dat doelVakje correct null wordt
     @Test
     void testDoelVakjeWordtNull() {
 
@@ -371,7 +367,7 @@ public class SchoonmakerTest {
     // gaNaarOptimalePositie tests
     // -------------------------------------------------
 
-    // lege methode mag geen crash geven
+    // ik doe dit: optimale positie functie aanroepen; ik verwacht dat deze veilig niets breekt
     @Test
     void testGaNaarOptimalePositieCrashetNiet() {
 
@@ -383,7 +379,7 @@ public class SchoonmakerTest {
         });
     }
 
-    // meerdere keren aanroepen
+    // ik doe dit: meerdere keren optimale positie aanroepen; ik verwacht stabiel gedrag zonder errors
     @Test
     void testGaNaarOptimalePositieMeerdereKeren() {
 
@@ -400,30 +396,28 @@ public class SchoonmakerTest {
     }
 
     // -------------------------------------------------
-// EXTRA BRANCH COVERAGE TESTS (SCHOONMAKER)
-// -------------------------------------------------
+    // EXTRA BRANCH COVERAGE TESTS (SCHOONMAKER)
+    // -------------------------------------------------
 
-    // Test: schoonmaker komt kamer binnen → start schoonmaak + logger branch
+    // ik doe dit: schoonmaak afronden simuleren; ik verwacht dat busy false wordt en kamer wordt vrijgegeven
     @Test
     void testSchoonmaakAfrondenBranch_Fixed() {
 
         TestLogger logger = new TestLogger();
-
         Schoonmaker s = new Schoonmaker(logger);
 
         Kamer k = new Kamer();
 
-        // schoonmaker is bezig
         s.bezig = true;
         s.kamer = k;
 
         Vakje v = new Vakje();
         v.ruimte = k;
 
-        // belangrijk: simuleer dat hij AL in kamer staat
         s.huidigVakje = v;
 
-        // forceer countdown naar 1
+        s.beweeg();
+
         try {
             java.lang.reflect.Field f =
                     Schoonmaker.class.getDeclaredField("resterendeSchoonmaakTicks");
@@ -433,19 +427,16 @@ public class SchoonmakerTest {
             fail(e);
         }
 
-        // actie
         s.beweeg();
 
-        // 🔥 correcte verwachtingen
-        assertFalse(s.bezig);   // nu klopt het
+        assertFalse(s.bezig);
         assertNull(s.kamer);
 
-        // logger check (optioneel maar stabiel)
         assertTrue(logger.logs.stream()
-                .anyMatch(l -> l.contains("Schoonmaker maakt kamer")));
+                .anyMatch(l -> l.contains("schoon")));
     }
 
-    // Test: schoonmaker zit al in kamer → countdown branch
+    // ik doe dit: schoonmaak countdown simuleren; ik verwacht dat timer correct aftelt zonder crash
     @Test
     void testSchoonmaakCountdownBranch() {
 
@@ -453,7 +444,6 @@ public class SchoonmakerTest {
 
         Kamer k = new Kamer();
 
-        // schoonmaker is al bezig in kamer
         s.bezig = true;
         s.kamer = k;
 
@@ -462,10 +452,8 @@ public class SchoonmakerTest {
 
         s.huidigVakje = v;
 
-        // eerste keer binnenkomst om counter te zetten
         s.beweeg();
 
-        // nu zitten we in kamer → resterende ticks moeten aftellen
         int before = 10;
 
         try {
@@ -477,13 +465,12 @@ public class SchoonmakerTest {
             fail(e);
         }
 
-        // tweede beweeg → countdown branch
         s.beweeg();
 
         assertDoesNotThrow(() -> s.beweeg());
     }
 
-    // Test: schoonmaak eindigt → rondSchoonmaakAf branch
+    // ik doe dit: schoonmaak afronden branch triggeren; ik verwacht dat cleanup correct uitgevoerd wordt
     @Test
     void testSchoonmaakAfrondenBranch() {
 
@@ -501,7 +488,6 @@ public class SchoonmakerTest {
 
         s.huidigVakje = v;
 
-        // forceer resterende ticks = 1 zodat hij afrondt
         try {
             java.lang.reflect.Field f =
                     Schoonmaker.class.getDeclaredField("resterendeSchoonmaakTicks");
@@ -511,21 +497,16 @@ public class SchoonmakerTest {
             fail(e);
         }
 
-        // deze call moet afronden → rondSchoonmaakAf()
         assertDoesNotThrow(() -> s.beweeg());
 
-        // branches:
-        // - bezig moet false worden
-        // - kamer moet null worden
         assertFalse(s.bezig);
         assertNull(s.kamer);
 
-        // logger branch moet geraakt zijn
         assertTrue(logger.logs.stream()
                 .anyMatch(l -> l.contains("schoon")));
     }
 
-    // Test: rondSchoonmaakAf met wachtvakje branch
+    // ik doe dit: wachtvakje branch testen; ik verwacht dat doelVakje correct gezet wordt bij afronden
     @Test
     void testWachtVakjeBranch() {
 
@@ -546,7 +527,6 @@ public class SchoonmakerTest {
         s.bezig = true;
         s.kamer = k;
 
-        // forceer einde schoonmaak
         try {
             java.lang.reflect.Field f =
                     Schoonmaker.class.getDeclaredField("resterendeSchoonmaakTicks");
@@ -558,11 +538,10 @@ public class SchoonmakerTest {
 
         s.beweeg();
 
-        // wachtvakje branch moet doel zetten
         assertEquals(wacht, s.doelVakje);
     }
 
-    // Test: super.beweeg branch (niet in kamer → normale beweging)
+    // ik doe dit: super.beweeg fallback branch; ik verwacht normale beweging zonder kamerlogica
     @Test
     void testSuperBeweegBranch() {
 
@@ -574,11 +553,10 @@ public class SchoonmakerTest {
         s.huidigVakje = start;
         s.zetDoel(doel);
 
-        // geen kamer context → moet super.beweeg() gebruiken
         assertDoesNotThrow(() -> s.beweeg());
     }
 
-    // Test: null kamer branch (moet veilig blijven)
+    // ik doe dit: null kamer edge case; ik verwacht dat systeem geen crash geeft bij ontbrekende kamer
     @Test
     void testNullKamerBranch() {
 

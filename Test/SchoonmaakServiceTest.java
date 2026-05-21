@@ -33,7 +33,9 @@ public class SchoonmaakServiceTest {
         hotel.breedte = 6;
         hotel.hoogte = 4;
 
-        // lift (nodig voor Pathfinder)
+        // ik doe dit: ik maak een volledig hotel met layout, lift, trap, kamer en pathfinder
+        // ik verwacht: dat de schoonmaakservice kan werken zonder null errors of ontbrekende dependencies
+
         Lift lift = new Lift(hotel);
         lift.posX = 1;
         lift.posY = 1;
@@ -43,7 +45,6 @@ public class SchoonmaakServiceTest {
         hotel.ruimtes.add(lift);
         hotel.layout.plaatsRuimte(lift);
 
-        // trap
         Trap trap = new Trap(2);
         trap.posX = 6;
         trap.posY = 1;
@@ -53,7 +54,6 @@ public class SchoonmaakServiceTest {
         hotel.ruimtes.add(trap);
         hotel.layout.plaatsRuimte(trap);
 
-        // kamer
         kamer = new Kamer();
         kamer.posX = 3;
         kamer.posY = 4;
@@ -62,10 +62,8 @@ public class SchoonmaakServiceTest {
         hotel.ruimtes.add(kamer);
         hotel.layout.plaatsRuimte(kamer);
 
-        // pathfinder verplicht
         hotel.pathfinder = new Pathfinder(hotel);
 
-        // gast koppelen aan kamer
         Gast gast = new Gast(7, 1);
         gast.setPathfinder(hotel.pathfinder);
         Vakje start = hotel.layout.krijgVakje(2, 4);
@@ -73,13 +71,11 @@ public class SchoonmaakServiceTest {
         kamer.koppelGast(gast);
         hotel.voegPersoonToe(gast);
 
-        // schoonmaker
         schoonmaker = new Schoonmaker();
         schoonmaker.setPathfinder(hotel.pathfinder);
         schoonmaker.setWachtVakje(hotel.layout.krijgVakje(2, 1));
         hotel.voegPersoonToe(schoonmaker);
 
-        // service zonder logger
         service = new SchoonmaakService(hotel, null);
     }
 
@@ -87,27 +83,25 @@ public class SchoonmaakServiceTest {
     // 1. HAPPY PATH: CLEANING_EMERGENCY werkt volledig
     // =========================================================
     @Test
+    // ik doe dit: ik trigger een CLEANING_EMERGENCY event voor een bestaande gast
+    // ik verwacht: dat een vrije schoonmaker wordt toegewezen aan de kamer van de gast
     void testCleaningEmergencyVolledigeFlow() {
 
-        // event dat een schoonmaak-noodgeval triggert
         HotelEvent event =
                 new HotelEvent(5, HotelEventType.CLEANING_EMERGENCY, 7, -1);
 
         service.onEvent(event);
 
-        // schoonmaker moet toegewezen worden
         assertTrue(schoonmaker.bezig);
-
-        // kamer moet correct gekoppeld zijn
         assertEquals(kamer, schoonmaker.kamer);
-
-        // we testen NIET intern pathing state → dat is Pathfinder verantwoordelijkheid
     }
 
     // =========================================================
     // 2. EVENT TYPE WORDT GEGENOREERD
     // =========================================================
     @Test
+    // ik doe dit: ik stuur een ander event type dan CLEANING_EMERGENCY
+    // ik verwacht: dat de schoonmaakservice niets verandert
     void testAnderEventWordtGenegeerd() {
 
         HotelEvent event =
@@ -115,7 +109,6 @@ public class SchoonmaakServiceTest {
 
         service.onEvent(event);
 
-        // niets mag gebeuren
         assertFalse(schoonmaker.bezig);
         assertNull(schoonmaker.kamer);
     }
@@ -124,6 +117,8 @@ public class SchoonmaakServiceTest {
     // 3. hotel.pathfinder == null branch
     // =========================================================
     @Test
+    // ik doe dit: ik zet de pathfinder op null en trigger een schoonmaak event
+    // ik verwacht: dat de service veilig faalt zonder schoonmaker aan te passen
     void testZonderPathfinder() {
 
         hotel.pathfinder = null;
@@ -140,6 +135,8 @@ public class SchoonmaakServiceTest {
     // 4. gast niet gevonden branch
     // =========================================================
     @Test
+    // ik doe dit: ik geef een gastId die niet bestaat in het hotel
+    // ik verwacht: dat er geen schoonmaker wordt toegewezen
     void testGastNietGevonden() {
 
         HotelEvent event =
@@ -154,6 +151,8 @@ public class SchoonmaakServiceTest {
     // 5. gast zonder kamer branch
     // =========================================================
     @Test
+    // ik doe dit: ik voeg een gast toe zonder kamer en trigger een schoonmaak event
+    // ik verwacht: dat de service niets kan doen en schoonmaker vrij blijft
     void testGastZonderKamer() {
 
         Gast losseGast = new Gast(100, 1);
@@ -171,9 +170,10 @@ public class SchoonmaakServiceTest {
     // 6. geen vrije schoonmaker branch
     // =========================================================
     @Test
+    // ik doe dit: ik zet de enige schoonmaker op bezet
+    // ik verwacht: dat er geen nieuwe schoonmaaktaak wordt gestart
     void testGeenVrijeSchoonmaker() {
 
-        // maak schoonmaker bezet
         schoonmaker.bezig = true;
 
         HotelEvent event =
@@ -181,7 +181,6 @@ public class SchoonmaakServiceTest {
 
         service.onEvent(event);
 
-        // status mag niet veranderen
         assertTrue(schoonmaker.bezig);
         assertNull(schoonmaker.kamer);
     }
@@ -190,6 +189,8 @@ public class SchoonmaakServiceTest {
     // 7. LOGGER NULL branch
     // =========================================================
     @Test
+    // ik doe dit: ik maak een service zonder logger en trigger een event
+    // ik verwacht: dat er geen crash optreedt en logica nog werkt
     void testZonderLoggerGeenCrash() {
 
         SchoonmaakService s =
@@ -207,6 +208,8 @@ public class SchoonmaakServiceTest {
     // 8. LOGGER WEL ACTIEF branch
     // =========================================================
     @Test
+    // ik doe dit: ik geef een actieve logger mee aan de service
+    // ik verwacht: dat er logging gebeurt tijdens event verwerking
     void testMetLogger() {
 
         StringBuilder log = new StringBuilder();
@@ -219,7 +222,6 @@ public class SchoonmaakServiceTest {
 
         s.onEvent(event);
 
-        // logger moet iets hebben geschreven
         assertTrue(log.length() > 0);
     }
 
@@ -227,6 +229,8 @@ public class SchoonmaakServiceTest {
     // 9. MEERDERE EVENTS (stress branch coverage)
     // =========================================================
     @Test
+    // ik doe dit: ik stuur meerdere events achter elkaar (CHECK_IN + CLEANING_EMERGENCY)
+    // ik verwacht: dat alleen CLEANING_EMERGENCY effect heeft op schoonmaker
     void testMeerdereEventsAchterElkaar() {
 
         HotelEvent e1 =
@@ -235,8 +239,8 @@ public class SchoonmaakServiceTest {
         HotelEvent e2 =
                 new HotelEvent(2, HotelEventType.CLEANING_EMERGENCY, 7, -1);
 
-        service.onEvent(e1); // wordt genegeerd
-        service.onEvent(e2); // wordt verwerkt
+        service.onEvent(e1);
+        service.onEvent(e2);
 
         assertTrue(schoonmaker.bezig);
     }
@@ -245,6 +249,8 @@ public class SchoonmaakServiceTest {
     // 10. SERVICE HERGEBRUIK (setLogger branch)
     // =========================================================
     @Test
+    // ik doe dit: ik verander de logger via setLogger en trigger daarna een event
+    // ik verwacht: dat de nieuwe logger effectief gebruikt wordt
     void testSetLogger() {
 
         StringBuilder log = new StringBuilder();
