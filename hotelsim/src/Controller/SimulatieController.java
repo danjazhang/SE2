@@ -118,10 +118,17 @@ public class SimulatieController {
             for (Persoon p : copy) {
                 p.beweeg();
             }
-        }
 
-        // Update listeners / UI
-        hotelController.notifyListeners();
+            // Update listeners / UI na elke stap
+            hotelController.notifyListeners();
+
+            //kleine pauze zodat repaint zichtbaar wordt
+            try {
+                Thread.sleep(225);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     // Verwerk gasten die net uit de lift zijn gekomen
