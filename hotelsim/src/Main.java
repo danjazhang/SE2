@@ -1,5 +1,3 @@
-package Controller;
-
 import Controller.EventController;
 import Controller.HotelController;
 import Controller.SimulatieController;
