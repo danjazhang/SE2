@@ -62,7 +62,7 @@ public class RestaurantExtraTest {
         hotel.layout = new Layout(6, 4);
         hotel.breedte = 6;
         hotel.hoogte = 4;
-        Lift lift = new Lift();
+        Lift lift = new Lift(hotel);
         lift.posX = 1; lift.posY = 1; lift.breedte = 1; lift.hoogte = 4;
         hotel.lift = lift;
         hotel.ruimtes.add(lift);

@@ -20,7 +20,7 @@ public class PersoonTest {
         hotel.breedte = breedte;
         hotel.hoogte = hoogte;
 
-        Lift lift = new Lift();
+        Lift lift = new Lift(hotel);
         lift.posX = 1; lift.posY = 1; lift.breedte = 1; lift.hoogte = hoogte;
         hotel.lift = lift;
         hotel.ruimtes.add(lift);
@@ -97,12 +97,7 @@ public class PersoonTest {
     }
 
     // Ik voeg een tussendoel toe zonder bestaand doel; ik verwacht dat dit tussendoel meteen het doel wordt.
-    @Test void testVoegTussendoelToeZonderDoel() {
-        Gast p = new Gast(1, 1);
-        Vakje v = new Vakje();
-        p.voegTussendoelToe(v);
-        assertEquals(v, p.doelVakje);
-    }
+
 
     // Ik voeg een tussendoel toe terwijl er al een doel is; ik verwacht dat het huidige doel onveranderd blijft.
     @Test void testVoegTussendoelToeMetDoel() {

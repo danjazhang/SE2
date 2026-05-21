@@ -51,7 +51,7 @@ public class HotelTest {
         h.layout = new Layout(5, 3);
         h.breedte = 5;
         h.hoogte = 3;
-        Lift lift = new Lift();
+        Lift lift = new Lift(h);
         lift.posX = 1; lift.posY = 1; lift.breedte = 1; lift.hoogte = 3;
         h.ruimtes.add(lift);
         h.layout.plaatsRuimte(lift);
