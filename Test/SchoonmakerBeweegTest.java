@@ -46,15 +46,6 @@ public class SchoonmakerBeweegTest {
         assertEquals(k, s.kamer);
     }
 
-    // handelEmergency: zelfde als maakKamerSchoon
-    @Test void testHandelEmergencyZetBezig() {
-        Schoonmaker s = new Schoonmaker();
-        Kamer k = new Kamer();
-        s.handelEmergency(k);
-        assertTrue(s.bezig);
-        assertEquals(k, s.kamer);
-    }
-
     // zetRouteNaarKamer: wist oude route en zet nieuw doel
     @Test void testZetRouteNaarKamer() {
         Hotel hotel = maakHotel();

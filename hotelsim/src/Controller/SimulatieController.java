@@ -29,9 +29,9 @@ public class SimulatieController {
         this.hotelController = hotelController;
     }
 
-    public void start() {
-        // start de library op basisinstelling, snelheid van personen regelen we zelf in tik()
-        eventManager.start(1);
+    // start de simulatie met het opgegeven scenario (1 t/m 4)
+    public void start(int scenario) {
+        eventManager.start(scenario);
     }
 
     public void pauzeer() {
