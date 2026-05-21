@@ -68,7 +68,7 @@ public class LayoutView extends JPanel implements ModelListener {
                 }
 
 
-                else if (r instanceof Restaurant) g.setColor(new Color(228, 223, 235));
+                else if (r instanceof Restaurant) g.setColor(new Color(220, 193, 185));
                 else if (r instanceof Bioscoop) g.setColor(new Color(247, 234, 219));
                 else if (r instanceof Fitnessruimte) g.setColor(new Color(235, 241, 223));
                 else if (r instanceof Lift) g.setColor(new Color(171, 87, 81));
