@@ -1,19 +1,17 @@
 package Model;
-
 import Model.layout.Layout;
 import Model.layout.Vakje;
+import Model.persoon.Gast;
 import Model.persoon.Persoon;
-import Model.ruimte.Lift;
-import Model.ruimte.Ruimte;
-import Model.ruimte.Trap;
+import Model.persoon.Schoonmaker;
+import Model.ruimte.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
-// Verantwoordelijkheid: routes berekenen tussen twee vakjes via lift of trap
 public class Pathfinder {
 
+    // Referentie naar layout
     private Layout layout;
+
+    // Referentie naar hotel
     private Hotel hotel;
 
     public Pathfinder(Hotel hotel) {
@@ -21,88 +19,200 @@ public class Pathfinder {
         this.layout = hotel.layout;
     }
 
+    // Bepaal volgende stap richting doel
     public Vakje volgendeStap(Vakje huidig, Vakje doel) {
-        //haal x en y coordinaten om mee te rekenen
-        int huidigX = huidig.x;
-        int huidigY = huidig.y;
-        int doelX = doel.x;
-        int doelY = doel.y;
 
-    
-        //beginnen met nieuwe positie gelijk aan huidige en dan aanpassen
-        int nieuweX = huidigX;
-        int nieuweY = huidigY;
-
-        //beweeg 1 stap in x of y richting
-        if (huidigX < doelX) nieuweX++;
-        else if (huidigX > doelX) nieuweX--;
-        else if (huidigY < doelY) nieuweY++;
-        else if (huidigY > doelY) nieuweY--;
-
-        //zoek vakje op nieuwe positie via layout
-        return layout.krijgVakje(nieuweX, nieuweY);
-    }
-
-    // bereken route van persoon naar ruimte en zet die op de persoon
-    public void zetRoute(Persoon persoon, Ruimte ruimte) {
-        Vakje start = persoon.huidigVakje;
-        Vakje doel = layout.krijgVakje(ruimte.posX, ruimte.posY);
-        if (start == null || doel == null) return;
-        List<Vakje> route = berekenRoute(start, doel);
-        persoon.zetDoel(route.get(0));
-        for (int i = 1; i < route.size(); i++) {
-            persoon.voegTussendoelToe(route.get(i));
+        // Ongeldige input
+        if (huidig == null || doel == null) {
+            return null;
         }
-    }
 
-    // zoek het trap vakje op een bepaalde verdieping op
-    private Vakje vindTrapVakje(int verdieping) {
-        for (Ruimte r : hotel.ruimtes) {
-            if (r instanceof Trap) {
-                return layout.krijgVakje(r.posX, verdieping);
+        int x = huidig.x;
+        int y = huidig.y;
+
+        // Zelfde verdieping
+        // Alleen horizontaal bewegen
+        if (y == doel.y) {
+
+            // Naar rechts
+            if (x < doel.x) {
+                x++;
             }
+
+            // Naar links
+            else if (x > doel.x) {
+                x--;
+            }
+
+            return layout.krijgVakje(x, y);
         }
+
+        // Persoon staat op trap
+        // Verticale beweging mogelijk
+        if (huidig.ruimte instanceof Trap) {
+
+            // Omhoog
+            if (y < doel.y) {
+                y++;
+            }
+
+            // Omlaag
+            else if (y > doel.y) {
+                y--;
+            }
+            return layout.krijgVakje(x, y);
+        }
+
+        // Geen geldige stap
         return null;
     }
 
-    // zoek het lift vakje op een bepaalde verdieping op
-    private Vakje vindLiftVakje(int verdieping) {
-        for (Ruimte r : hotel.ruimtes) {
-            if (r instanceof Lift) {
-                return layout.krijgVakje(r.posX, verdieping);
-            }
+    // Zet route naar ruimte
+    public void zetRoute(Persoon p, Ruimte bestemming) {
+
+        Vakje start = p.huidigVakje;
+        Vakje doel = layout.krijgVakje( bestemming.posX, bestemming.posY );
+
+        // Ongeldige start/doel
+        if (start == null || doel == null) {
+            return;
         }
-        return null;
-    }
 
-    // kies willekeurig tussen lift en trap
-    public List<Vakje> berekenRoute(Vakje start, Vakje doel) {
-         List<Vakje> route = new ArrayList<>();
+        // Sla eindbestemming op bij gast
+        if (p instanceof Gast g) {
+            g.eindbestemming = bestemming;
+        }
 
-        boolean gebruikLift = Math.random() < 0.5;
+        // Zelfde verdieping
+        // Direct lopen
+        if (start.y == doel.y) {
+            p.zetDoel(doel);
+            return;
+        }
 
-        // stap 1: ga naar lift of trap op huidige verdieping
-        Vakje transport;
-        if (gebruikLift) {
-            transport = vindLiftVakje(start.y);
+        // Schoonmakers gebruiken altijd trap
+        if (p instanceof Schoonmaker) {
+            routeViaTrap(p, start, doel);
+            return;
+        }
+
+        // Bereken geschatte reistijden
+        int trapTijd = Math.abs(start.y - doel.y) * hotel.trap.tijdperverdieping;
+        int liftTijd = schatLiftTijd(start, doel);
+
+        // Gebruik lift bij lagere tijd Of bij groot hoogteverschil
+        if ( liftTijd < trapTijd || Math.abs(start.y - doel.y) > 4 ) {
+            routeViaLift(p, start, doel);
         } else {
-            transport = vindTrapVakje(start.y);
+            routeViaTrap(p, start, doel);
         }
-        if (transport != null) route.add(transport);
+    }
 
-        // stap 2: ga naar de doelverdieping
-        if (start.y != doel.y) {
-            Vakje transportOpDoel;
-            if (gebruikLift) {
-                transportOpDoel = vindLiftVakje(doel.y);
-            } else {
-                transportOpDoel = vindTrapVakje(doel.y);
+    // Vind wachtplek naast lift
+    private Vakje vindLiftWachtplek(int y) {
+
+        for (Ruimte r : hotel.ruimtes) {
+
+            if (r instanceof Lift) {
+
+                // Vakje rechts van lift
+                return layout.krijgVakje(
+                        r.posX + 1,
+                        y
+                );
             }
-            if (transportOpDoel != null) route.add(transportOpDoel);
+        }
+        return null;
+    }
+
+    // Route via lift
+    private void routeViaLift( Persoon p, Vakje start, Vakje doel ) {
+
+        Gast g = (Gast) p;
+
+        // Zoek liftplek
+        Vakje liftVakje =
+                vindLiftWachtplek(start.y);
+
+        // Geen lift gevonden
+        if (liftVakje == null) {
+            routeViaTrap(p, start, doel);
+            return;
         }
 
-        // stap 3: einddoel
-        route.add(doel);
-        return route;
+        // Zet liftstatus
+        g.gebruiktLift = true;
+        g.gewensteVerdieping = doel.y;
+
+        // Loop eerst naar lift
+        p.zetDoel(liftVakje);
+
+        // Roep lift op
+        hotel.lift.roep(p, start.y);
+    }
+
+    // Route via trap
+    private void routeViaTrap( Persoon p, Vakje start, Vakje doel ) {
+
+        // Trap op huidige verdieping
+        Vakje trap1 = vindTrap(start.y);
+
+        // Trap op doelverdieping
+        Vakje trap2 = vindTrap(doel.y);
+
+        // Eerst naar eerste trap
+        if (trap1 != null) {
+            p.zetDoel(trap1);
+        }
+
+        // Daarna naar tweede trap
+        if ( trap2 != null && !trap2.equals(trap1) ) {
+            p.voegTussendoelToe(trap2);
+        }
+
+        // Uiteindelijk naar doel
+        p.voegTussendoelToe(doel);
+    }
+
+    // Schatting lift reistijd
+    private int schatLiftTijd( Vakje start, Vakje doel ) {
+
+        Lift lift = hotel.lift;
+
+        // Wachttijd tot lift aankomt
+        int wacht = Math.abs( lift.getHuidigeVerdieping() - start.y );
+
+        // Reistijd in lift
+        int rit = Math.abs(start.y - doel.y);
+
+        // Grootte wachtrij
+        int queue = lift.aantalWachtend(start.y);
+
+        return wacht + rit + queue;
+    }
+
+    // Vind liftvakje
+    private Vakje vindLift(int y) {
+
+        for (Ruimte r : hotel.ruimtes) {
+
+            if (r instanceof Lift) {
+                return layout.krijgVakje( r.posX, y );
+            }
+        }
+
+        return null;
+    }
+
+    // Vind trapvakje
+    private Vakje vindTrap(int y) {
+
+        for (Ruimte r : hotel.ruimtes) {
+
+            if (r instanceof Trap) {
+                return layout.krijgVakje( r.posX, y );
+            }
+        }
+        return null;
     }
 }
