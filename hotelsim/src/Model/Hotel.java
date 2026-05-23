@@ -34,6 +34,9 @@ public class Hotel {
     public Trap trap;
     public Lobby lobby;
 
+    // of het brandalarm momenteel actief is
+    public boolean brandalarmActief = false;
+
     // constructor: maak lege lijsten aan
     public Hotel() {
         ruimtes = new ArrayList<>();

@@ -37,6 +37,15 @@ public class HotelView extends JFrame {
     //event controller voor het registreren van listeners
     private EventController eventController;
 
+    // label dat de gebruikstijd toont naast de import knop
+    private JLabel tijdLabel = new JLabel("Tijd: 00:00:00");
+
+    // teller in seconden voor de gebruikstijd
+    private int verstrekenSeconden = 0;
+
+    // swing timer die elke seconde de gebruikstijd bijwerkt
+    private Timer gebruikstijdTimer;
+
     //constructor
     public HotelView(HotelController hotelController, EventLogView eventLogView, EventController eventController, SimulatieController simulatieController) {
 
@@ -54,6 +63,15 @@ public class HotelView extends JFrame {
 
         panel = new LayoutView(hotel);
         layoutSelector = new JComboBox<>();
+
+        // maak de timer aan die elke seconde de tijd bijwerkt
+        gebruikstijdTimer = new Timer(1000, (ActionEvent e) -> {
+            verstrekenSeconden++;
+            int uren = verstrekenSeconden / 3600;
+            int minuten = (verstrekenSeconden % 3600) / 60;
+            int sec = verstrekenSeconden % 60;
+            tijdLabel.setText(String.format("Tijd: %02d:%02d:%02d", uren, minuten, sec));
+        });
 
         // =========================
         // IMPORT BUTTON
@@ -118,12 +136,16 @@ public class HotelView extends JFrame {
             //haal het gekozen scenario op uit de simulatieview en start daarmee
             int scenario = simulatieView.getGekozenScenario();
             simulatieController.start(scenario);
+            // start de gebruikstijd timer mee met de simulatie
+            gebruikstijdTimer.start();
         });
 
         // =========================
         // UI
         // =========================
         JPanel top = new JPanel();
+        // voeg tijdlabel toe als eerste zodat het links naast import layout staat
+        top.add(tijdLabel);
         top.add(importButton);
         top.add(layoutSelector);
         top.add(startButton);
@@ -135,6 +157,32 @@ public class HotelView extends JFrame {
         //maak de simulatieview
         simulatieView = new SimulatieView(simulatieController);
         top.add(simulatieView);
+
+        // stel de pauze callback in zodat de timer ook pauzeert
+        simulatieView.setOnPauze((gepauzeerd) -> {
+            if (gepauzeerd) {
+                gebruikstijdTimer.stop();
+            } else {
+                gebruikstijdTimer.start();
+            }
+        });
+
+        // stel de reset callback in: wis alles en zet scherm terug naar beginstaat
+        simulatieView.setOnReset(() -> {
+            // stop en reset de gebruikstijd timer
+            gebruikstijdTimer.stop();
+            verstrekenSeconden = 0;
+            tijdLabel.setText("Tijd: 00:00:00");
+            // wis de layout dropdown
+            layoutSelector.removeAllItems();
+            // zet het panel terug naar een leeg hotel
+            Hotel leegHotel = new Hotel();
+            hotelController.setHotel(leegHotel);
+            this.hotel = leegHotel;
+            panel.setHotel(leegHotel);
+            // wis de eventlog
+            eventLogView.getLogArea().setText("");
+        });
 
         //toon de eventlog links zonder horizontale scrollbar
         JScrollPane zijLog = new JScrollPane(eventLogView.getLogArea(),
