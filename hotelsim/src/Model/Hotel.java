@@ -50,6 +50,7 @@ public class Hotel {
 
     // geef de ruimte op positie (x, y) terug
     public Ruimte krijgRuimteOp(int x, int y) {
+        if (layout== null) return null;
         Vakje vakje = layout.krijgVakje(x, y);
         if (vakje != null) return vakje.ruimte;
         return null;
