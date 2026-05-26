@@ -66,9 +66,14 @@ public class HotelView extends JFrame {
 
         // -> betekent dat als het stukje ervoor wordt aangeroepen dat het stuk erna gebeurt
         panel.setOnLobbyClick(() -> {
+            // pauzeert de simulatie en stopt de timer voordat het venster opent
+            simulatieController.pauzeer();
+            gebruikstijdTimer.stop();
             // gebruik this.hotel zodat altijd het meest recente hotel gebruikt wordt
             LobbyOverzichtView view = new LobbyOverzichtView(this.hotel, simulatieController);
             view.setVisible(true);
+            // hervat de timer nadat het venster gesloten is
+            gebruikstijdTimer.start();
         });
 
         // maak de timer aan die elke seconde de tijd bijwerkt

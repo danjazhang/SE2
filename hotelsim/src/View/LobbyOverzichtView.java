@@ -19,6 +19,7 @@ public class LobbyOverzichtView extends JDialog {
     private JTextArea linksArea;
     private JTextArea rechtsArea;
     private Timer refreshTimer;
+    private boolean gesloten = false;
 
     public LobbyOverzichtView(Hotel hotel, SimulatieController simulatieController) {
         super((JFrame) null, "Hotel Observatie Scherm", true);
@@ -41,7 +42,7 @@ public class LobbyOverzichtView extends JDialog {
 
         // splits het venster in twee gelijke kolommen
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                new JScrollPane(linksArea),
+                linksArea,
                 new JScrollPane(rechtsArea));
         splitPane.setDividerLocation(550);
         splitPane.setResizeWeight(0.5);
@@ -53,9 +54,6 @@ public class LobbyOverzichtView extends JDialog {
         JPanel bottom = new JPanel();
         bottom.add(sluitButton);
         add(bottom, BorderLayout.SOUTH);
-
-        // pauzeert de simulatie zodra het venster opent
-        if (simulatieController != null) simulatieController.pauzeer();
 
         // elke seconde de weergave verversen
         refreshTimer = new Timer(1000, e -> updateView());
@@ -222,9 +220,12 @@ public class LobbyOverzichtView extends JDialog {
         return count;
     }
 
-    // stop de timer en pauzeert de simulatie bij sluiten
+    // stop de timer en hervat de simulatie bij sluiten
     @Override
     public void dispose() {
+        //zorgt ervoor dat dispose maar 1x wordt aangeroepen
+        if (gesloten) return;
+        gesloten = true;
         if (refreshTimer != null) refreshTimer.stop();
         if (simulatieController != null) simulatieController.pauzeer();
         super.dispose();
