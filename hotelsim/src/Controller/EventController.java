@@ -3,6 +3,7 @@ package Controller;
 import Model.*;
 import Model.events.IEventListener;
 import Model.persoon.Persoon;
+import Model.persoon.Schoonmaker;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventListener;
 import hotelevents.HotelEventManager;
@@ -90,6 +91,12 @@ public class EventController implements HotelEventListener {
         if (hotelController == null || hotelController.getHotel() == null) return;
 
         Hotel hotel = hotelController.getHotel();
+
+        for (Persoon p : hotel.personen) {
+            if (p instanceof Schoonmaker) {
+                ((Schoonmaker) p).setHuidigeTijd(evt.getTime());
+            }
+        }
 
         // tijdens brandalarm geen nieuwe activiteiten sturen naar gasten
         if (!hotel.brandalarmActief) {

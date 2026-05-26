@@ -42,4 +42,28 @@ public class PersonenService {
         }
         return null;
     }
+
+    // geef bij check-out de voorkeur aan de gewone schoonmaker,
+    // maar val terug op eender welke vrije schoonmaker als dat nodig is
+    public Schoonmaker vindVrijeSchoonmakerVoorCheckOut() {
+        Schoonmaker fallback = null;
+        for (Persoon p : hotel.personen) {
+            if (!(p instanceof Schoonmaker schoonmaker) || schoonmaker.bezig) continue;
+            if (!schoonmaker.isNoodSchoonmaker()) return schoonmaker;
+            if (fallback == null) fallback = schoonmaker;
+        }
+        return fallback;
+    }
+
+    // geef bij een noodgeval de voorkeur aan de noodschoonmaker,
+    // maar val terug op een andere vrije schoonmaker als die al bezig is
+    public Schoonmaker vindVrijeSchoonmakerVoorNoodsituatie() {
+        Schoonmaker fallback = null;
+        for (Persoon p : hotel.personen) {
+            if (!(p instanceof Schoonmaker schoonmaker) || schoonmaker.bezig) continue;
+            if (schoonmaker.isNoodSchoonmaker()) return schoonmaker;
+            if (fallback == null) fallback = schoonmaker;
+        }
+        return fallback;
+    }
 }

@@ -95,13 +95,20 @@ public class LayoutController {
 
         nieuwHotel.pathfinder = new Pathfinder(nieuwHotel);
 
-        //maak een schoonmaker aan zodat die meteen beschikbaar is bij check-out
+        // maak twee schoonmakers aan:
+        // links staat de gewone schoonmaker voor check-outtaken,
+        // rechts staat de noodschoonmaker voor CLEANING_EMERGENCY
         PersonenFactory personenFactory = new PersonenFactory();
-        //schoonmaker wacht links van het midden onderaan het hotel
-        Vakje wachtVakje = nieuwHotel.layout.krijgVakje(Math.max(2, gridBreedte / 2 - 1), gridHoogte);
-        Schoonmaker schoonmaker = personenFactory.maakSchoonmaker(nieuwHotel.pathfinder, wachtVakje);
-        schoonmaker.setWachtVakje(wachtVakje);
-        nieuwHotel.voegPersoonToe(schoonmaker);
+        Vakje wachtVakjeLinks = nieuwHotel.layout.krijgVakje(Math.max(2, gridBreedte / 2 - 1), gridHoogte);
+        Schoonmaker schoonmakerCheckOut = personenFactory.maakSchoonmaker(nieuwHotel.pathfinder, wachtVakjeLinks);
+        schoonmakerCheckOut.setWachtVakje(wachtVakjeLinks);
+        nieuwHotel.voegPersoonToe(schoonmakerCheckOut);
+
+        Vakje wachtVakjeRechts = nieuwHotel.layout.krijgVakje(Math.min(gridBreedte - 2, gridBreedte / 2 + 1), gridHoogte);
+        Schoonmaker schoonmakerNood = personenFactory.maakSchoonmaker(nieuwHotel.pathfinder, wachtVakjeRechts);
+        schoonmakerNood.setWachtVakje(wachtVakjeRechts);
+        schoonmakerNood.setNoodSchoonmaker(true);
+        nieuwHotel.voegPersoonToe(schoonmakerNood);
 
         //sla de layout op in hotelmanager met bestandsnaam als naam
         int id = hotelManager.addLayout(bestandsnaam, nieuwHotel.layout);
