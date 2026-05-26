@@ -183,6 +183,9 @@ public class HotelView extends JFrame {
         simulatieView = new SimulatieView(simulatieController);
         top.add(simulatieView);
 
+
+        //krijgt boolean terug van simulatieview als pauze is ingedrukt (true)
+        //daarna ->
         // stel de pauze callback in zodat de timer ook pauzeert
         simulatieView.setOnPauze((gepauzeerd) -> {
             if (gepauzeerd) {

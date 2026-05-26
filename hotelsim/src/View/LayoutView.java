@@ -124,9 +124,11 @@ public class LayoutView extends JPanel implements ModelListener {
                 getekend.add(r);
 
                 if (r instanceof Kamer) {
-                    g.setColor(((Kamer) r).isBezet()
-                            ? new Color(220, 80, 80)
-                            : new Color(222, 229, 240));
+                    if (((Kamer) r).isBezet()) {
+                        g.setColor(new Color(220, 80, 80));
+                    } else {
+                        g.setColor(new Color(222, 229, 240));
+                    }
                 } else if (r instanceof Restaurant) {
                     g.setColor(new Color(220, 193, 185));
                 } else if (r instanceof Bioscoop) {

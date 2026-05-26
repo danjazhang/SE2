@@ -38,7 +38,11 @@ public class SimulatieView extends JPanel {
         pauseButton.addActionListener((ActionEvent e) -> {
             simulatieController.pauzeer();
             gepauzeerd = !gepauzeerd;
-            pauseButton.setText(gepauzeerd ? "Resume" : "Pauze");
+            if (gepauzeerd) {
+                pauseButton.setText("Resume");
+            } else {
+                pauseButton.setText("Pauze");
+            }
             // stuur pauze status door naar HotelView zodat de timer mee pauzeert
             if (onPauze != null) onPauze.accept(gepauzeerd);
         });
@@ -66,6 +70,9 @@ public class SimulatieView extends JPanel {
     public void setOnReset(Runnable onReset) {
         this.onReset = onReset;
     }
+
+    //callback is stukje code dat je meegeeft aan andere klasse,
+    //zodat die klasse het later kan uitvoeren op het juiste moment
 
     // stel de pauze callback in vanuit HotelView
     public void setOnPauze(Consumer<Boolean> onPauze) {

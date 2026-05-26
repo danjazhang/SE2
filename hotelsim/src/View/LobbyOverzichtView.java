@@ -74,7 +74,13 @@ public class LobbyOverzichtView extends JDialog {
         // simulatiestatus
         text += "=== HOTEL OBSERVATIE [GEPAUZEERD] ===\n\n";
         text += "Gasten aanwezig : " + aantalGasten() + "\n";
-        text += "Brandalarm      : " + (hotel.brandalarmActief ? "ACTIEF" : "uit") + "\n\n";
+        String brandalarmStatus;
+        if (hotel.brandalarmActief) {
+            brandalarmStatus = "ACTIEF";
+        } else {
+            brandalarmStatus = "uit";
+        }
+        text += "Brandalarm      : " + brandalarmStatus + "\n\n";
 
         // lift
         if (hotel.lift != null) {
@@ -122,14 +128,27 @@ public class LobbyOverzichtView extends JDialog {
         // faciliteiten
         text += "=== FACILITEITEN ===\n";
         for (Ruimte r : hotel.ruimtes) {
-            if (r instanceof Restaurant rest) {
+            if (r instanceof Restaurant) {
+                Restaurant rest = (Restaurant) r;
                 int aanwezig = rest.getAanwezigen().size();
-                String vol = rest.capaciteit > 0 && aanwezig >= rest.capaciteit ? " [VOL]" : "";
+                String vol;
+                if (rest.capaciteit > 0 && aanwezig >= rest.capaciteit) {
+                    vol = " [VOL]";
+                } else {
+                    vol = "";
+                }
                 text += "  Restaurant (cap " + rest.capaciteit + ") : " + aanwezig + " aanwezig" + vol + "\n";
-            } else if (r instanceof Fitnessruimte fit) {
+            } else if (r instanceof Fitnessruimte) {
+                Fitnessruimte fit = (Fitnessruimte) r;
                 text += "  Fitness : " + fit.getAanwezigen().size() + " aanwezig\n";
-            } else if (r instanceof Bioscoop bio) {
-                String film = bio.filmBezig ? "film bezig" : "geen film";
+            } else if (r instanceof Bioscoop) {
+                Bioscoop bio = (Bioscoop) r;
+                String film;
+                if (bio.filmBezig) {
+                    film = "film bezig";
+                } else {
+                    film = "geen film";
+                }
                 text += "  Bioscoop : " + bio.getAanwezigen().size() + " aanwezig, " + film + "\n";
             }
         }
