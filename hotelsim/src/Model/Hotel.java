@@ -34,6 +34,9 @@ public class Hotel {
     public Trap trap;
     public Lobby lobby;
 
+    // of het brandalarm momenteel actief is
+    public boolean brandalarmActief = false;
+
     // constructor: maak lege lijsten aan
     public Hotel() {
         ruimtes = new ArrayList<>();
@@ -47,6 +50,7 @@ public class Hotel {
 
     // geef de ruimte op positie (x, y) terug
     public Ruimte krijgRuimteOp(int x, int y) {
+        if (layout== null) return null;
         Vakje vakje = layout.krijgVakje(x, y);
         if (vakje != null) return vakje.ruimte;
         return null;

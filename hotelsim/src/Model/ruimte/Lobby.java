@@ -66,8 +66,8 @@ public class Lobby extends Ruimte implements IEventListener {
         // sla kamer op want na uitchecken is kamer null
         Kamer kamer = gast.kamer;
         if (kamer != null) kamer.ontkoppelGast(gast);
-        // zoek vrije schoonmaker
-        Schoonmaker schoonmaker = personenService.vindVrijeSchoonmaker();
+        // gebruik bij gewone check-out eerst de standaard schoonmaker
+        Schoonmaker schoonmaker = personenService.vindVrijeSchoonmakerVoorCheckOut();
         // check of er een schoonmaker is en of de gast een kamer had
         if (schoonmaker != null && kamer != null) {
             schoonmaker.maakKamerSchoon(kamer);

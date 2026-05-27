@@ -62,13 +62,18 @@ public class Restaurant extends Ruimte implements IEventListener {
     public void onEvent(HotelEvent event) {
         // NONE: elke tick checkt het restaurant of gasten klaar zijn met eten
         if (event.getEventType() == HotelEventType.NONE) {
+
+            //haal het huidige tijdstip op uit het event en sla op als tijd
             int tijd = event.getTime();
 
-            // verzamel alle gasten die klaar zijn met eten
+            // maak lege lijst om gastIds op te slaan als ze klaar zijn met eten
             List<Integer> klaar = new ArrayList<>();
+            //loop door elke sleutel waarde paren in de map
             for (Map.Entry<Integer, Integer> entry : eetEindTijden.entrySet()) {
 
+                //gastid is de key
                 int gastId = entry.getKey();
+                //eindtijd is de waarde 
                 int eindTijd = entry.getValue();
                 if (tijd >= eindTijd) {
                     klaar.add(gastId);
