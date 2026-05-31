@@ -52,27 +52,22 @@ public class Schoonmaker extends Persoon {
     // overschrijft beweeg() van Persoon om schoonmaaktijd af te tellen als de schoonmaker in de kamer staat
     @Override
     public void beweeg() {
-        Kamer oudeKamer = null;
+        Kamer oudeKamer = (huidigVakje != null && huidigVakje.ruimte instanceof Kamer)
+                ? (Kamer) huidigVakje.ruimte : null;
 
-        if (huidigVakje != null) {
-            if (huidigVakje.ruimte instanceof Kamer) {
-                oudeKamer = (Kamer) huidigVakje.ruimte;
-            }
-        }
-
-        // als de schoonmaker al in de doelkamer staat, tel schoonmaaktijd af
-        if (bezig && kamer != null && huidigVakje != null && huidigVakje.ruimte == kamer && resterendeSchoonmaakTicks > 0) {
+        // al in de doelkamer: tel schoonmaaktijd af
+        if (bezig && kamer != null && huidigVakje != null
+                && huidigVakje.ruimte == kamer && resterendeSchoonmaakTicks > 0) {
             resterendeSchoonmaakTicks--;
-            if (resterendeSchoonmaakTicks == 0) {
-                rondSchoonmaakAf();
-            }
+            if (resterendeSchoonmaakTicks == 0) rondSchoonmaakAf();
             return;
         }
 
         super.beweeg();
 
-        // check of de schoonmaker net de doelkamer is binnengekomen
-        if (bezig && kamer != null && huidigVakje != null && huidigVakje.ruimte == kamer && oudeKamer != kamer) {
+        // net de doelkamer binnengekomen: start schoonmaaktijd
+        if (bezig && kamer != null && huidigVakje != null
+                && huidigVakje.ruimte == kamer && oudeKamer != kamer) {
             resterendeSchoonmaakTicks = SCHOONMAAKDUUR;
             if (logger != null) logger.log("Schoonmaker begint kamer " + kamer.getKamernummer() + " schoon te maken");
         }
@@ -89,15 +84,21 @@ public class Schoonmaker extends Persoon {
 
     public void setWachtVakje(Vakje wachtVakje) { this.wachtVakje = wachtVakje; }
 
-    // maak de kamer schoon en ga terug naar de wachtplek als die bekend is
+    // maak de kamer schoon en ga terug naar de wachtplek (trap) als die bekend is
     private void rondSchoonmaakAf() {
         kamer.schoonmaken();
         if (logger != null) logger.log("Schoonmaker heeft " + kamer.getKamernummer() + " schoon gemaakt");
         bezig = false;
         kamer = null;
-        // ga terug naar wachtplek als die ingesteld is
-        if (wachtVakje != null && huidigVakje != null && huidigVakje != wachtVakje) {
-            zetDoel(wachtVakje);
+        // ga terug naar wachtplek (bij de trap) als die ingesteld is
+        if (wachtVakje != null && huidigVakje != null && !huidigVakje.equals(wachtVakje)) {
+            // gebruik de pathfinder voor de route terug
+            if (getPathfinder() != null) {
+                wisRoute();
+                getPathfinder().zetRouteTrap(this, wachtVakje);
+            } else {
+                zetDoel(wachtVakje);
+            }
         }
     }
 

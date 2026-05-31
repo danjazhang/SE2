@@ -1,6 +1,11 @@
 package Model.persoon;
 import Model.Pathfinder;
 import Model.layout.Vakje;
+import Model.ruimte.Gang;
+import Model.ruimte.Kamer;
+import Model.ruimte.Lift;
+import Model.ruimte.Lobby;
+import Model.ruimte.Trap;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -9,7 +14,7 @@ public abstract class Persoon {
     // Huidige positie
     public Vakje huidigVakje;
 
-    // Huidige bestemming
+    // Huidige bestemming (huidig actief doel)
     public Vakje doelVakje;
 
     // Pathfinding systeem
@@ -23,110 +28,100 @@ public abstract class Persoon {
         this.doelVakje = null;
     }
 
-    // Zet pathfinder
-    public void setPathfinder(Pathfinder pathfinder) {
-        this.pathfinder = pathfinder;
-    }
+    public void setPathfinder(Pathfinder pathfinder) { this.pathfinder = pathfinder; }
+    public Pathfinder getPathfinder() { return this.pathfinder; }
+    public void zetDoel(Vakje v) { this.doelVakje = v; }
+    public void voegTussendoelToe(Vakje v) { tussendoelen.add(v); }
 
-    // Geef pathfinder terug
-    public Pathfinder getPathfinder() {
-        return this.pathfinder;
-    }
-
-    // Zet hoofddoel
-    public void zetDoel(Vakje v) {
-        this.doelVakje = v;
-    }
-
-    // Voeg tussendoel toe
-    public void voegTussendoelToe(Vakje v) {
-        tussendoelen.add(v);
-    }
-
-    // Zet startpositie
     public void zetStartPositie(Vakje v) {
         huidigVakje = v;
         v.voegPersoonToe(this);
     }
 
-    // Verplaats persoon
     public void beweeg() {
 
         // Gasten in lift bewegen niet zelfstandig
-        if (this instanceof Gast g) {
-            if (g.inLift) {
-                return;
-            }
-        }
+        if (this instanceof Gast g && g.inLift) return;
 
-        // Geen doel
-        if (doelVakje == null && tussendoelen.isEmpty()) {
-            return;
-        }
+        // Geen doel of positie
+        if (doelVakje == null && tussendoelen.isEmpty()) return;
+        if (huidigVakje == null) return;
 
-        // Geen huidige positie
-        if (huidigVakje == null) {
-            return;
-        }
-
-        // Doel bereikt
-        // Pak volgend tussendoel
+        // Huidig doel bereikt: pak volgend tussendoel
         if (huidigVakje.equals(doelVakje)) {
             doelVakje = tussendoelen.poll();
         }
-
-        // Geen nieuw doel
-        if (doelVakje == null) {
-            return;
-        }
+        if (doelVakje == null) return;
 
         // Gast wacht op lift
-        if (this instanceof Gast g) {
-
-            if (g.wachtOpLift) {
-                return;
-            }
-        }
+        if (this instanceof Gast g && g.wachtOpLift) return;
 
         // Geen pathfinder
-        if (pathfinder == null) {
-            return;
-        }
+        if (pathfinder == null) return;
 
-        // Vraag volgende stap op
-        Vakje nieuw = pathfinder.volgendeStap(
-                huidigVakje,
-                doelVakje
-        );
+        // Volgende stap berekenen
+        Vakje nieuw = pathfinder.volgendeStap(huidigVakje, doelVakje);
+        if (nieuw == null) return;
 
-        // Geen mogelijke stap
-        if (nieuw == null) {
-            return;
-        }
+        // Mag de persoon dit vakje betreden?
+        if (!isBetreedbaar(nieuw)) return;
 
-        // Verwijder persoon uit oud vakje
+        // Is dit het laatste doel (kamer-check vóór verplaatsing)?
+        // We onthouden of het nieuwe vakje het eindpunt is (geen tussendoelen meer na dit)
+        boolean isEindpunt = nieuw.equals(doelVakje) && tussendoelen.isEmpty();
+
+        // --- Verplaats persoon ---
+
+        // Verwijder uit oud vakje
         huidigVakje.verwijderPersoon(this);
 
-        // Meld vertrek uit ruimte
-        if (huidigVakje.ruimte != null) {
+        // Verlaat huidige ruimte (alleen voor "echte" ruimtes)
+        if (huidigVakje.ruimte instanceof Kamer
+                || huidigVakje.ruimte instanceof Model.ruimte.Restaurant
+                || huidigVakje.ruimte instanceof Model.ruimte.Bioscoop
+                || huidigVakje.ruimte instanceof Model.ruimte.Fitnessruimte
+                || huidigVakje.ruimte instanceof Lobby) {
             huidigVakje.ruimte.verlaat(this);
         }
 
-        // Verplaats persoon
+        // Zet op nieuw vakje
         huidigVakje = nieuw;
-
-        // Voeg toe aan nieuw vakje
         nieuw.voegPersoonToe(this);
 
-        // Meld binnenkomst in ruimte
-        if (nieuw.ruimte != null) {
+        // Betreed nieuwe ruimte
+        if (nieuw.ruimte instanceof Kamer kamer) {
+            // Gast betreedt kamer alleen als dit het eindpunt is
+            if (isEindpunt) {
+                if (this instanceof Gast gast && gast.kamer == kamer) {
+                    gast.gaNaarkamer(); // registreert gast intern in kamer
+                } else if (!(this instanceof Gast)) {
+                    // schoonmaker
+                    kamer.betreed(this);
+                }
+            }
+        } else if (nieuw.ruimte instanceof Lobby
+                || nieuw.ruimte instanceof Model.ruimte.Restaurant
+                || nieuw.ruimte instanceof Model.ruimte.Bioscoop
+                || nieuw.ruimte instanceof Model.ruimte.Fitnessruimte) {
             nieuw.ruimte.betreed(this);
         }
+        // Gang, Lift, Trap: geen betreed/verlaat aanroep
     }
 
-    // Wis route
-    public void wisRoute() {
+    // Mag de persoon dit vakje betreden?
+    // Toegestaan: gang, lift, trap, lobby, leeg vakje, of het exacte doelvakje.
+    private boolean isBetreedbaar(Vakje vakje) {
+        if (vakje == null) return false;
+        if (vakje.equals(doelVakje)) return true;
+        if (vakje.ruimte == null) return true;
+        if (vakje.ruimte instanceof Gang) return true;
+        if (vakje.ruimte instanceof Lift) return true;
+        if (vakje.ruimte instanceof Trap) return true;
+        if (vakje.ruimte instanceof Lobby) return true;
+        return false;
+    }
 
+    public void wisRoute() {
         doelVakje = null;
         tussendoelen.clear();
     }

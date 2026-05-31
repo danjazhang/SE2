@@ -92,11 +92,21 @@ public class SimulatieController {
             if (!(p instanceof Gast g)) continue;
             if (!g.moetUitstappen) continue;
             g.moetUitstappen = false;
-            Vakje liftVakje = hotel.layout.krijgVakje(hotel.lift.posX, hotel.lift.getHuidigeVerdieping());
-            if (liftVakje != null) { g.huidigVakje = liftVakje; liftVakje.voegPersoonToe(g); }
-            if (g.eindbestemming != null && g.getPathfinder() != null) {
-                Vakje doel = hotel.layout.krijgVakje(g.eindbestemming.posX, g.eindbestemming.posY);
-                if (doel != null) g.zetDoel(doel);
+
+            // Zet gast op de gang naast de lift (x=lift+1) op de huidige verdieping.
+            // Niet op de lift-kolom zelf, want dan raakt de gast vast in de lift-ruimte.
+            int gangX = hotel.lift.posX + 1;
+            int gangY = hotel.lift.getHuidigeVerdieping();
+            Vakje gangVakje = hotel.layout.krijgVakje(gangX, gangY);
+            if (gangVakje != null) {
+                if (g.huidigVakje != null) g.huidigVakje.verwijderPersoon(g);
+                g.huidigVakje = gangVakje;
+                gangVakje.voegPersoonToe(g);
+            }
+
+            // stuur gast naar zijn eindbestemming
+            if (g.eindbestemming != null && hotel.pathfinder != null) {
+                hotel.pathfinder.zetRoute(g, g.eindbestemming);
             }
         }
     }
@@ -107,8 +117,8 @@ public class SimulatieController {
         for (Persoon p : hotel.personen) {
             if (!(p instanceof Gast g)) continue;
             if (!g.gebruiktLift || g.inLift || g.huidigVakje == null) continue;
-            boolean bijLift = g.huidigVakje.x == hotel.lift.posX + 1 &&
-                    g.huidigVakje.y == hotel.lift.getHuidigeVerdieping();
+            // gast staat bij de lift als hij op x=lift.posX+1 staat op de gang-rij van zijn verdieping
+            boolean bijLift = g.huidigVakje.x == hotel.lift.posX + 1;
             if (bijLift) g.wachtOpLift = lift.getHuidigeVerdieping() != g.huidigVakje.y;
         }
     }

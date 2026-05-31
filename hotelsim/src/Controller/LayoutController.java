@@ -6,6 +6,7 @@ import Model.layout.LayoutParser;
 import Model.layout.ParseResultaat;
 import Model.layout.Vakje;
 import Model.persoon.Schoonmaker;
+import Model.ruimte.Gang;
 import Model.ruimte.Lift;
 import Model.ruimte.Lobby;
 import Model.ruimte.Ruimte;
@@ -22,25 +23,44 @@ public class LayoutController {
 
     // laad een nieuw hotel vanuit een JSON bestand
     public int laadVanBestand(String bestandspad, String bestandsnaam) {
-        //lees het JSON bestand via de parser
         ParseResultaat resultaat = new LayoutParser().laad(bestandspad);
-        //als laden mislukt geef -1 terug, want id begint bij 1
         if (resultaat == null) return -1;
 
-        //maak nieuwe hotel
         Hotel nieuwHotel = new Hotel();
 
-        //grid groter maken voor lift trap en lobby
-        int gridBreedte = resultaat.breedte + 3;
-        int gridHoogte = resultaat.hoogte + 1;
+        // Elke JSON-verdieping (y=1..hoogte-1) krijgt 2 grid-rijen:
+        //   - ruimte-rij: de kamers/ruimtes staan hier
+        //   - gang-rij:   de gang loopt hier volledig door (x=2..gridBreedte-2)
+        // De begane grond (JSON-y=hoogte) wordt de lobby, geen gang.
+        //
+        // Multi-verdieping ruimtes (hoogte>=2) krijgen in het grid hun JSON-hoogte
+        // als grid-hoogte. Ze bezetten ALLEEN de ruimte-rijen, NIET de gang-rijen.
+        // De gang-rijen lopen gewoon door naast de ruimte.
+        //
+        // Mapping: jsonY -> gridY
+        // Elke JSON-y-rij (behalve begane grond) krijgt een gang-rij eronder.
+        // gridY[1]=1, gang=2, gridY[2]=3, gang=4, gridY[3]=5, gang=6, ...
+
+        int jsonHoogte = resultaat.hoogte; // aantal JSON-rijen incl. begane grond
+        int[] jsonYnaarGridY = new int[jsonHoogte + 2];
+        int gridY = 1;
+        for (int jsonY = 1; jsonY <= jsonHoogte; jsonY++) {
+            jsonYnaarGridY[jsonY] = gridY;
+            gridY++; // ruimte-rij
+            if (jsonY < jsonHoogte) {
+                gridY++; // gang-rij (niet voor begane grond)
+            }
+        }
+        // gridY is nu de hoogte van het grid exclusief de lobby
+        int gridHoogte = gridY; // lobby op gridY
+
+        int gridBreedte = resultaat.breedte + 3; // +1 lift links, +2 trap rechts
 
         nieuwHotel.breedte = gridBreedte;
         nieuwHotel.hoogte = gridHoogte;
-        //maak grid op basis van bovenstaande afmetingen
         nieuwHotel.layout = new Layout(gridBreedte, gridHoogte);
 
-        //zoek de onderste kamerlaag in de layout voor correcte kamernummers per verdieping
-        //de onderste kamers moeten 101, 102, ... krijgen, daarboven 201, 202, ...
+        // kamernummers: onderste kamerlaag in JSON
         int ondersteKamerPosY = 1;
         for (JSONObject obj : resultaat.ruimteData) {
             if (obj.getString("AreaType").equals("Room")) {
@@ -48,64 +68,80 @@ public class LayoutController {
             }
         }
 
-        //maak ruimtes aan via ruimtefactory en voeg toe aan hotel en grid
         RuimteFactory factory = new RuimteFactory(logger, ondersteKamerPosY);
 
-        //loopt door alle jsonobjecten
         for (JSONObject obj : resultaat.ruimteData) {
-            //maak de juiste ruimte subklasse aan
             Ruimte r = factory.maakRuimte(obj.getString("AreaType"), obj);
-            //set de x en y positie
-            r.posX = obj.getInt("_posX") + 1; // ruimte voor lift
-            r.posY = obj.getInt("_posY");
-            //set de breedte en hoogte
-            r.breedte = obj.getInt("_breedte");
-            r.hoogte = obj.getInt("_hoogte");
-            //voeg de ruimte toe aan de lijst van ruimtes in het hotel
+            int jsonX   = obj.getInt("_posX");
+            int jsonY   = obj.getInt("_posY");
+            int breedte = obj.getInt("_breedte");
+            int hoogte  = obj.getInt("_hoogte");
+
+            r.posX   = jsonX + 1;                  // +1 voor lift
+            r.posY   = jsonYnaarGridY[jsonY];       // ruimte-rij in grid
+            r.breedte = breedte;
+            r.hoogte  = hoogte;                     // EXACT JSON-hoogte, geen gang-rijen ertussen
+
+            // ingang = linksonder van de ruimte
+            r.setIngang(r.posX, r.posY + r.hoogte - 1);
+
             nieuwHotel.ruimtes.add(r);
-            //plaats de ruimte op de juiste positie in het grid
             nieuwHotel.layout.plaatsRuimte(r);
         }
 
-        // maak lift aan links
+        // lift (loopt door alle grid-rijen)
         Lift lift = new Lift(nieuwHotel);
-        lift.posX = 1;
-        lift.posY = 1;
-        lift.breedte = 1;
-        lift.hoogte = gridHoogte;
+        lift.posX = 1; lift.posY = 1;
+        lift.breedte = 1; lift.hoogte = gridHoogte;
         nieuwHotel.lift = lift;
         nieuwHotel.ruimtes.add(lift);
         nieuwHotel.layout.plaatsRuimte(lift);
 
-        // maak trap aan rechts
+        // trap (loopt door alle grid-rijen)
         Trap trap = new Trap(3);
-        trap.posX = gridBreedte - 1;
-        trap.posY = 1;
-        trap.breedte = 2;
-        trap.hoogte = gridHoogte;
+        trap.posX = gridBreedte - 1; trap.posY = 1;
+        trap.breedte = 2; trap.hoogte = gridHoogte;
         nieuwHotel.trap = trap;
         nieuwHotel.ruimtes.add(trap);
         nieuwHotel.layout.plaatsRuimte(trap);
 
-        // maak lobby aan onderin
-        Lobby lobby = new Lobby(2, gridHoogte, gridBreedte - 3, 1, gridBreedte / 2, gridHoogte, nieuwHotel, logger);
+        // lobby (begane grond)
+        Lobby lobby = new Lobby(2, gridHoogte, gridBreedte - 3, 1,
+                gridBreedte / 2, gridHoogte, nieuwHotel, logger);
         nieuwHotel.lobby = lobby;
         nieuwHotel.ruimtes.add(lobby);
         nieuwHotel.layout.plaatsRuimte(lobby);
 
+        // gangen: elke gang-rij (gridY van jsonY + 1) krijgt gang-vakjes op alle
+        // lege x-posities (x=2..gridBreedte-2). Lift en trap worden niet overschreven.
+        // Multi-verdieping ruimtes bezetten alleen hun ruimte-rijen, dus de gang-rij
+        // eronder is altijd leeg en krijgt gewoon een gang-vakje.
+        for (int jsonY = 1; jsonY < jsonHoogte; jsonY++) {
+            int gangGridY = jsonYnaarGridY[jsonY] + 1;
+            for (int x = 2; x <= gridBreedte - 2; x++) {
+                Vakje vakje = nieuwHotel.layout.krijgVakje(x, gangGridY);
+                if (vakje != null && vakje.ruimte == null) {
+                    Gang gangVakje = new Gang(gangGridY);
+                    gangVakje.posX = x;
+                    gangVakje.posY = gangGridY;
+                    gangVakje.breedte = 1;
+                    gangVakje.hoogte = 1;
+                    vakje.ruimte = gangVakje;
+                    nieuwHotel.ruimtes.add(gangVakje);
+                }
+            }
+        }
+
         nieuwHotel.pathfinder = new Pathfinder(nieuwHotel);
 
-        //maak een schoonmaker aan zodat die meteen beschikbaar is bij check-out
+        // schoonmaker wacht bij de trap op de begane grond
         PersonenFactory personenFactory = new PersonenFactory();
-        //schoonmaker wacht links van het midden onderaan het hotel
-        Vakje wachtVakje = nieuwHotel.layout.krijgVakje(Math.max(2, gridBreedte / 2 - 1), gridHoogte);
+        Vakje wachtVakje = nieuwHotel.layout.krijgVakje(gridBreedte - 1, gridHoogte);
         Schoonmaker schoonmaker = personenFactory.maakSchoonmaker(nieuwHotel.pathfinder, wachtVakje);
         schoonmaker.setWachtVakje(wachtVakje);
         nieuwHotel.voegPersoonToe(schoonmaker);
 
-        //sla de layout op in hotelmanager met bestandsnaam als naam
         int id = hotelManager.addLayout(bestandsnaam, nieuwHotel.layout);
-        //sla het hele hotel object op in hotelmanager met zelfde id als sleutel
         hotelManager.loadHotel(id, nieuwHotel);
         return id;
     }
