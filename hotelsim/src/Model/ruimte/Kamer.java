@@ -12,9 +12,8 @@ public class Kamer extends Ruimte {
 
     // het aantal sterren van de kamer (1 t/m 5)
     public int sterren;
-
-    //kamernummer
     public int kamernummer;
+
 
     // gasten die aan deze kamer gekoppeld zijn (ingecheckt)
     //true = gast is fysiek in de kamer, false = gast is ergens anders maar nog ingecheckt
@@ -25,6 +24,15 @@ public class Kamer extends Ruimte {
 
     // of de kamer bezet is
     private boolean bezet = false;
+    //is de kamer bezet?
+    public boolean isBezet() {
+        return bezet;
+    }
+
+    // zet de kamer als bezet of vrij
+    public void zetBezet(boolean bezet) {
+        this.bezet = bezet;
+    }
 
     // constructor: kamer begint schoon en zonder gast
     public Kamer() {
@@ -74,15 +82,6 @@ public class Kamer extends Ruimte {
         this.schoon = true;
     }
 
-    //is de kamer bezet?
-    public boolean isBezet() {
-        return bezet;
-    }
-
-    // zet de kamer als bezet of vrij
-    public void zetBezet(boolean bezet) {
-        this.bezet = bezet;
-    }
 
     //is een specifieke gast in de kamer?
     public boolean isGastAanwezig(Gast g) {

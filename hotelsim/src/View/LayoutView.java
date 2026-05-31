@@ -58,8 +58,17 @@ public class LayoutView extends JPanel implements ModelListener {
                 getekend.add(r);
 
                 // kies kleur op basis van ruimtetype
-                if (r instanceof Kamer) g.setColor(new Color(222, 229, 240));
-                else if (r instanceof Restaurant) g.setColor(new Color(228, 223, 235));
+                if (r instanceof Kamer) {
+                    Kamer kamer = (Kamer) r;
+                    if (kamer.isBezet()){
+                        g.setColor(new Color(220, 80, 80));//bezet
+                    }else {
+                        g.setColor(new Color(222, 229, 240)); //vrij
+                    }
+                }
+
+
+                else if (r instanceof Restaurant) g.setColor(new Color(220, 193, 185));
                 else if (r instanceof Bioscoop) g.setColor(new Color(247, 234, 219));
                 else if (r instanceof Fitnessruimte) g.setColor(new Color(235, 241, 223));
                 else if (r instanceof Lift) g.setColor(new Color(171, 87, 81));
@@ -76,10 +85,11 @@ public class LayoutView extends JPanel implements ModelListener {
                 g.setColor(Color.BLACK);
                 g.drawRect(tekenX, tekenY, tekenB, tekenH);
 
-                // teken rode rand als de ruimte druk bezet is
+                // teken licht rode overlay als de ruimte druk bezet is
                 if (r.getAanwezigen().size() >= DREMPEL_BEZET) {
-                    g.setColor(Color.RED);
-                    g.drawRect(tekenX + 2, tekenY + 2, tekenB - 4, tekenH - 4);
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.setColor(new Color(220, 50, 50, 80));
+                    g2d.fillRect(tekenX, tekenY, tekenB, tekenH);
                 }
 
                 g.setColor(Color.BLACK);

@@ -1,99 +1,135 @@
 package Model.persoon;
-
 import Model.Pathfinder;
 import Model.layout.Vakje;
-
-import java.util.Queue;
 import java.util.LinkedList;
+import java.util.Queue;
 
-// Basisklasse voor alle personen in het hotel
-// Gast en Schoonmaker erven van deze klasse
 public abstract class Persoon {
 
-    // het vakje waar de persoon zich momenteel bevindt
+    // Huidige positie
     public Vakje huidigVakje;
 
-    // het vakje waar de persoon naartoe wil
+    // Huidige bestemming
     public Vakje doelVakje;
 
-    // pathfinder voor het berekenen van de volgende stap
+    // Pathfinding systeem
     private Pathfinder pathfinder;
 
-    //queue is first in first out
-    //linkedlist verwijst de elementen naar elkaar
+    // Wachtrij van tussendoelen
     private Queue<Vakje> tussendoelen = new LinkedList<>();
 
-    // constructor: persoon begint zonder positie
     public Persoon() {
         this.huidigVakje = null;
         this.doelVakje = null;
     }
 
-    // stel de pathfinder in
+    // Zet pathfinder
     public void setPathfinder(Pathfinder pathfinder) {
         this.pathfinder = pathfinder;
     }
 
-    // stel het doelVakje in
-    public void zetDoel(Vakje v) { 
-        this.doelVakje = v; 
-        }
-
-    public void voegTussendoelToe(Vakje v){
-        tussendoelen.add(v);
-
-        if (doelVakje == null){
-            doelVakje = tussendoelen.poll();
-        }
+    // Geef pathfinder terug
+    public Pathfinder getPathfinder() {
+        return this.pathfinder;
     }
 
-    //zet persoon op een startvakje
+    // Zet hoofddoel
+    public void zetDoel(Vakje v) {
+        this.doelVakje = v;
+    }
+
+    // Voeg tussendoel toe
+    public void voegTussendoelToe(Vakje v) {
+        tussendoelen.add(v);
+    }
+
+    // Zet startpositie
     public void zetStartPositie(Vakje v) {
         huidigVakje = v;
-        //voeg aan personenlijst van dat vakje
         v.voegPersoonToe(this);
     }
 
-    // beweeg de persoon 1 stap richting het doelVakje
+    // Verplaats persoon
     public void beweeg() {
-        //als doelvakje of tussendoel leeg is dan stopt de methode
-        if (doelVakje == null && tussendoelen.isEmpty()) return;
-        // persoon staat nergens
-        if (huidigVakje == null) return;
 
-        if (huidigVakje == doelVakje && !tussendoelen.isEmpty()) {
-        doelVakje = tussendoelen.poll();
-        }//poll is eerste element ophalen en verwijderen
+        // Gasten in lift bewegen niet zelfstandig
+        if (this instanceof Gast g) {
+            if (g.inLift) {
+                return;
+            }
+        }
 
-        if (doelVakje == null || huidigVakje == doelVakje) return;
+        // Geen doel
+        if (doelVakje == null && tussendoelen.isEmpty()) {
+            return;
+        }
 
-        
-        //stop als pathfinder niet bestaat
-        if (pathfinder == null) return;
-        //zoek vakje op nieuwe positie van persoon via pathfinder
-        Vakje nieuwVakje = pathfinder.volgendeStap(huidigVakje, doelVakje);
-        //stop als vakje niet bestaat
-        if (nieuwVakje == null) return;
+        // Geen huidige positie
+        if (huidigVakje == null) {
+            return;
+        }
 
-        // verwijder van huidig vakje
+        // Doel bereikt
+        // Pak volgend tussendoel
+        if (huidigVakje.equals(doelVakje)) {
+            doelVakje = tussendoelen.poll();
+        }
+
+        // Geen nieuw doel
+        if (doelVakje == null) {
+            return;
+        }
+
+        // Gast wacht op lift
+        if (this instanceof Gast g) {
+
+            if (g.wachtOpLift) {
+                return;
+            }
+        }
+
+        // Geen pathfinder
+        if (pathfinder == null) {
+            return;
+        }
+
+        // Vraag volgende stap op
+        Vakje nieuw = pathfinder.volgendeStap(
+                huidigVakje,
+                doelVakje
+        );
+
+        // Geen mogelijke stap
+        if (nieuw == null) {
+            return;
+        }
+
+        // Verwijder persoon uit oud vakje
         huidigVakje.verwijderPersoon(this);
-        //verwijder persoon uit ruimte als er eentje is
-        if (huidigVakje.ruimte != null) huidigVakje.ruimte.verlaat(this);
 
-        // zet persoon op nieuw vakje
-        huidigVakje = nieuwVakje;
-        //voeg persoon toe aan de personenlijst van dat vakje
-        nieuwVakje.voegPersoonToe(this);
-        // voeg persoon toe aan ruimte als dat bestaat
-        if (nieuwVakje.ruimte != null) nieuwVakje.ruimte.betreed(this);
+        // Meld vertrek uit ruimte
+        if (huidigVakje.ruimte != null) {
+            huidigVakje.ruimte.verlaat(this);
+        }
+
+        // Verplaats persoon
+        huidigVakje = nieuw;
+
+        // Voeg toe aan nieuw vakje
+        nieuw.voegPersoonToe(this);
+
+        // Meld binnenkomst in ruimte
+        if (nieuw.ruimte != null) {
+            nieuw.ruimte.betreed(this);
+        }
     }
 
-    // wis de huidige route zodat de persoon stopt met bewegen
+    // Wis route
     public void wisRoute() {
+
         doelVakje = null;
         tussendoelen.clear();
     }
 
-    // voer de taak van de persoon uit
     public void voerTaakUit() {}
 }

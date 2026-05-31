@@ -20,6 +20,9 @@ public class HotelController {
 
     private ILogger logger;
 
+    // aparte service die schoonmaak-noodgevallen afhandelt
+    private SchoonmaakService schoonmaakService;
+
     // lijst van observers (View) die genotificeerd worden bij wijzigingen
     private List<ModelListener> listeners = new ArrayList<>();
 
@@ -46,12 +49,14 @@ public class HotelController {
     public void setLogger(ILogger logger){
         this.logger = logger;
         layoutController.setLogger(logger);
+        if (schoonmaakService != null) schoonmaakService.setLogger(logger);
     }
     public void setEventController(EventController eventController){
         this.eventController = eventController;
     }
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
+        this.schoonmaakService = new SchoonmaakService(hotel, logger);
         //stel logger in op lobby
         if (hotel.lobby != null){
             hotel.lobby.setLogger(logger);
@@ -65,6 +70,7 @@ public class HotelController {
         //registreer alle listeners via eventcontroller
         if (eventController != null) {
             eventController.registreerHotelListeners(hotel);
+            eventController.registreerListener(schoonmaakService);
         }
     }
 

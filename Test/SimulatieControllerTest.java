@@ -18,7 +18,7 @@ public class SimulatieControllerTest {
     private HotelController hc = new HotelController();
 
     // hulpmethode: maak hotel met pathfinder
-    private Hotel maakHotel() {
+    static Hotel maakHotel() {
         Hotel hotel = new Hotel();
         hotel.layout = new Layout(6, 4);
         hotel.breedte = 6;
@@ -40,10 +40,10 @@ public class SimulatieControllerTest {
         assertDoesNotThrow(() -> new SimulatieController(manager, ec, hc));
     }
 
-    // start: gooit exception zonder scenario
+    // start met scenario: gooit exception in testmodus want scenario bestand bestaat niet
     @Test void testStartGooidExceptionZonderScenario() {
         SimulatieController sc = new SimulatieController(manager, ec, hc);
-        assertThrows(RuntimeException.class, () -> sc.start());
+        assertThrows(RuntimeException.class, () -> sc.start(1));
     }
 
     // pauzeer: geen crash
@@ -66,7 +66,7 @@ public class SimulatieControllerTest {
         assertDoesNotThrow(() -> sc.tik());
     }
 
-    // tik: personen bewegen per tik
+    // tik: gast beweegt één stap per tik
     @Test void testTikBeweegPersonen() {
         Hotel hotel = maakHotel();
         Gast gast = new Gast(1, 1);
@@ -77,7 +77,6 @@ public class SimulatieControllerTest {
         hc.setHotel(hotel);
         SimulatieController sc = new SimulatieController(manager, ec, hc);
         sc.tik();
-        // gast is 1 stap verder
         assertEquals(3, gast.huidigVakje.x);
     }
 
@@ -96,7 +95,78 @@ public class SimulatieControllerTest {
     @Test void testTikZonderHotel() {
         HotelController legeHc = new HotelController();
         SimulatieController sc = new SimulatieController(manager, ec, legeHc);
-        // hotel is leeg maar niet null, dus geen crash verwacht
         assertDoesNotThrow(() -> sc.tik());
+    }
+
+    // pasSnelheidToe: langzaam zet snelheid op 0
+    @Test void testPasSnelheidToeLangzaam() {
+        SimulatieController sc = new SimulatieController(manager, ec, hc);
+        assertDoesNotThrow(() -> sc.pasSnelheidToe("Langzaam"));
+    }
+
+    // pasSnelheidToe: normaal zet snelheid op 1
+    @Test void testPasSnelheidToeNormaal() {
+        SimulatieController sc = new SimulatieController(manager, ec, hc);
+        assertDoesNotThrow(() -> sc.pasSnelheidToe("Normaal"));
+    }
+
+    // pasSnelheidToe: snel zet snelheid op 4
+    @Test void testPasSnelheidToeSnel() {
+        SimulatieController sc = new SimulatieController(manager, ec, hc);
+        assertDoesNotThrow(() -> sc.pasSnelheidToe("Snel"));
+    }
+
+    // setSnelheid: geen crash
+    @Test void testSetSnelheid() {
+        SimulatieController sc = new SimulatieController(manager, ec, hc);
+        assertDoesNotThrow(() -> sc.setSnelheid(2));
+    }
+
+    // tik langzaam: persoon beweegt niet op oneven tik
+    @Test void testTikLangzaamBeweegNietOpOneven() {
+        Hotel hotel = maakHotel();
+        Gast gast = new Gast(1, 1);
+        gast.setPathfinder(hotel.pathfinder);
+        gast.zetStartPositie(hotel.layout.krijgVakje(2, 1));
+        gast.zetDoel(hotel.layout.krijgVakje(4, 1));
+        hotel.voegPersoonToe(gast);
+        hc.setHotel(hotel);
+        SimulatieController sc = new SimulatieController(manager, ec, hc);
+        sc.pasSnelheidToe("Langzaam");
+        // eerste tik is oneven, gast mag niet bewegen
+        sc.tik();
+        assertEquals(2, gast.huidigVakje.x);
+    }
+
+    // tik langzaam: persoon beweegt wel op even tik
+    @Test void testTikLangzaamBeweegWelOpEven() {
+        Hotel hotel = maakHotel();
+        Gast gast = new Gast(1, 1);
+        gast.setPathfinder(hotel.pathfinder);
+        gast.zetStartPositie(hotel.layout.krijgVakje(2, 1));
+        gast.zetDoel(hotel.layout.krijgVakje(4, 1));
+        hotel.voegPersoonToe(gast);
+        hc.setHotel(hotel);
+        SimulatieController sc = new SimulatieController(manager, ec, hc);
+        sc.pasSnelheidToe("Langzaam");
+        sc.tik(); // oneven, geen beweging
+        sc.tik(); // even, wel beweging
+        assertEquals(3, gast.huidigVakje.x);
+    }
+
+    // tik snel: persoon zet meerdere stappen per tik
+    @Test void testTikSnelMeerdereStappen() {
+        Hotel hotel = maakHotel();
+        Gast gast = new Gast(1, 1);
+        gast.setPathfinder(hotel.pathfinder);
+        gast.zetStartPositie(hotel.layout.krijgVakje(2, 1));
+        gast.zetDoel(hotel.layout.krijgVakje(6, 1));
+        hotel.voegPersoonToe(gast);
+        hc.setHotel(hotel);
+        SimulatieController sc = new SimulatieController(manager, ec, hc);
+        sc.pasSnelheidToe("Snel");
+        sc.tik();
+        // bij snelheid 4 zet de gast 4 stappen, dus van x=2 naar x=6
+        assertTrue(gast.huidigVakje.x > 2);
     }
 }

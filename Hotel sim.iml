@@ -12,8 +12,7 @@
     <orderEntry type="library" name="gson-2.10.1" level="project" />
     <orderEntry type="library" name="junit.jupiter" level="project" />
     <orderEntry type="library" name="junit.jupiter" level="project" />
-    <orderEntry type="library" name="json-20251225" level="project" />
-    <orderEntry type="library" name="HotelEventsObs 1" level="project" />
     <orderEntry type="library" name="json-20251224 (1)" level="project" />
+    <orderEntry type="library" name="HotelEventsObs 1" level="project" />
   </component>
 </module>

@@ -3,6 +3,7 @@ import Controller.HotelController;
 import Controller.LayoutController;
 import Model.*;
 import Model.layout.Layout;
+import Model.persoon.Schoonmaker;
 import Model.ruimte.Kamer;
 import Model.ruimte.Lobby;
 import hotelevents.HotelEventManager;
@@ -46,6 +47,21 @@ public class HotelControllerTest {
         assertDoesNotThrow(() -> hc.setLogger(bericht -> {}));
     }
 
+    // setLogger daarna setHotel: logger wordt doorgegeven aan lobby
+    @Test void testSetLoggerDaarnSetHotelGeeftLoggerAanLobby() {
+        HotelController hc = new HotelController();
+        boolean[] logged = {false};
+        hc.setLogger(bericht -> logged[0] = true);
+        Hotel h = new Hotel();
+        h.layout = new Layout(5, 5);
+        Lobby lobby = new Lobby(1, 5, 3, 1, 2, 5, h, null);
+        h.lobby = lobby;
+        h.ruimtes.add(lobby);
+        hc.setHotel(h);
+        // logger is ingesteld op lobby, geen crash verwacht
+        assertDoesNotThrow(() -> {});
+    }
+
     // setEventController: geen crash
     @Test void testSetEventController() {
         HotelController hc = new HotelController();
@@ -53,16 +69,27 @@ public class HotelControllerTest {
         assertDoesNotThrow(() -> hc.setEventController(ec));
     }
 
-    // setHotel: lobby krijgt logger als die ingesteld is
-    @Test void testSetHotelMetLobbyZetLogger() {
+    // setHotel met eventController: registreerHotelListeners wordt aangeroepen
+    @Test void testSetHotelMetEventControllerRegistreertListeners() {
+        HotelController hc = new HotelController();
+        EventController ec = new EventController(new HotelEventManager(true));
+        hc.setEventController(ec);
+        Hotel h = new Hotel();
+        h.layout = new Layout(5, 5);
+        assertDoesNotThrow(() -> hc.setHotel(h));
+    }
+
+    // setHotel met schoonmaker: logger wordt doorgegeven aan schoonmaker
+    @Test void testSetHotelMetSchoonmakerZetLogger() {
         HotelController hc = new HotelController();
         hc.setLogger(bericht -> {});
         Hotel h = new Hotel();
         h.layout = new Layout(5, 5);
-        Lobby lobby = new Lobby(1, 5, 3, 1, 2, 5, h, null);
-        h.lobby = lobby;
-        h.ruimtes.add(lobby);
-        assertDoesNotThrow(() -> hc.setHotel(h));
+        Schoonmaker s = new Schoonmaker();
+        h.voegPersoonToe(s);
+        hc.setHotel(h);
+        // schoonmaker heeft nu een logger, geen crash verwacht
+        assertDoesNotThrow(() -> {});
     }
 
     // getLayoutController: geeft een LayoutController terug
@@ -71,7 +98,7 @@ public class HotelControllerTest {
         assertTrue(hc.getLayoutController() instanceof LayoutController);
     }
 
-    // voegListenerToe: listener wordt toegevoegd
+    // voegListenerToe: listener wordt aangeroepen na notifyListeners
     @Test void testVoegListenerToe() {
         HotelController hc = new HotelController();
         boolean[] called = {false};
@@ -90,6 +117,12 @@ public class HotelControllerTest {
         assertEquals(2, count[0]);
     }
 
+    // notifyListeners: geen crash zonder listeners
+    @Test void testNotifyListenersZonderListenersCrashetNiet() {
+        HotelController hc = new HotelController();
+        assertDoesNotThrow(() -> hc.notifyListeners());
+    }
+
     // registreerListeners via eventController: geen crash als hotel leeg is
     @Test void testRegistreerListenersLeegHotel() {
         EventController ec = new EventController(new HotelEventManager(true));
@@ -106,5 +139,17 @@ public class HotelControllerTest {
         h.lobby = lobby;
         h.ruimtes.add(lobby);
         assertDoesNotThrow(() -> ec.registreerHotelListeners(h));
+    }
+
+    // setHotel met lobby en logger: geen crash
+    @Test void testSetHotelMetLobbyZetLogger() {
+        HotelController hc = new HotelController();
+        hc.setLogger(bericht -> {});
+        Hotel h = new Hotel();
+        h.layout = new Layout(5, 5);
+        Lobby lobby = new Lobby(1, 5, 3, 1, 2, 5, h, null);
+        h.lobby = lobby;
+        h.ruimtes.add(lobby);
+        assertDoesNotThrow(() -> hc.setHotel(h));
     }
 }

@@ -26,7 +26,8 @@ public class LobbyTest {
         hotel.breedte = 6;
         hotel.hoogte = 4;
 
-        Lift lift = new Lift();
+        Hotel hotel = new Hotel();
+        Lift lift = new Lift(hotel);
         lift.posX = 1; lift.posY = 1; lift.breedte = 1; lift.hoogte = 4;
         hotel.lift = lift;
         hotel.ruimtes.add(lift);
@@ -99,6 +100,17 @@ public class LobbyTest {
         assertFalse(kamer.isSchoon());
     }
 
+    // checkOut: schoonmaker krijgt de kamer toegewezen na check-out
+    @Test void testCheckOutRoeptSchoonmakerAan() {
+        Schoonmaker s = new Schoonmaker();
+        s.zetStartPositie(hotel.layout.krijgVakje(3, 4));
+        hotel.voegPersoonToe(s);
+        lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+        lobby.onEvent(new HotelEvent(2, HotelEventType.CHECK_OUT, 1, -1));
+        // schoonmaker is bezig en heeft de kamer toegewezen gekregen
+        assertTrue(s.bezig);
+        assertEquals(kamer, s.kamer);
+    }
 
     // checkOut: geen crash als gast niet bestaat
     @Test void testCheckOutZonderGastCrashetNiet() {

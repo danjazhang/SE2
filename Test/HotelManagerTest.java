@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class HotelManagerTest {
 
-    // addLayout: layout wordt opgeslagen en teruggevonden via id
+    // Ik voeg een layout toe; ik verwacht dat ik die via het teruggegeven id weer kan ophalen.
     @Test void testAddLayout() {
         HotelManager hm = new HotelManager();
         Layout l = new Layout(3, 3);
@@ -14,7 +14,7 @@ public class HotelManagerTest {
         assertEquals(l, hm.getLayout(id));
     }
 
-    // loadHotel en getHotel: hotel wordt opgeslagen en teruggevonden via id
+    // Ik laad een hotel op een bestaand layout-id; ik verwacht dat ik dat hotel daarna weer kan ophalen.
     @Test void testLoadEnGetHotel() {
         HotelManager hm = new HotelManager();
         Layout l = new Layout(3, 3);
@@ -24,7 +24,7 @@ public class HotelManagerTest {
         assertEquals(h, hm.getHotel(id));
     }
 
-    // removeLayout: layout is weg na verwijderen
+    // Ik verwijder een layout; ik verwacht dat die daarna niet meer opgehaald kan worden.
     @Test void testRemoveLayout() {
         HotelManager hm = new HotelManager();
         Layout l = new Layout(3, 3);
@@ -33,7 +33,7 @@ public class HotelManagerTest {
         assertNull(hm.getLayout(id));
     }
 
-    // getAllLayoutIds: geeft alle ids terug
+    // Ik voeg twee layouts toe; ik verwacht dat de lijst met ids daarna twee elementen bevat.
     @Test void testGetAllLayoutIds() {
         HotelManager hm = new HotelManager();
         hm.addLayout("a", new Layout(2, 2));
@@ -41,7 +41,7 @@ public class HotelManagerTest {
         assertEquals(2, hm.getAllLayoutIds().size());
     }
 
-    // ids zijn oplopend
+    // Ik voeg meerdere layouts toe; ik verwacht dat de ids oplopend worden uitgedeeld.
     @Test void testIdOplopend() {
         HotelManager hm = new HotelManager();
         int id1 = hm.addLayout("a", new Layout(2, 2));
