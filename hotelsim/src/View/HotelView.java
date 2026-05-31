@@ -64,6 +64,18 @@ public class HotelView extends JFrame {
         panel = new LayoutView(hotel);
         layoutSelector = new JComboBox<>();
 
+        // -> betekent dat als het stukje ervoor wordt aangeroepen dat het stuk erna gebeurt
+        panel.setOnLobbyClick(() -> {
+            // pauzeert de simulatie en stopt de timer voordat het venster opent
+            simulatieController.pauzeer();
+            gebruikstijdTimer.stop();
+            // gebruik this.hotel zodat altijd het meest recente hotel gebruikt wordt
+            LobbyOverzichtView view = new LobbyOverzichtView(this.hotel, simulatieController);
+            view.setVisible(true);
+            // hervat de timer nadat het venster gesloten is
+            gebruikstijdTimer.start();
+        });
+
         // maak de timer aan die elke seconde de tijd bijwerkt
         gebruikstijdTimer = new Timer(1000, (ActionEvent e) -> {
             verstrekenSeconden++;
@@ -152,12 +164,28 @@ public class HotelView extends JFrame {
 
         //voeg hotel grid toe in het midden
         add(top, BorderLayout.NORTH);
-        add(new JScrollPane(panel), BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(panel);
+        // zorg dat muisklikken op het panel aankomen ook als het in een scrollpane zit
+        scrollPane.getViewport().addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                // stuur de klik door naar het panel met gecorrigeerde coordinaten
+                java.awt.event.MouseEvent doorgestuurd = javax.swing.SwingUtilities.convertMouseEvent(
+                        scrollPane.getViewport(), e, panel);
+                for (java.awt.event.MouseListener l : panel.getMouseListeners()) {
+                    l.mouseClicked(doorgestuurd);
+                }
+            }
+        });
+        add(scrollPane, BorderLayout.CENTER);
 
         //maak de simulatieview
         simulatieView = new SimulatieView(simulatieController);
         top.add(simulatieView);
 
+
+        //krijgt boolean terug van simulatieview als pauze is ingedrukt (true)
+        //daarna ->
         // stel de pauze callback in zodat de timer ook pauzeert
         simulatieView.setOnPauze((gepauzeerd) -> {
             if (gepauzeerd) {

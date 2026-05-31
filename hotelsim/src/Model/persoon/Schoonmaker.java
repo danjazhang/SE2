@@ -27,12 +27,20 @@ public class Schoonmaker extends Persoon {
     // logger voor het loggen naar de GUI
     private ILogger logger;
 
+    // laatst bekende eventtijd voor consistente logberichten
+    private int huidigeTijd;
+
+    // bepaalt of deze schoonmaker in de eerste plaats voor noodgevallen bedoeld is
+    private boolean noodSchoonmaker;
+
     // constructor met logger
     public Schoonmaker(ILogger logger) {
         this.bezig = false;
         this.kamer = null;
         this.resterendeSchoonmaakTicks = 0;
         this.logger = logger;
+        this.huidigeTijd = 0;
+        this.noodSchoonmaker = false;
     }
 
     // lege constructor voor als er geen logger nodig is (bijv. in testen)
@@ -40,6 +48,8 @@ public class Schoonmaker extends Persoon {
         this.bezig = false;
         this.kamer = null;
         this.resterendeSchoonmaakTicks = 0;
+        this.huidigeTijd = 0;
+        this.noodSchoonmaker = false;
     }
 
     // wijs een kamer toe die schoongemaakt moet worden
@@ -74,7 +84,7 @@ public class Schoonmaker extends Persoon {
         // check of de schoonmaker net de doelkamer is binnengekomen
         if (bezig && kamer != null && huidigVakje != null && huidigVakje.ruimte == kamer && oudeKamer != kamer) {
             resterendeSchoonmaakTicks = SCHOONMAAKDUUR;
-            if (logger != null) logger.log("Schoonmaker begint kamer " + kamer.getKamernummer() + " schoon te maken");
+            if (logger != null) logger.log("[" + huidigeTijd + "] Schoonmaker begint kamer " + kamer.getKamernummer() + " schoon te maken");
         }
     }
 
@@ -82,22 +92,42 @@ public class Schoonmaker extends Persoon {
     public void zetRouteNaarKamer(Vakje doelVakje) {
         wisRoute();
         resterendeSchoonmaakTicks = 0;
-        if (doelVakje != null) zetDoel(doelVakje);
+        zetRouteViaTrap(doelVakje);
     }
 
     public void setLogger(ILogger logger) { this.logger = logger; }
 
+    public void setHuidigeTijd(int huidigeTijd) { this.huidigeTijd = huidigeTijd; }
+
     public void setWachtVakje(Vakje wachtVakje) { this.wachtVakje = wachtVakje; }
+
+    // markeer deze schoonmaker als voorkeurskeuze voor noodgevallen of gewone checkout-schoonmaak
+    public void setNoodSchoonmaker(boolean noodSchoonmaker) { this.noodSchoonmaker = noodSchoonmaker; }
+
+    public boolean isNoodSchoonmaker() { return noodSchoonmaker; }
 
     // maak de kamer schoon en ga terug naar de wachtplek als die bekend is
     private void rondSchoonmaakAf() {
         kamer.schoonmaken();
-        if (logger != null) logger.log("Schoonmaker heeft " + kamer.getKamernummer() + " schoon gemaakt");
+        if (logger != null) logger.log("[" + huidigeTijd + "] Schoonmaker heeft " + kamer.getKamernummer() + " schoon gemaakt");
         bezig = false;
         kamer = null;
-        // ga terug naar wachtplek als die ingesteld is
+        // ga ook voor de terugweg via de pathfinder, zodat de schoonmaker
+        // net als op de heenweg steeds de trap blijft gebruiken
         if (wachtVakje != null && huidigVakje != null && huidigVakje != wachtVakje) {
-            zetDoel(wachtVakje);
+            wisRoute();
+            zetRouteViaTrap(wachtVakje);
+        }
+    }
+
+    // gebruik altijd de traproute wanneer de schoonmaker een nieuw doel krijgt;
+    // zo loopt hij niet dwars door kamers heen bij een andere verdieping
+    private void zetRouteViaTrap(Vakje doelVakje) {
+        if (doelVakje == null) return;
+        if (getPathfinder() != null) {
+            getPathfinder().zetRouteTrap(this, doelVakje);
+        } else {
+            zetDoel(doelVakje);
         }
     }
 

@@ -61,7 +61,13 @@ public class Lift extends Ruimte {
         if (uitBedrijf) {
             if (!passagiers.isEmpty()) {
                 // maak huidige beweging af naar eerstvolgende verdieping
-                int doel = passagiers.get(0) instanceof Gast g ? g.gewensteVerdieping : lobbyVerdieping;
+                int doel;
+                if (passagiers.get(0) instanceof Gast) {
+                    Gast g = (Gast) passagiers.get(0);
+                    doel = g.gewensteVerdieping;
+                } else {
+                    doel = lobbyVerdieping;
+                }
                 if (huidigeVerdieping < doel) huidigeVerdieping++;
                 else if (huidigeVerdieping > doel) huidigeVerdieping--;
                 updatePassagierPosities();
@@ -140,6 +146,10 @@ public class Lift extends Ruimte {
     public List<Persoon> getPassagiers() { return passagiers; }
     public int aantalWachtend(int verdieping) {
         Queue<Persoon> q = wachtrijen.get(verdieping);
-        return q == null ? 0 : q.size();
+        if (q == null) {
+            return 0;
+        } else {
+            return q.size();
+        }
     }
 }

@@ -57,10 +57,27 @@ public class RuimteFactory {
     // verdieping 1 = onderste kamerlaag, begint bij 101
     // verdieping 2 begint bij 201, verdieping 3 bij 301, etc.
     private int maakKamernummer(JSONObject obj) {
-        int posY = obj.has("_posY") ? Math.max(1, obj.getInt("_posY")) : 1;
-        // kleine y-waarde is hoger op het scherm, dus omdraaien voor verdiepingsnummer
-        int verdieping = ondersteKamerPosY > 0 ? Math.max(1, ondersteKamerPosY - posY + 1) : 1;
-        int volgendKamernummer = volgendeKamernummersPerVerdieping.getOrDefault(verdieping, verdieping * 100 + 1);
+        int posY;
+        if (obj.has("_posY")) {
+            posY = Math.max(1, obj.getInt("_posY"));
+        } else {
+            posY = 1;
+        }
+
+        int verdieping;
+        if (ondersteKamerPosY > 0) {
+            verdieping = Math.max(1, ondersteKamerPosY - posY + 1);
+        } else {
+            verdieping = 1;
+        }
+
+        int volgendKamernummer;
+        if (volgendeKamernummersPerVerdieping.containsKey(verdieping)) {
+            volgendKamernummer = volgendeKamernummersPerVerdieping.get(verdieping);
+        } else {
+            volgendKamernummer = verdieping * 100 + 1;
+        }
+
         volgendeKamernummersPerVerdieping.put(verdieping, volgendKamernummer + 1);
         return volgendKamernummer;
     }

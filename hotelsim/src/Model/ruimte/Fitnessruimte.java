@@ -60,12 +60,18 @@ public class Fitnessruimte extends Ruimte implements IEventListener {
         }
         // NONE: elke tick checkt de fitnessruimte of gasten klaar zijn
         else if (event.getEventType() == HotelEventType.NONE) {
+            //sla huidige tijdstip van event op als tijd
             int tijd = event.getTime();
 
-            // verzamel alle gasten die klaar zijn met sporten
+            // maak lege lijst voor gasten die klaar zijn met sporten
             List<Integer> klaar = new ArrayList<>();
+
+            //loop door de sleutel-waarde paren in de map
             for (Map.Entry<Integer, Integer> entry : sportEindTijden.entrySet()) {
+                
+                //gastid is sleutel
                 int gastId = entry.getKey();
+                //eindtijd is waarde
                 int eindTijd = entry.getValue();
                 if (tijd >= eindTijd) {
                     klaar.add(gastId);

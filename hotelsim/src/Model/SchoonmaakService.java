@@ -38,7 +38,8 @@ public class SchoonmaakService implements IEventListener {
         if (gast == null || gast.kamer == null) return;
 
         Kamer kamer = gast.kamer;
-        Schoonmaker schoonmaker = personenService.vindVrijeSchoonmaker();
+        // gebruik bij een noodgeval eerst de schoonmaker die voor noodtaken bedoeld is
+        Schoonmaker schoonmaker = personenService.vindVrijeSchoonmakerVoorNoodsituatie();
         if (schoonmaker == null) return;
 
         if (logger != null) {
@@ -51,7 +52,8 @@ public class SchoonmaakService implements IEventListener {
         hotel.pathfinder.zetRoute(schoonmaker, kamer);
 
         if (logger != null) {
-            logger.log("Schoonmaker gaat naar kamer " + kamer.getKamernummer());
+            // gebruik hetzelfde [tijd]-formaat als de andere schoonmaakberichten in de GUI
+            logger.log("[" + event.getTime() + "] Schoonmaker gaat naar kamer " + kamer.getKamernummer());
         }
     }
 }
