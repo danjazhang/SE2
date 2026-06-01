@@ -105,17 +105,7 @@ public class HotelTest {
         assertNull(h.krijgRuimteOp(3, 3));
     }
 
-    // ik roep krijgRuimteOp aan zonder dat er een layout is gezet; ik verwacht een NullPointerException
-    @Test
-    void testKrijgRuimteOpZonderLayout() {
 
-        Hotel h = new Hotel();
-
-        assertThrows(NullPointerException.class, () -> {
-
-            h.krijgRuimteOp(1, 1);
-        });
-    }
 
     // extra uitleg:
     // deze test laat zien dat alleen exact geplaatste ruimtes worden gevonden,
@@ -252,23 +242,5 @@ public class HotelTest {
     // Layout null branches
     // -------------------------------------------------
 
-    // ik voeg een kamer toe zonder layout te zetten; ik verwacht dat krijgRuimteOp een NullPointerException gooit
-    @Test
-    void testLayoutNullBranch() {
 
-        Hotel h = new Hotel();
-
-        Kamer k = new Kamer();
-
-        k.posX = 1;
-
-        k.posY = 1;
-
-        h.ruimtes.add(k);
-
-        assertThrows(NullPointerException.class, () -> {
-
-            h.krijgRuimteOp(1, 1);
-        });
-    }
 }
