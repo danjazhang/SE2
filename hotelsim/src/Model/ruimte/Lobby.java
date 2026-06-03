@@ -101,7 +101,7 @@ public class Lobby extends Ruimte implements IEventListener {
         for (Ruimte r : hotel.ruimtes) {
             if (r instanceof Kamer) {
                 Kamer k = (Kamer) r;
-                if (!k.isBezet() && k.isSchoon() && k.sterren > gewensteSterren) return k;
+                if (!k.isBezet() && k.isSchoon() && k.sterren == gewensteSterren+1) return k;
             }
         }
         // stap 3: geen geschikte kamer gevonden

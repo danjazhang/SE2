@@ -41,9 +41,7 @@ public class LobbyOverzichtView extends JDialog {
         rechtsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         // splits het venster in twee gelijke kolommen
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                linksArea,
-                new JScrollPane(rechtsArea));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(linksArea), new JScrollPane(rechtsArea));
         splitPane.setDividerLocation(550);
         splitPane.setResizeWeight(0.5);
         add(splitPane, BorderLayout.CENTER);
@@ -214,6 +212,7 @@ public class LobbyOverzichtView extends JDialog {
         if (r instanceof Bioscoop) return "bioscoop";
         if (r instanceof Lobby) return "lobby";
         if (r instanceof Lift) return "lift";
+        if (r instanceof Trap) return "trap";
         return "(" + g.huidigVakje.x + "," + g.huidigVakje.y + ")";
     }
 
@@ -222,6 +221,7 @@ public class LobbyOverzichtView extends JDialog {
         if (g.uitcheckend) return "aan het uitchecken";
         if (g.inLift) return "in lift";
         if (g.wachtOpLift) return "wacht op lift";
+        if (g.huidigVakje != null && g.huidigVakje.ruimte instanceof Trap) return "in trappenhuis";
         if (g.huidigVakje != null && g.huidigVakje.ruimte instanceof Restaurant) return "aan het eten";
         if (g.huidigVakje != null && g.huidigVakje.ruimte instanceof Fitnessruimte) return "aan het sporten";
         if (g.huidigVakje != null && g.huidigVakje.ruimte instanceof Bioscoop) return "kijkt film";

@@ -66,14 +66,25 @@ public class HotelView extends JFrame {
 
         // -> betekent dat als het stukje ervoor wordt aangeroepen dat het stuk erna gebeurt
         panel.setOnLobbyClick(() -> {
-            // pauzeert de simulatie en stopt de timer voordat het venster opent
-            simulatieController.pauzeer();
-            gebruikstijdTimer.stop();
-            // gebruik this.hotel zodat altijd het meest recente hotel gebruikt wordt
-            LobbyOverzichtView view = new LobbyOverzichtView(this.hotel, simulatieController);
+            // alleen pauzeren en timer stoppen als de simulatie al gestart is
+            boolean timerWasActief = gebruikstijdTimer.isRunning();
+            if (timerWasActief) {
+                simulatieController.pauzeer();
+                gebruikstijdTimer.stop();
+            }
+            LobbyOverzichtView view;
+            if (timerWasActief) {
+                //simulatiecontroller om te pauzeren en hervatten
+                view = new LobbyOverzichtView(this.hotel, simulatieController);
+            } else {
+                //geen simulatiecontroller dus kan niet perongeluk gestart worden zonder dat het gestart is
+                view = new LobbyOverzichtView(this.hotel, null);
+            }
             view.setVisible(true);
-            // hervat de timer nadat het venster gesloten is
-            gebruikstijdTimer.start();
+            // alleen hervatten als de timer al liep voor het openen
+            if (timerWasActief) {
+                gebruikstijdTimer.start();
+            }
         });
 
         // maak de timer aan die elke seconde de tijd bijwerkt
@@ -85,9 +96,7 @@ public class HotelView extends JFrame {
             tijdLabel.setText(String.format("Tijd: %02d:%02d:%02d", uren, minuten, sec));
         });
 
-        // =========================
         // IMPORT BUTTON
-        // =========================
         importButton.addActionListener((ActionEvent e) -> {
             //maak nieuwe filepicker
             JFileChooser chooser = new JFileChooser();
@@ -119,9 +128,7 @@ public class HotelView extends JFrame {
             }
         });
 
-        // =========================
         // DROPDOWN
-        // =========================
         layoutSelector.addActionListener((ActionEvent e) -> {
             //als er niks geselecteerd is stop dan
             if (layoutSelector.getSelectedItem() == null) return;
@@ -152,9 +159,7 @@ public class HotelView extends JFrame {
             gebruikstijdTimer.start();
         });
 
-        // =========================
         // UI
-        // =========================
         JPanel top = new JPanel();
         // voeg tijdlabel toe als eerste zodat het links naast import layout staat
         top.add(tijdLabel);
@@ -185,7 +190,7 @@ public class HotelView extends JFrame {
 
 
         //krijgt boolean terug van simulatieview als pauze is ingedrukt (true)
-        //daarna ->
+        //daarna "->"
         // stel de pauze callback in zodat de timer ook pauzeert
         simulatieView.setOnPauze((gepauzeerd) -> {
             if (gepauzeerd) {
@@ -213,13 +218,10 @@ public class HotelView extends JFrame {
         });
 
         //toon de eventlog links zonder horizontale scrollbar
-        JScrollPane zijLog = new JScrollPane(eventLogView.getLogArea(),
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane zijLog = new JScrollPane(eventLogView.getLogArea(), JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         zijLog.setPreferredSize(new Dimension(360, 400));
         add(zijLog, BorderLayout.WEST);
 
-        //venster grootte
         setSize(1200, 800);
         //venster in het midden van het scherm
         setLocationRelativeTo(null);

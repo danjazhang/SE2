@@ -1,4 +1,5 @@
 import Model.ruimte.Lift;
+import Model.Hotel;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -6,7 +7,7 @@ public class LiftTest {
 
     // Ik maak een nieuwe lift aan; ik verwacht dat die op verdieping 1 start en nog geen verzoeken heeft.
     @Test void testConstructor() {
-        Lift l = new Lift();
+        Lift l = new Lift(hotel);
         assertEquals(1, l.getHuidigeVerdieping());
         assertTrue(l.getVerzoeken().isEmpty());
     }
