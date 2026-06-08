@@ -89,14 +89,38 @@ public class SimulatieController {
 
     private void verwerkUitstappendeGasten(Hotel hotel) {
         for (Persoon p : hotel.personen) {
-            if (!(p instanceof Gast g)) continue;
+            if (!(p instanceof Gast)) continue;
+            Gast g = (Gast) p;
             if (!g.moetUitstappen) continue;
             g.moetUitstappen = false;
-            Vakje liftVakje = hotel.layout.krijgVakje(hotel.lift.posX, hotel.lift.getHuidigeVerdieping());
-            if (liftVakje != null) { g.huidigVakje = liftVakje; liftVakje.voegPersoonToe(g); }
-            if (g.eindbestemming != null && g.getPathfinder() != null) {
-                Vakje doel = hotel.layout.krijgVakje(g.eindbestemming.posX, g.eindbestemming.posY);
-                if (doel != null) g.zetDoel(doel);
+
+            // zet gast op het lege vakje naast de lift op de huidige verdieping
+            int uitstapX = hotel.lift.posX + 1;
+            int uitstapY = hotel.lift.getHuidigeVerdieping();
+            Vakje uitstapVakje = hotel.layout.krijgVakje(uitstapX, uitstapY);
+            if (uitstapVakje != null) {
+                if (g.huidigVakje != null) g.huidigVakje.verwijderPersoon(g);
+                g.huidigVakje = uitstapVakje;
+                uitstapVakje.voegPersoonToe(g);
+            }
+
+            // reset lift-status zodat zetRoute niet opnieuw via lift probeert te routeren
+            g.gebruiktLift = false;
+            g.wachtOpLift = false;
+
+            // stuur gast direct naar zijn eindbestemming — altijd lopen, nooit opnieuw lift
+            if (g.eindbestemming != null && hotel.pathfinder != null) {
+                Model.ruimte.Ruimte bestemming = g.eindbestemming;
+                g.eindbestemming = null;
+                // gebruik doelvakje van de bestemming en loop er direct naartoe
+                int[] ingang = bestemming.krijgIngang();
+                Vakje doelVakje = hotel.layout.krijgVakje(ingang[0], ingang[1]);
+                if (doelVakje == null) {
+                    doelVakje = hotel.layout.krijgVakje(bestemming.posX, bestemming.posY);
+                }
+                if (doelVakje != null) {
+                    hotel.pathfinder.zetRouteTrap(g, doelVakje);
+                }
             }
         }
     }
@@ -105,11 +129,15 @@ public class SimulatieController {
         Lift lift = hotel.lift;
         if (lift == null) return;
         for (Persoon p : hotel.personen) {
-            if (!(p instanceof Gast g)) continue;
+            if (!(p instanceof Gast)) continue;
+            Gast g = (Gast) p;
             if (!g.gebruiktLift || g.inLift || g.huidigVakje == null) continue;
-            boolean bijLift = g.huidigVakje.x == hotel.lift.posX + 1 &&
-                    g.huidigVakje.y == hotel.lift.getHuidigeVerdieping();
-            if (bijLift) g.wachtOpLift = lift.getHuidigeVerdieping() != g.huidigVakje.y;
+            // gast staat op de wachtplek als hij op x=posX+1 staat
+            boolean opWachtplek = g.huidigVakje.x == lift.posX + 1;
+            if (opWachtplek) {
+                // wacht als lift nog niet op dezelfde y-rij is
+                g.wachtOpLift = lift.getHuidigeVerdieping() != g.huidigVakje.y;
+            }
         }
     }
 }

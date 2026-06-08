@@ -38,8 +38,8 @@ public class Lobby extends Ruimte implements IEventListener {
     }
 
     private void behandelCheckIn(int gastId, int tijd, int gewensteSterren) {
-        // zet gast op balie als startpunt
-        Vakje startVakje = hotel.layout.krijgVakje(balieX, hotel.hoogte);
+        // zet gast op de balie in de lobby als startpunt
+        Vakje startVakje = hotel.layout.krijgVakje(balieX, balieY);
 
         // zoek eerst een geschikte kamer voordat de gast aangemaakt wordt
         Kamer kamer = vindGeschikteKamer(gewensteSterren);
