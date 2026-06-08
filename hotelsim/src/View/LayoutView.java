@@ -6,9 +6,8 @@ import Model.persoon.Gast;
 import Model.persoon.Persoon;
 import Model.persoon.Schoonmaker;
 import Model.ruimte.*;
-
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 /**
  * Tekent het hotel op het scherm.
@@ -202,7 +201,14 @@ public class LayoutView extends JPanel implements ModelListener {
             int py;
 
             Ruimte r2 = p.huidigVakje.ruimte;
-            boolean centreer = r2 != null
+            // een schoonmaker die actief schoonmaakt is ook "op zijn doel" (geen beweging)
+            boolean schoonmakerBezig = (p instanceof Schoonmaker)
+                    && ((Schoonmaker) p).bezig
+                    && p.huidigVakje.ruimte == ((Schoonmaker) p).kamer;
+            boolean heeftDoel = p.doelVakje != null && !schoonmakerBezig;
+            // centreer alleen als de persoon zijn einddoel bereikt heeft én in een echte ruimte staat
+            boolean centreer = !heeftDoel
+                    && r2 != null
                     && !(r2 instanceof Lift)
                     && !(r2 instanceof Trap)
                     && !(r2 instanceof Lobby);
@@ -214,9 +220,9 @@ public class LayoutView extends JPanel implements ModelListener {
                 px = midX - grootte / 2;
                 py = midY - grootte / 2;
             } else {
-                // leeg vakje, lift, trap, lobby: positie op het vakje zelf
+                // onderweg of in lift/trap/lobby: teken onderaan het vakje
                 px = (p.huidigVakje.x - 1) * tileSize + tileSize / 4;
-                py = schermY(p.huidigVakje.y, offsetY) + tileSize / 4;
+                py = schermY(p.huidigVakje.y, offsetY) + tileSize - grootte - 2;
             }
 
             if (p instanceof Gast) {
