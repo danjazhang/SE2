@@ -222,7 +222,7 @@ public class HotelView extends JFrame {
         zijLog.setPreferredSize(new Dimension(360, 400));
         add(zijLog, BorderLayout.WEST);
 
-        setSize(1200, 800);
+        setSize(1250, 800);
         //venster in het midden van het scherm
         setLocationRelativeTo(null);
         //maak venster zichtbaar
