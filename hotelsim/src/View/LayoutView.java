@@ -37,12 +37,18 @@ public class LayoutView extends JPanel implements ModelListener {
 
                 // zoek welke ruimte op deze positie zit in het model
                 if (LayoutView.this.hotel == null || LayoutView.this.hotel.layout == null) return;
+
+                // check of de lobby aangeklikt is — die staat hardcoded onder het grid
+                int lobbyRij = LayoutView.this.hotel.hoogte;
+                if (y == lobbyRij) {
+                    if (onLobbyClick != null) onLobbyClick.run();
+                    return;
+                }
+
                 Ruimte r = LayoutView.this.hotel.krijgRuimteOp(x, y);
 
                 // check of het de lobby is
                 if (r instanceof Lobby) {
-
-                    // als er een callback is ingesteld, voer die uit
                     if (onLobbyClick != null) {
                         onLobbyClick.run();
                     }
@@ -67,7 +73,8 @@ public class LayoutView extends JPanel implements ModelListener {
         this.hotel = hotel;
         // stel de vaste grootte in zodat de scrollpane niet terugspringt
         if (hotel != null && hotel.breedte > 0 && hotel.hoogte > 0) {
-            setPreferredSize(new Dimension(hotel.breedte * tileSize, hotel.hoogte * tileSize));
+            // +1 rij voor de lobby die onder het grid getekend wordt
+            setPreferredSize(new Dimension(hotel.breedte * tileSize, (hotel.hoogte + 1) * tileSize));
             revalidate();
         }
         repaint();
@@ -146,9 +153,31 @@ public class LayoutView extends JPanel implements ModelListener {
                 }
 
                 int tekenX = (r.posX - 1) * tileSize;
-                int tekenY = (r.posY - 1) * tileSize + offsetY;
+                int tekenY;
                 int tekenB = r.breedte * tileSize;
                 int tekenH = r.hoogte * tileSize;
+
+                // lobby hardcoded onder de hotel
+                if (r instanceof Lobby) {
+                    tekenY = (hotel.hoogte - 1) * tileSize + offsetY;
+                    tekenH = tileSize;
+                    // breedte: van rechts van lift tot links van trap
+                    tekenB = (hotel.breedte - 3) * tileSize;
+                    tekenX = tileSize; // begin rechts van de lift
+                // lift hardcoded van bovenaan tot en met de lobby
+                } else if (r instanceof Lift) {
+                    tekenY = offsetY;
+                    tekenH = hotel.hoogte * tileSize;
+                // trap hardcoded van bovenaan tot en met de lobby
+                } else if (r instanceof Trap) {
+                    tekenY = offsetY;
+                    tekenH = hotel.hoogte * tileSize;
+                } else {
+                    // gebruik de onderste rij van de ruimte als startpunt
+                    // zodat ruimtes met meerdere vakjes hoogte correct getekend worden
+                    int ondersteRij = r.posY + r.hoogte - 1;
+                    tekenY = (hotel.hoogte - ondersteRij - 1) * tileSize + offsetY;
+                }
 
                 g.fillRect(tekenX, tekenY, tekenB, tekenH);
                 g.setColor(Color.BLACK);
@@ -177,7 +206,8 @@ public class LayoutView extends JPanel implements ModelListener {
                 }
 
                 if (r instanceof Lift) {
-                    int cabineY = (hotel.lift.getHuidigeVerdieping() - 1) * tileSize + offsetY;
+                    // cabine positie: verdieping 1 is onderaan de schacht (net boven de lobby)
+                    int cabineY = (hotel.hoogte - hotel.lift.getHuidigeVerdieping() - 1) * tileSize + offsetY;
 
                     g.setColor(new Color(202, 152, 150));
                     g.fillRect(tekenX, cabineY, tileSize, tileSize);
@@ -195,7 +225,13 @@ public class LayoutView extends JPanel implements ModelListener {
             if (p.huidigVakje == null) continue;
 
             int px = (p.huidigVakje.x - 1) * tileSize + tileSize / 4;
-            int py = (p.huidigVakje.y - 1) * tileSize + tileSize / 4 + offsetY;
+            int py;
+            // personen op de lobby rij hardcoded onderaan tekenen
+            if (p.huidigVakje.y == hotel.hoogte) {
+                py = (hotel.hoogte - 1) * tileSize + tileSize / 4 + offsetY;
+            } else {
+                py = (hotel.hoogte - p.huidigVakje.y - 1) * tileSize + tileSize / 4 + offsetY;
+            }
 
             if (p instanceof Gast) {
                 int offset = (((Gast) p).gastId % 3) * 10;

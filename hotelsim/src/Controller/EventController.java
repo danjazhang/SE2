@@ -94,6 +94,7 @@ public class EventController implements HotelEventListener {
 
         for (Persoon p : hotel.personen) {
             if (p instanceof Schoonmaker) {
+                //typecast, zet persoon om naar schoonmaker
                 ((Schoonmaker) p).setHuidigeTijd(evt.getTime());
             }
         }
