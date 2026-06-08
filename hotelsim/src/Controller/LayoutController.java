@@ -33,61 +33,64 @@ public class LayoutController {
         // grid groter maken:
         // +3 voor lift (links) en trap (rechts, 2 breed)
         // +2 voor lobby (y=1, onderaan) en extra ruimte bovenaan
-        // JSON-ruimtes krijgen posY+1 zodat lobby op y=1 kan zitten
+        // +1 voor "buiten"-rij op y=0 (evacuatiebestemming, buiten het gebouw)
+        // JSON-ruimtes krijgen posY+2 zodat lobby op y=2 zit en y=1 de buiten-rij is
         int gridBreedte = resultaat.breedte + 3;
-        int gridHoogte = resultaat.hoogte + 2; // +1 voor lobby op y=1, +1 voor originele marge
+        int gridHoogte = resultaat.hoogte + 3; // +1 buiten, +1 lobby, +1 marge bovenaan
 
         nieuwHotel.breedte = gridBreedte;
         nieuwHotel.hoogte = gridHoogte;
         nieuwHotel.layout = new Layout(gridBreedte, gridHoogte);
 
-        // zoek de hoogste kamer-y in de JSON (na +1 offset) voor kamernummering
+        // zoek de hoogste kamer-y in de JSON (na +2 offset) voor kamernummering
         int ondersteKamerPosY = 1;
         for (JSONObject obj : resultaat.ruimteData) {
             if (obj.getString("AreaType").equals("Room")) {
-                ondersteKamerPosY = Math.max(ondersteKamerPosY, obj.getInt("_posY") + 1);
+                ondersteKamerPosY = Math.max(ondersteKamerPosY, obj.getInt("_posY") + 2);
             }
         }
 
-        // maak ruimtes aan; posY krijgt +1 zodat ze boven de lobby (y=1) vallen
+        // maak ruimtes aan; posY krijgt +2 zodat lobby (y=2) en buiten (y=1) eronder passen
         RuimteFactory factory = new RuimteFactory(logger, ondersteKamerPosY);
 
         for (JSONObject obj : resultaat.ruimteData) {
             Ruimte r = factory.maakRuimte(obj.getString("AreaType"), obj);
             r.posX = obj.getInt("_posX") + 1; // ruimte voor lift
-            r.posY = obj.getInt("_posY") + 1; // +1 zodat lobby op y=1 past
+            r.posY = obj.getInt("_posY") + 2; // +2 zodat lobby op y=2 en buiten op y=1 passen
             r.breedte = obj.getInt("_breedte");
             r.hoogte = obj.getInt("_hoogte");
             nieuwHotel.ruimtes.add(r);
             nieuwHotel.layout.plaatsRuimte(r);
         }
 
-        // lobby op y=1 — de onderste rij
-        // lift en trap starten op y=2 (boven de lobby) en lopen door tot gridHoogte
-        int lobbyPosY = 1;
-        int kamersStartY = 2; // eerste y-rij met kamers, direct boven de lobby
+        // y=1  = "buiten" — evacuatiebestemming, leeg vakje voor de lobby
+        // y=2  = lobby
+        // y=3..gridHoogte = kamers en andere ruimtes
+        int buitenPosY = 1;
+        int lobbyPosY = 2;
+        int kamersStartY = 3;
 
         Lift lift = new Lift(nieuwHotel);
         lift.posX = 1;
-        lift.posY = kamersStartY;        // begint bij de eerste kamerrij, niet bij de lobby
+        lift.posY = kamersStartY;
         lift.breedte = 1;
-        lift.hoogte = gridHoogte - 1;    // van y=2 t/m y=gridHoogte
+        lift.hoogte = gridHoogte - kamersStartY + 1; // van kamersStartY t/m gridHoogte
         lift.initWachtrijen(gridHoogte);
-        lift.setLobbyVerdieping(lobbyPosY); // lift start bij de lobby (y=1)
+        lift.setLobbyVerdieping(lobbyPosY); // lift start bij de lobby (y=2)
         nieuwHotel.lift = lift;
         nieuwHotel.ruimtes.add(lift);
         nieuwHotel.layout.plaatsRuimte(lift);
 
         Trap trap = new Trap(3);
         trap.posX = gridBreedte - 1;
-        trap.posY = kamersStartY;        // begint bij de eerste kamerrij, niet bij de lobby
+        trap.posY = kamersStartY;
         trap.breedte = 2;
-        trap.hoogte = gridHoogte - 1;    // van y=2 t/m y=gridHoogte
+        trap.hoogte = gridHoogte - kamersStartY + 1;
         nieuwHotel.trap = trap;
         nieuwHotel.ruimtes.add(trap);
         nieuwHotel.layout.plaatsRuimte(trap);
 
-        // lobby: posY=1, breedte van x=1 t/m trap (inclusief lift-kolom)
+        // lobby: posY=2, breedte van x=1 t/m trap
         Lobby lobby = new Lobby(1, lobbyPosY, gridBreedte - 2, 1, gridBreedte / 2, lobbyPosY, nieuwHotel, logger);
         nieuwHotel.lobby = lobby;
         nieuwHotel.ruimtes.add(lobby);
@@ -95,14 +98,15 @@ public class LayoutController {
 
         nieuwHotel.pathfinder = new Pathfinder(nieuwHotel);
 
-        // schoonmakers starten in de lobby (y=1)
+        // schoonmaker 1: wacht in de lobby (y=2)
         PersonenFactory personenFactory = new PersonenFactory();
         Vakje wachtVakjeLinks = nieuwHotel.layout.krijgVakje(Math.max(2, gridBreedte / 2 - 1), lobbyPosY);
         Schoonmaker schoonmakerCheckOut = personenFactory.maakSchoonmaker(nieuwHotel.pathfinder, wachtVakjeLinks);
         schoonmakerCheckOut.setWachtVakje(wachtVakjeLinks);
         nieuwHotel.voegPersoonToe(schoonmakerCheckOut);
 
-        Vakje wachtVakjeRechts = nieuwHotel.layout.krijgVakje(Math.min(gridBreedte - 2, gridBreedte / 2 + 1), lobbyPosY);
+        // schoonmaker 2 (nood): wacht bij de trap op de bovenste verdieping
+        Vakje wachtVakjeRechts = nieuwHotel.layout.krijgVakje(gridBreedte - 1, gridHoogte - 1);
         Schoonmaker schoonmakerNood = personenFactory.maakSchoonmaker(nieuwHotel.pathfinder, wachtVakjeRechts);
         schoonmakerNood.setWachtVakje(wachtVakjeRechts);
         schoonmakerNood.setNoodSchoonmaker(true);

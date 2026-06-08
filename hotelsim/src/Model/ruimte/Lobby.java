@@ -74,11 +74,17 @@ public class Lobby extends Ruimte implements IEventListener {
             // stuur schoonmaker naar de kamer via een route
             hotel.pathfinder.zetRoute(schoonmaker, kamer);
         }
-        // markeer gast als uitcheckend, wis oude route en stuur naar de lobby
-        // zodra de gast de lobby bereikt wordt hij grafisch verwijderd via betreed()
+        // markeer gast als uitcheckend, wis oude route en stuur naar het midden van de lobby
+        // zodra de gast de lobby betreedt wordt hij grafisch verwijderd via betreed()
         gast.uitcheckend = true;
         gast.wisRoute();
-        hotel.pathfinder.zetRoute(gast, this);
+        // stuur naar balievakje (midden lobby) zodat hij visueel door het midden vertrekt
+        Vakje balieVakje = hotel.layout.krijgVakje(balieX, balieY);
+        if (balieVakje != null) {
+            hotel.pathfinder.zetRouteTrap(gast, balieVakje);
+        } else {
+            hotel.pathfinder.zetRoute(gast, this);
+        }
         if (logger != null) {
             if (kamer != null) {
                 logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt uit uit kamer " + kamer.getKamernummer());
@@ -113,18 +119,18 @@ public class Lobby extends Ruimte implements IEventListener {
     public int getBalieX() { return balieX; }
     public int getBalieY() { return balieY; }
 
-    // als een uitcheckende gast de lobby betreedt, verwijder hem grafisch
+    // als een uitcheckende gast de lobby betreedt, verwijder hem alleen als hij het balievakje bereikt
     @Override
     public void betreed(Model.persoon.Persoon p) {
         super.betreed(p);
         if (p instanceof Gast) {
             Gast gast = (Gast) p;
-            if (gast.uitcheckend) {
-                // verwijder van huidig vakje en uit de personenlijst
-                if (gast.huidigVakje != null) {
-                    gast.huidigVakje.verwijderPersoon(gast);
-                    gast.huidigVakje = null;
-                }
+            if (gast.uitcheckend && gast.huidigVakje != null
+                    && gast.huidigVakje.x == balieX
+                    && gast.huidigVakje.y == balieY) {
+                // gast heeft het midden van de lobby bereikt — verwijder hem
+                gast.huidigVakje.verwijderPersoon(gast);
+                gast.huidigVakje = null;
                 gast.wisRoute();
                 hotel.personen.remove(gast);
             }
