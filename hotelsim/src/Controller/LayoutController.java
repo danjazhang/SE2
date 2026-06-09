@@ -98,6 +98,10 @@ public class LayoutController {
 
         nieuwHotel.pathfinder = new Pathfinder(nieuwHotel);
 
+        //brandalarmservice koppelen
+        BrandalarmService brandalarmService = new BrandalarmService(nieuwHotel, logger);
+        nieuwHotel.brandalarmService = brandalarmService;
+
         // schoonmaker 1: wacht in de lobby (y=2)
         PersonenFactory personenFactory = new PersonenFactory();
         Vakje wachtVakjeLinks = nieuwHotel.layout.krijgVakje(Math.max(2, gridBreedte / 2 - 1), lobbyPosY);

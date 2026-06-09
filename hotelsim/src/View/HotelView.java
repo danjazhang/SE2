@@ -4,6 +4,7 @@ import Controller.EventController;
 import Controller.HotelController;
 import Controller.LayoutController;
 import Controller.SimulatieController;
+import Model.BrandalarmService;
 import Model.Hotel;
 
 import javax.swing.*;
