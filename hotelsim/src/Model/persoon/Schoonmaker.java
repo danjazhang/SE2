@@ -130,4 +130,28 @@ public class Schoonmaker extends Persoon {
     }
 
     public void gaNaarOptimalePositie() {}
+
+    @Override
+    public boolean isSchoonmaker() { return true; }
+
+    @Override
+    public String getStatusTekst() {
+        String status;
+        if (bezig && kamer != null) {
+            status = "bezig met kamer " + kamer.getKamernummer();
+        } else if (bezig) {
+            status = "onderweg naar kamer";
+        } else {
+            status = "vrij inzetbaar";
+        }
+
+        String positie;
+        if (huidigVakje != null) {
+            positie = "(" + huidigVakje.x + "," + huidigVakje.y + ")";
+        } else {
+            positie = "geen positie";
+        }
+
+        return "Schoonmaker " + positie + " : " + status;
+    }
 }

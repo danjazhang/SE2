@@ -99,4 +99,19 @@ public class Restaurant extends Ruimte implements IEventListener {
     // controleer of het restaurant vol is op basis van aanwezigen vs capaciteit
     public boolean isVol() {
         return capaciteit > 0 && getAanwezigen().size() >= capaciteit;
-    }}
+    }
+
+    @Override
+    public boolean isFaciliteit() { return true; }
+
+    // geef de status van het restaurant terug voor het observatiescherm
+    @Override
+    public String getStatusTekst() {
+        int aanwezig = getAanwezigen().size();
+        String vol = "";
+        if (capaciteit > 0 && aanwezig >= capaciteit) {
+            vol = " [VOL]";
+        }
+        return "Restaurant (cap " + capaciteit + ") : " + aanwezig + " aanwezig" + vol;
+    }
+}

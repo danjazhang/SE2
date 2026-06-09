@@ -56,13 +56,34 @@ public class Ruimte {
         return new ArrayList<>(aanwezigen);
     }
 
-    // sla de ingang positie op
-    public void setIngang(int x, int y) { this.ingangX = x; this.ingangY = y; }
+    // geef deze ruimte terug als vrije kamer, standaard null
+    // Kamer overschrijft dit als die vrij en schoon is
+    public Kamer getVrijeKamer() { return null; }
 
     // geef de ingang positie terug als array [x, y]
     public int[] krijgIngang() { return new int[]{ingangX, ingangY}; }
 
-    // geef deze ruimte terug als vrije kamer, standaard null
-    // Kamer overschrijft dit als die vrij en schoon is
-    public Kamer getVrijeKamer() { return null; }
+    // sla de ingang positie op
+    public void setIngang(int x, int y) { this.ingangX = x; this.ingangY = y; }
+
+    // geef een statustekst terug voor het lobbyscherm
+    // subklassen overschrijven dit om hun eigen status te tonen
+    public String getStatusTekst() {
+        return "";
+    }
+
+    // geeft true als deze ruimte een kamer is — Kamer overschrijft dit
+    public boolean isKamer() {
+        return false;
+    }
+
+    // geeft true als deze ruimte een faciliteit is — Restaurant/Fitness/Bioscoop overschrijven dit
+    public boolean isFaciliteit() {
+        return false;
+    }
+
+    // geef een leesbare naam terug — subklassen overschrijven dit voor specifieke namen
+    public String getNaam() {
+        return getClass().getSimpleName().toLowerCase();
+    }
 }

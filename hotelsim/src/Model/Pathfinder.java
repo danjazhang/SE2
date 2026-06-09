@@ -62,7 +62,10 @@ public class Pathfinder {
         Vakje doel = layout.krijgVakje(bestemming.posX, bestemming.posY);
         if (start == null || doel == null) return;
         if (p instanceof Gast g) g.eindbestemming = bestemming;
+        // zelfde verdieping: direct lopen
         if (start.y == doel.y) { p.zetDoel(doel); return; }
+        // aangrenzende verdieping: direct lopen zonder lift of trap
+        if (Math.abs(start.y - doel.y) == 1) { p.zetDoel(doel); return; }
         if (p instanceof Schoonmaker) { routeViaTrap(p, start, doel); return; }
         int trapTijd = Math.abs(start.y - doel.y) * hotel.trap.tijdperverdieping;
         int liftTijd = schatLiftTijd(start, doel);

@@ -96,6 +96,8 @@ public abstract class Persoon {
 
         // verplaats persoon naar het nieuwe vakje
         huidigVakje = nieuw;
+
+        // Voeg toe aan nieuw vakje
         nieuw.voegPersoonToe(this);
 
         // meld binnenkomst in de ruimte als die er is
@@ -121,4 +123,20 @@ public abstract class Persoon {
     }
 
     public void voerTaakUit() {}
+
+    // geeft true als deze persoon een gast is — Gast overschrijft dit
+    public boolean isGast() {
+        return false;
+    }
+
+    // geeft true als deze persoon een schoonmaker is — Schoonmaker overschrijft dit
+    public boolean isSchoonmaker() {
+        return false;
+    }
+
+    // geef een statustekst terug voor het lobbyscherm
+    // subklassen overschrijven dit om hun eigen status te tonen
+    public String getStatusTekst() {
+        return "";
+    }
 }
