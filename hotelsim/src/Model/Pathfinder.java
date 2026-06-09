@@ -22,16 +22,37 @@ public class Pathfinder {
         if (huidig == null || doel == null) return null;
         int x = huidig.x;
         int y = huidig.y;
+
+        // op de trap: beweeg verticaal richting doel-y, of horizontaal als y al gelijk is
+        if (huidig.ruimte instanceof Trap) {
+            if (y < doel.y) return layout.krijgVakje(x, y + 1);
+            if (y > doel.y) return layout.krijgVakje(x, y - 1);
+            // zelfde y: verlaat de trap horizontaal richting doel
+            if (x < doel.x) return layout.krijgVakje(x + 1, y);
+            if (x > doel.x) return layout.krijgVakje(x - 1, y);
+            return null;
+        }
+
+        // zelfde y als doel: beweeg horizontaal
         if (y == doel.y) {
             if (x < doel.x) x++;
             else if (x > doel.x) x--;
             return layout.krijgVakje(x, y);
         }
-        if (huidig.ruimte instanceof Trap) {
-            if (y < doel.y) y++;
-            else if (y > doel.y) y--;
-            return layout.krijgVakje(x, y);
+
+        // zelfde x als doel en doel is direct erboven of eronder: stap verticaal
+        // (bijv. van lobby-rij naar eerste trap-vakje, of van gang naar kamer)
+        if (x == doel.x) {
+            if (y < doel.y) return layout.krijgVakje(x, y + 1);
+            if (y > doel.y) return layout.krijgVakje(x, y - 1);
         }
+
+        // op leeg vakje/lobby: beweeg horizontaal richting doel-x
+        if (x != doel.x) {
+            if (x < doel.x) return layout.krijgVakje(x + 1, y);
+            return layout.krijgVakje(x - 1, y);
+        }
+
         return null;
     }
 
@@ -102,7 +123,11 @@ public class Pathfinder {
 
     private Vakje vindTrap(int y) {
         for (Ruimte r : hotel.ruimtes) {
-            if (r instanceof Trap) return layout.krijgVakje(r.posX, y);
+            if (r instanceof Trap) {
+                // clip y naar de grenzen van de trap (posY t/m posY+hoogte-1)
+                int trapY = Math.max(r.posY, Math.min(y, r.posY + r.hoogte - 1));
+                return layout.krijgVakje(r.posX, trapY);
+            }
         }
         return null;
     }

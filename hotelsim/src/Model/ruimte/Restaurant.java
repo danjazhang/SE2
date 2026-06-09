@@ -96,8 +96,10 @@ public class Restaurant extends Ruimte implements IEventListener {
     // laat een gast het restaurant verlaten
     public void verlaatRestaurant() {}
 
-    // controleer of het restaurant vol is
-    public void isVol() {}
+    // controleer of het restaurant vol is op basis van aanwezigen vs capaciteit
+    public boolean isVol() {
+        return capaciteit > 0 && getAanwezigen().size() >= capaciteit;
+    }}
 
     @Override
     public boolean isFaciliteit() { return true; }

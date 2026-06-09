@@ -19,7 +19,7 @@ public class PersonenFactoryTest {
         hotel.layout = new Layout(5, 3);
         hotel.breedte = 5;
         hotel.hoogte = 3;
-        Lift lift = new Lift();
+        Lift lift = new Lift(hotel);
         lift.posX = 1; lift.posY = 1; lift.breedte = 1; lift.hoogte = 3;
         hotel.ruimtes.add(lift);
         hotel.layout.plaatsRuimte(lift);

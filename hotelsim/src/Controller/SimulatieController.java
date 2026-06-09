@@ -19,8 +19,12 @@ public class SimulatieController {
     private int snelheid = 1;
     private int tikTeller = 0;
 
-    // starttijd in milliseconden voor de realtime klok
     private long startTijdMs = 0;
+
+    // gast wordt gesummond na dit aantal stilstaande ticks
+    private static final int MAX_WACHT_TICKS = 5;
+    // summoning animatie duurt dit aantal ticks
+    private static final int SUMMON_DUUR = 8;
 
     public SimulatieController(HotelEventManager eventManager, EventController eventController, HotelController hotelController) {
         this.eventManager = eventManager;
@@ -28,7 +32,6 @@ public class SimulatieController {
         this.hotelController = hotelController;
     }
 
-    // start de simulatie met het opgegeven scenario en sla de starttijd op
     public void start(int scenario) {
         startTijdMs = System.currentTimeMillis();
         tikTeller = 0;
@@ -48,10 +51,8 @@ public class SimulatieController {
         }
     }
 
-    // geef het huidige ticknummer terug voor de HTE weergave
     public int getTikTeller() { return tikTeller; }
 
-    // geef de verstreken realtime terug als HH:mm:ss, onafhankelijk van de ticks
     public String getRealTijd() {
         if (startTijdMs == 0) return "00:00:00";
         long verstreken = System.currentTimeMillis() - startTijdMs;
@@ -62,7 +63,6 @@ public class SimulatieController {
         return String.format("%02d:%02d:%02d", uren, minuten, sec);
     }
 
-    // wordt elke simulatie-tick uitgevoerd
     public void tik() {
         Hotel hotel = hotelController.getHotel();
         if (hotel == null) return;
@@ -80,6 +80,8 @@ public class SimulatieController {
             if (hotel.lift != null) hotel.lift.tik();
             verwerkUitstappendeGasten(hotel);
             verwerkWachtendeGasten(hotel);
+            verwerkWachttijden(hotel);
+            verwerkRestaurantWachtrij(hotel);
             List<Persoon> copy = new ArrayList<>(hotel.personen);
             for (Persoon p : copy) p.beweeg();
             hotelController.notifyListeners();
@@ -87,16 +89,40 @@ public class SimulatieController {
         }
     }
 
+    // -----------------------------------------------------------------------
+    // Lift-afhandeling
+    // -----------------------------------------------------------------------
+
     private void verwerkUitstappendeGasten(Hotel hotel) {
         for (Persoon p : hotel.personen) {
-            if (!(p instanceof Gast g)) continue;
+            if (!(p instanceof Gast)) continue;
+            Gast g = (Gast) p;
             if (!g.moetUitstappen) continue;
             g.moetUitstappen = false;
-            Vakje liftVakje = hotel.layout.krijgVakje(hotel.lift.posX, hotel.lift.getHuidigeVerdieping());
-            if (liftVakje != null) { g.huidigVakje = liftVakje; liftVakje.voegPersoonToe(g); }
-            if (g.eindbestemming != null && g.getPathfinder() != null) {
-                Vakje doel = hotel.layout.krijgVakje(g.eindbestemming.posX, g.eindbestemming.posY);
-                if (doel != null) g.zetDoel(doel);
+
+            int uitstapX = hotel.lift.posX + 1;
+            int uitstapY = hotel.lift.getHuidigeVerdieping();
+            Vakje uitstapVakje = hotel.layout.krijgVakje(uitstapX, uitstapY);
+            if (uitstapVakje != null) {
+                if (g.huidigVakje != null) g.huidigVakje.verwijderPersoon(g);
+                g.huidigVakje = uitstapVakje;
+                uitstapVakje.voegPersoonToe(g);
+            }
+
+            g.gebruiktLift = false;
+            g.wachtOpLift = false;
+
+            if (g.eindbestemming != null && hotel.pathfinder != null) {
+                Model.ruimte.Ruimte bestemming = g.eindbestemming;
+                g.eindbestemming = null;
+                int[] ingang = bestemming.krijgIngang();
+                Vakje doelVakje = hotel.layout.krijgVakje(ingang[0], ingang[1]);
+                if (doelVakje == null) {
+                    doelVakje = hotel.layout.krijgVakje(bestemming.posX, bestemming.posY);
+                }
+                if (doelVakje != null) {
+                    hotel.pathfinder.zetRouteTrap(g, doelVakje);
+                }
             }
         }
     }
@@ -105,11 +131,118 @@ public class SimulatieController {
         Lift lift = hotel.lift;
         if (lift == null) return;
         for (Persoon p : hotel.personen) {
-            if (!(p instanceof Gast g)) continue;
+            if (!(p instanceof Gast)) continue;
+            Gast g = (Gast) p;
             if (!g.gebruiktLift || g.inLift || g.huidigVakje == null) continue;
-            boolean bijLift = g.huidigVakje.x == hotel.lift.posX + 1 &&
-                    g.huidigVakje.y == hotel.lift.getHuidigeVerdieping();
-            if (bijLift) g.wachtOpLift = lift.getHuidigeVerdieping() != g.huidigVakje.y;
+            boolean opWachtplek = g.huidigVakje.x == lift.posX + 1;
+            if (opWachtplek) {
+                g.wachtOpLift = lift.getHuidigeVerdieping() != g.huidigVakje.y;
+            }
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Summoning: gast verdwijnt na te lang stilstaan
+    // Gasten in een ruimte (kamer/restaurant/etc) tellen niet mee.
+    // Gasten die wachten op het restaurant tellen ook niet mee —
+    // als ze te lang wachten activeren ze summoning zodra wachtOpRestaurant
+    // niet meer actief is EN ze buiten staan.
+    // -----------------------------------------------------------------------
+
+    private void verwerkWachttijden(Hotel hotel) {
+        List<Persoon> teVerwijderen = new ArrayList<>();
+
+        for (Persoon p : new ArrayList<>(hotel.personen)) {
+            if (!(p instanceof Gast)) continue;
+            Gast g = (Gast) p;
+
+            // summoning animatie loopt: tel op en verwijder als klaar
+            if (g.summonTick >= 0) {
+                g.summonTick++;
+                if (g.summonTick >= SUMMON_DUUR) {
+                    if (g.huidigVakje != null) g.huidigVakje.verwijderPersoon(g);
+                    g.huidigVakje = null;
+                    teVerwijderen.add(g);
+                }
+                continue;
+            }
+
+            // gast in een echte ruimte (kamer, restaurant, etc.): niet summonen
+            boolean inRuimte = g.huidigVakje != null
+                    && g.huidigVakje.ruimte != null
+                    && !(g.huidigVakje.ruimte instanceof Model.ruimte.Lift)
+                    && !(g.huidigVakje.ruimte instanceof Model.ruimte.Trap)
+                    && !(g.huidigVakje.ruimte instanceof Model.ruimte.Lobby);
+
+            // gast wacht op restaurant telt ook mee voor summoning
+            boolean stilstaand = g.doelVakje == null
+                    && !g.inLift
+                    && !g.uitcheckend
+                    && !inRuimte
+                    && g.huidigVakje != null;
+
+            if (stilstaand) {
+                g.wachtTicks++;
+                if (g.wachtTicks >= MAX_WACHT_TICKS) {
+                    g.summonTick = 0;
+                    g.wisRoute();
+                }
+            } else {
+                g.wachtTicks = 0;
+            }
+        }
+
+        hotel.personen.removeAll(teVerwijderen);
+    }
+
+    // -----------------------------------------------------------------------
+    // Restaurant wachtrij: stuur wachtende gasten naar binnen zodra er plek is
+    // -----------------------------------------------------------------------
+
+    private void verwerkRestaurantWachtrij(Hotel hotel) {
+        if (hotel.pathfinder == null) return;
+        for (Persoon p : new ArrayList<>(hotel.personen)) {
+            if (!(p instanceof Gast)) continue;
+            Gast g = (Gast) p;
+            if (!g.wachtOpRestaurant || g.wachtRestaurant == null) continue;
+            if (g.doelVakje != null) continue; // nog onderweg naar wachtplek
+
+            Model.ruimte.Restaurant r = g.wachtRestaurant;
+
+            // wachtrestaurant heeft nu plek
+            if (!r.isVol()) {
+                g.wachtOpRestaurant = false;
+                g.wachtRestaurant = null;
+                hotel.pathfinder.zetRoute(g, r);
+                continue;
+            }
+
+            // zoek een alternatief niet-vol restaurant
+            Model.ruimte.Restaurant alternatief = vindNietVolRestaurant(hotel, g, r);
+            if (alternatief != null) {
+                g.wachtOpRestaurant = false;
+                g.wachtRestaurant = null;
+                hotel.pathfinder.zetRoute(g, alternatief);
+            }
+            // anders: blijf wachten — wachtTicks tellen niet want wachtOpRestaurant=true
+        }
+    }
+
+    private Model.ruimte.Restaurant vindNietVolRestaurant(Hotel hotel, Gast gast, Model.ruimte.Restaurant uitgesloten) {
+        Model.ruimte.Restaurant beste = null;
+        int minAfstand = Integer.MAX_VALUE;
+        for (Model.ruimte.Ruimte r : hotel.ruimtes) {
+            if (!(r instanceof Model.ruimte.Restaurant)) continue;
+            if (r == uitgesloten) continue;
+            Model.ruimte.Restaurant rest = (Model.ruimte.Restaurant) r;
+            if (rest.isVol()) continue;
+            int afstand = Math.abs(r.posX - gast.huidigVakje.x)
+                    + Math.abs(r.posY - gast.huidigVakje.y);
+            if (afstand < minAfstand) {
+                minAfstand = afstand;
+                beste = rest;
+            }
+        }
+        return beste;
     }
 }

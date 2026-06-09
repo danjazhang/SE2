@@ -6,83 +6,80 @@ import Model.persoon.Gast;
 import Model.persoon.Persoon;
 import Model.persoon.Schoonmaker;
 import Model.ruimte.*;
-
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
-// View klasse: tekent het hotel grid op het scherm
+/**
+ * Tekent het hotel op het scherm.
+ *
+ * Coördinaten-systeem:
+ *   Model y=1  = "buiten" — evacuatiebestemming, buiten het gebouw
+ *   Model y=2  = lobby (onderaan het gebouw)
+ *   Model y=3..hoogte = kamers en andere ruimtes (hoog y = bovenaan scherm)
+ *
+ * Flip-formule voor een ruimte met posY en hoogte h:
+ *   tekenY = (hotel.hoogte - posY - h) * tileSize
+ *
+ * Voor een enkel vakje op y:
+ *   schermY = (hotel.hoogte - y - 1) * tileSize
+ *
+ * Voorbeelden met hoogte=11:
+ *   y=1  (buiten)         → (11-1-1)*64 = 576px  (onderaan, onder de lobby)
+ *   y=2  (lobby)          → (11-2-1)*64 = 512px
+ *   y=3  (laagste kamer)  → (11-3-1)*64 = 448px
+ *   y=10 (bovenste kamer) → (11-10-1)*64 = 0px   (bovenaan) ✓
+ */
 public class LayoutView extends JPanel implements ModelListener {
 
     Hotel hotel;
     static int tileSize = 64;
     private static final int DREMPEL_BEZET = 3;
 
-    // simulatiecontroller voor de realtime klok en tick teller
     private SimulatieController simulatieController;
-
-    // callback voor lobby klik
     private Runnable onLobbyClick;
 
     public LayoutView(Hotel hotel) {
         this.hotel = hotel;
 
-        // mouse listener voor klikken op het grid
         addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
-
-                // bereken welke tile is aangeklikt op basis van muiscoördinaten
-                int x = e.getX() / tileSize + 1;
-                int y = e.getY() / tileSize + 1;
-
-                // zoek welke ruimte op deze positie zit in het model
                 if (LayoutView.this.hotel == null || LayoutView.this.hotel.layout == null) return;
-
-                // check of de lobby aangeklikt is — die staat hardcoded onder het grid
-                int lobbyRij = LayoutView.this.hotel.hoogte;
-                if (y == lobbyRij) {
-                    if (onLobbyClick != null) onLobbyClick.run();
-                    return;
-                }
-
+                int x = e.getX() / tileSize + 1;
+                int y = LayoutView.this.hotel.hoogte - e.getY() / tileSize; // flip terug naar model-y
                 Ruimte r = LayoutView.this.hotel.krijgRuimteOp(x, y);
-
-                // check of het de lobby is
-                if (r instanceof Lobby) {
-                    if (onLobbyClick != null) {
-                        onLobbyClick.run();
-                    }
+                if (r instanceof Lobby && onLobbyClick != null) {
+                    onLobbyClick.run();
                 }
             }
         });
     }
 
-    // setter zodat HotelView kan koppelen wat er gebeurt bij klik
-    public void setOnLobbyClick(Runnable onLobbyClick) {
-        this.onLobbyClick = onLobbyClick;
-    }
-
-    // stel de simulatiecontroller in zodat de klok getoond kan worden
-    public void setSimulatieController(SimulatieController sc) {
-        this.simulatieController = sc;
-    }
-
+    public void setOnLobbyClick(Runnable onLobbyClick) { this.onLobbyClick = onLobbyClick; }
+    public void setSimulatieController(SimulatieController sc) { this.simulatieController = sc; }
     public Hotel getHotel() { return hotel; }
 
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
-        // stel de vaste grootte in zodat de scrollpane niet terugspringt
         if (hotel != null && hotel.breedte > 0 && hotel.hoogte > 0) {
-            // +1 rij voor de lobby die onder het grid getekend wordt
-            setPreferredSize(new Dimension(hotel.breedte * tileSize, (hotel.hoogte + 1) * tileSize));
+            // hotel.hoogte bevat alle rijen inclusief buiten (y=1) en lobby (y=2)
+            setPreferredSize(new Dimension(hotel.breedte * tileSize, hotel.hoogte * tileSize));
             revalidate();
         }
         repaint();
     }
 
     @Override
-    public void modelGewijzigd() {
-        repaint();
+    public void modelGewijzigd() { repaint(); }
+
+    /** Zet model-y van een vakje om naar scherm-y pixels. */
+    private int schermY(int modelY, int offsetY) {
+        return (hotel.hoogte - modelY - 1) * tileSize + offsetY;
+    }
+
+    /** Zet model-y van een ruimte (posY + hoogte) om naar tekenY (bovenkant op scherm). */
+    private int ruimteTekenY(int posY, int hoogte, int offsetY) {
+        return (hotel.hoogte - posY - hoogte) * tileSize + offsetY;
     }
 
     @Override
@@ -96,27 +93,24 @@ public class LayoutView extends JPanel implements ModelListener {
 
         int offsetY = 0;
 
-        // teken rode brandalarm balk bovenaan als het alarm actief is
+        // brandalarm balk
         if (hotel.brandalarmActief) {
             g.setColor(new Color(200, 30, 30));
             g.fillRect(0, 0, getWidth(), 40);
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 18));
-            g.drawString("🚨 BRANDALARM – EVACUEER DIRECT", 10, 26);
+            g.drawString("BRANDALARM - EVACUEER DIRECT", 10, 26);
             offsetY += 40;
         }
 
-        // teken de HTE tick teller en realtime klok
+        // tick teller en klok
         if (simulatieController != null) {
             g.setColor(new Color(40, 40, 40));
             g.fillRect(0, offsetY, getWidth(), 24);
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.PLAIN, 13));
-
-            String klok = "HTE: " + simulatieController.getTikTeller() +
-                    "    Real Time: " + simulatieController.getRealTijd();
-
-            g.drawString(klok, 10, offsetY + 17);
+            g.drawString("HTE: " + simulatieController.getTikTeller()
+                    + "    Real Time: " + simulatieController.getRealTijd(), 10, offsetY + 17);
             offsetY += 24;
         }
 
@@ -130,12 +124,10 @@ public class LayoutView extends JPanel implements ModelListener {
                 if (getekend.contains(r)) continue;
                 getekend.add(r);
 
+                // kleur per ruimtetype
                 if (r instanceof Kamer) {
-                    if (((Kamer) r).isBezet()) {
-                        g.setColor(new Color(220, 80, 80));
-                    } else {
-                        g.setColor(new Color(222, 229, 240));
-                    }
+                    g.setColor(((Kamer) r).isBezet()
+                            ? new Color(220, 80, 80) : new Color(222, 229, 240));
                 } else if (r instanceof Restaurant) {
                     g.setColor(new Color(220, 193, 185));
                 } else if (r instanceof Bioscoop) {
@@ -153,40 +145,24 @@ public class LayoutView extends JPanel implements ModelListener {
                 }
 
                 int tekenX = (r.posX - 1) * tileSize;
-                int tekenY;
+                int tekenY = ruimteTekenY(r.posY, r.hoogte, offsetY);
                 int tekenB = r.breedte * tileSize;
                 int tekenH = r.hoogte * tileSize;
 
-                // lobby hardcoded onder de hotel
-                if (r instanceof Lobby) {
-                    tekenY = (hotel.hoogte - 1) * tileSize + offsetY;
-                    tekenH = tileSize;
-                    // breedte: van rechts van lift tot links van trap
-                    tekenB = (hotel.breedte - 3) * tileSize;
-                    tekenX = tileSize; // begin rechts van de lift
-                // lift hardcoded van bovenaan tot en met de lobby
-                } else if (r instanceof Lift) {
+                // lift en trap beslaan alleen de kamerrijen (y=3..hoogte), niet lobby (y=2) of buiten (y=1)
+                if (r instanceof Lift || r instanceof Trap) {
                     tekenY = offsetY;
-                    tekenH = hotel.hoogte * tileSize;
-                // trap hardcoded van bovenaan tot en met de lobby
-                } else if (r instanceof Trap) {
-                    tekenY = offsetY;
-                    tekenH = hotel.hoogte * tileSize;
-                } else {
-                    // gebruik de onderste rij van de ruimte als startpunt
-                    // zodat ruimtes met meerdere vakjes hoogte correct getekend worden
-                    int ondersteRij = r.posY + r.hoogte - 1;
-                    tekenY = (hotel.hoogte - ondersteRij - 1) * tileSize + offsetY;
+                    tekenH = (hotel.hoogte - 2) * tileSize; // hoogte - 2 rijen (zonder lobby en buiten)
                 }
 
                 g.fillRect(tekenX, tekenY, tekenB, tekenH);
                 g.setColor(Color.BLACK);
                 g.drawRect(tekenX, tekenY, tekenB, tekenH);
 
+                // rood overlay als ruimte vol is
                 if (r.getAanwezigen().size() >= DREMPEL_BEZET) {
-                    Graphics2D g2d = (Graphics2D) g;
-                    g2d.setColor(new Color(220, 50, 50, 80));
-                    g2d.fillRect(tekenX, tekenY, tekenB, tekenH);
+                    ((Graphics2D) g).setColor(new Color(220, 50, 50, 80));
+                    ((Graphics2D) g).fillRect(tekenX, tekenY, tekenB, tekenH);
                 }
 
                 g.setColor(Color.BLACK);
@@ -199,23 +175,19 @@ public class LayoutView extends JPanel implements ModelListener {
                 }
 
                 if (r instanceof Kamer) {
-                    g.drawString(String.valueOf(((Kamer) r).getKamernummer()),
-                            tekenX + 4, tekenY + 30);
-                    g.drawString(((Kamer) r).getSterrenLabel(),
-                            tekenX + 4, tekenY + 44);
+                    Kamer k = (Kamer) r;
+                    g.drawString(String.valueOf(k.getKamernummer()), tekenX + 4, tekenY + 30);
+                    g.drawString(k.getSterrenLabel(), tekenX + 4, tekenY + 44);
                 }
 
+                // teken lift-cabine op de huidige verdieping
                 if (r instanceof Lift) {
-                    // zelfde formule als ruimtes: ondersteRij = huidigeVerdieping, hoogte = 1
-                    int ondersteRij = hotel.lift.getHuidigeVerdieping();
-                    int cabineY = (hotel.hoogte - ondersteRij - 1) * tileSize + offsetY;
-
+                    int v = hotel.lift.getHuidigeVerdieping();
+                    int cabineY = schermY(v, offsetY);
                     g.setColor(new Color(202, 152, 150));
                     g.fillRect(tekenX, cabineY, tileSize, tileSize);
-
                     g.setColor(Color.BLACK);
                     g.drawRect(tekenX, cabineY, tileSize, tileSize);
-
                     g.drawString("Lift", tekenX + 4, cabineY + 16);
                 }
             }
@@ -225,47 +197,125 @@ public class LayoutView extends JPanel implements ModelListener {
         for (Persoon p : hotel.personen) {
             if (p.huidigVakje == null) continue;
 
-            int px = (p.huidigVakje.x - 1) * tileSize + tileSize / 4;
+            int grootte = tileSize / 3;
+            int px;
             int py;
-            // personen op de lobby rij hardcoded onderaan tekenen
-            if (p.huidigVakje.y == hotel.hoogte) {
-                py = (hotel.hoogte - 1) * tileSize + tileSize / 4 + offsetY;
+
+            Ruimte r2 = p.huidigVakje.ruimte;
+            // een schoonmaker die actief schoonmaakt is ook "op zijn doel" (geen beweging)
+            boolean schoonmakerBezig = (p instanceof Schoonmaker)
+                    && ((Schoonmaker) p).bezig
+                    && p.huidigVakje.ruimte == ((Schoonmaker) p).kamer;
+            boolean heeftDoel = p.doelVakje != null && !schoonmakerBezig;
+            // centreer alleen als de persoon zijn einddoel bereikt heeft én in een echte ruimte staat
+            // (niet lift/trap/lobby en niet buiten het gebouw)
+            boolean centreer = !heeftDoel
+                    && r2 != null
+                    && !(r2 instanceof Lift)
+                    && !(r2 instanceof Trap)
+                    && !(r2 instanceof Lobby)
+                    && p.huidigVakje.y > hotel.lobby.posY; // niet op of onder de lobby
+
+            if (centreer) {
+                // persoon in kamer/restaurant/etc: midden van de ruimte
+                int midX = (r2.posX - 1) * tileSize + (r2.breedte * tileSize) / 2;
+                int midY = ruimteTekenY(r2.posY, r2.hoogte, offsetY) + (r2.hoogte * tileSize) / 2;
+                px = midX - grootte / 2;
+                py = midY - grootte / 2;
             } else {
-                py = (hotel.hoogte - p.huidigVakje.y - 1) * tileSize + tileSize / 4 + offsetY;
+                // onderweg of in lift/trap/lobby: teken onderaan het vakje
+                px = (p.huidigVakje.x - 1) * tileSize + tileSize / 4;
+                py = schermY(p.huidigVakje.y, offsetY) + tileSize - grootte - 2;
             }
 
             if (p instanceof Gast) {
-                int offset = (((Gast) p).gastId % 3) * 10;
-                px += offset;
+                px += (((Gast) p).gastId % 3) * 10;
             }
 
             if (p instanceof Gast) {
+                Gast gast = (Gast) p;
+
+                // summoning animatie: straal van boven + gast vliegt omhoog
+                if (gast.summonTick >= 0) {
+                    float progress = (float) gast.summonTick / 8f; // 0.0 → 1.0 in 8 ticks
+
+                    // basisposities
+                    int basisPx = (p.huidigVakje.x - 1) * tileSize + tileSize / 2;
+                    int basisPy = schermY(p.huidigVakje.y, offsetY) + tileSize / 2;
+
+                    // gast vliegt omhoog: py daalt proportioneel met progress
+                    int vliegPy = (int) (basisPy - progress * (basisPy + tileSize));
+                    int vliegGrootte = (int) (grootte * (1f - progress * 0.8f));
+
+                    // tractor beam: breed van boven smal toelopend naar de gast
+                    Graphics2D g2d = (Graphics2D) g;
+                    // pulserende breedte op basis van tick
+                    int puls = (int) (8 + 6 * Math.sin(gast.summonTick * 0.8));
+                    int straalBovBreedte = tileSize + puls;
+                    int straalOnderBreedte = Math.max(4, grootte - (int)(progress * grootte * 0.5f));
+
+                    // straal loopt van y=0 (top scherm) tot aan de gast
+                    int[] xPunten = {
+                        basisPx - straalBovBreedte / 2,
+                        basisPx + straalBovBreedte / 2,
+                        basisPx + straalOnderBreedte / 2,
+                        basisPx - straalOnderBreedte / 2
+                    };
+                    int[] yPunten = {
+                        offsetY,
+                        offsetY,
+                        vliegPy + vliegGrootte / 2,
+                        vliegPy + vliegGrootte / 2
+                    };
+
+                    // semi-transparante groene straal met pulserende alpha
+                    int alpha = (int) (60 + 80 * Math.abs(Math.sin(gast.summonTick * 0.6)));
+                    g2d.setColor(new Color(50, 255, 120, Math.min(255, alpha)));
+                    g2d.fillPolygon(xPunten, yPunten, 4);
+
+                    // lichtere kern in het midden
+                    int kernBreedte = straalBovBreedte / 3;
+                    int[] xKern = {
+                        basisPx - kernBreedte / 2,
+                        basisPx + kernBreedte / 2,
+                        basisPx + straalOnderBreedte / 4,
+                        basisPx - straalOnderBreedte / 4
+                    };
+                    g2d.setColor(new Color(180, 255, 200, Math.min(255, alpha + 60)));
+                    g2d.fillPolygon(xKern, yPunten, 4);
+
+                    // teken de gast zelf (vliegt omhoog en wordt kleiner)
+                    if (vliegGrootte > 2) {
+                        g.setColor(Color.WHITE);
+                        g.fillOval(basisPx - vliegGrootte / 2, vliegPy - vliegGrootte / 2,
+                                vliegGrootte, vliegGrootte);
+                        g.setColor(new Color(50, 255, 120));
+                        g.drawOval(basisPx - vliegGrootte / 2, vliegPy - vliegGrootte / 2,
+                                vliegGrootte, vliegGrootte);
+                    }
+                    continue; // geen normale tekening
+                }
+
                 g.setColor(Color.WHITE);
-                g.fillOval(px, py, tileSize / 3, tileSize / 3);
-
+                g.fillOval(px, py, grootte, grootte);
                 g.setColor(Color.BLACK);
-                g.drawOval(px, py, tileSize / 3, tileSize / 3);
-
+                g.drawOval(px, py, grootte, grootte);
                 g.setFont(new Font("Arial", Font.BOLD, 10));
-                g.drawString(String.valueOf(((Gast) p).gastId),
-                        px + tileSize / 8, py + tileSize / 3);
+                g.drawString(String.valueOf(gast.gastId), px + grootte / 4, py + grootte);
 
             } else if (p instanceof Schoonmaker) {
                 g.setColor(new Color(232, 145, 68));
-                g.fillRoundRect(px, py, tileSize / 3, tileSize / 3, 10, 10);
-
+                g.fillRoundRect(px, py, grootte, grootte, 10, 10);
                 g.setColor(Color.BLACK);
-                g.drawRoundRect(px, py, tileSize / 3, tileSize / 3, 10, 10);
-
+                g.drawRoundRect(px, py, grootte, grootte, 10, 10);
                 g.setFont(new Font("Arial", Font.BOLD, 11));
                 g.drawString("S", px + 7, py + 14);
 
             } else {
                 g.setColor(Color.DARK_GRAY);
-                g.fillOval(px, py, tileSize / 3, tileSize / 3);
-
+                g.fillOval(px, py, grootte, grootte);
                 g.setColor(Color.BLACK);
-                g.drawOval(px, py, tileSize / 3, tileSize / 3);
+                g.drawOval(px, py, grootte, grootte);
             }
         }
     }

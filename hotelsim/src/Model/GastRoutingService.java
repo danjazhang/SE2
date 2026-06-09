@@ -19,15 +19,33 @@ public class GastRoutingService {
         this.hotel = hotel;
     }
 
-    // stuur een gast naar het dichtstbijzijnde restaurant en geef dat restaurant terug
+    // stuur een gast naar het dichtstbijzijnde niet-volle restaurant
+    // als alle restaurants vol zijn: laat de gast wachten buiten het dichtstbijzijnde restaurant
     public Restaurant stuurNaarRestaurant(int gastId) {
-
         Gast gast = vindGast(gastId);
         if (gast == null || gast.huidigVakje == null) return null;
-        Ruimte doelRuimte = vindDichtstbijzijndeRuimte(gast, "restaurant");
-        if (doelRuimte == null) return null;
-        hotel.pathfinder.zetRoute(gast, doelRuimte);
-        return (Restaurant) doelRuimte;
+
+        // zoek dichtstbijzijnd niet-vol restaurant
+        Restaurant doelRuimte = (Restaurant) vindDichtstbijzijndeNietVolleRuimte(gast, "restaurant");
+        if (doelRuimte != null) {
+            gast.wachtOpRestaurant = false;
+            gast.wachtRestaurant = null;
+            hotel.pathfinder.zetRoute(gast, doelRuimte);
+            return doelRuimte;
+        }
+
+        // alle restaurants vol: laat gast wachten bij het dichtstbijzijnde restaurant
+        Restaurant dichtstbij = (Restaurant) vindDichtstbijzijndeRuimte(gast, "restaurant");
+        if (dichtstbij != null) {
+            gast.wachtOpRestaurant = true;
+            gast.wachtRestaurant = dichtstbij;
+            int[] ingang = dichtstbij.krijgIngang();
+            int ix = ingang[0] != 0 ? ingang[0] : dichtstbij.posX;
+            int iy = ingang[1] != 0 ? ingang[1] : dichtstbij.posY;
+            Model.layout.Vakje wachtVakje = hotel.layout.krijgVakje(ix, iy);
+            if (wachtVakje != null) hotel.pathfinder.zetRouteTrap(gast, wachtVakje);
+        }
+        return dichtstbij;
     }
 
     // stuur een gast naar de dichtstbijzijnde fitnessruimte en geef die terug
@@ -78,6 +96,30 @@ public class GastRoutingService {
         for (Ruimte r : hotel.ruimtes) {
             boolean isJuisteType = false;
             if (ruimteType.equals("restaurant") && r instanceof Restaurant) isJuisteType = true;
+            if (ruimteType.equals("fitness") && r instanceof Fitnessruimte) isJuisteType = true;
+            if (ruimteType.equals("bioscoop") && r instanceof Bioscoop) isJuisteType = true;
+
+            if (isJuisteType) {
+                int afstand = Math.abs(r.posX - gast.huidigVakje.x) + Math.abs(r.posY - gast.huidigVakje.y);
+                if (afstand < minAfstand) {
+                    minAfstand = afstand;
+                    dichtstbij = r;
+                }
+            }
+        }
+        return dichtstbij;
+    }
+
+    // zoek de dichtstbijzijnde niet-volle ruimte van het opgegeven type
+    private Ruimte vindDichtstbijzijndeNietVolleRuimte(Gast gast, String ruimteType) {
+        Ruimte dichtstbij = null;
+        int minAfstand = Integer.MAX_VALUE;
+
+        for (Ruimte r : hotel.ruimtes) {
+            boolean isJuisteType = false;
+            if (ruimteType.equals("restaurant") && r instanceof Restaurant) {
+                if (!((Restaurant) r).isVol()) isJuisteType = true;
+            }
             if (ruimteType.equals("fitness") && r instanceof Fitnessruimte) isJuisteType = true;
             if (ruimteType.equals("bioscoop") && r instanceof Bioscoop) isJuisteType = true;
 

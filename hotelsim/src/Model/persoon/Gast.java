@@ -36,6 +36,18 @@ public class Gast extends Persoon {
     // Eindbestemming na lift
     public Ruimte eindbestemming = null;
 
+    // Aantal ticks dat de gast stilstaat (geen doel, niet in lift)
+    public int wachtTicks = 0;
+
+    // Summoning animatie: -1 = niet actief, 0..8 = animatie bezig
+    public int summonTick = -1;
+
+    // Wacht op toegang tot een vol restaurant (telt niet mee voor summoning)
+    public boolean wachtOpRestaurant = false;
+
+    // Het restaurant waar de gast op wacht
+    public Model.ruimte.Restaurant wachtRestaurant = null;
+
     public Gast(int gastId, int gewensteSterren) {
 
         this.gastId = gastId;

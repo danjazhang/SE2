@@ -1,12 +1,11 @@
 package Model.persoon;
 
 import Model.ILogger;
+import Model.Pathfinder;
 import Model.layout.Vakje;
 import Model.ruimte.Kamer;
 
-// Verantwoordelijkheid: bewegen, schoonmaaktijd aftellen en kamer schoonmaken.
-// Eventkeuze en taaktoewijzing gebeuren buiten deze klasse,
-// zodat de schoonmaker zelf alleen uitvoert.
+// Verantwoordelijkheid: bewegen, schoonmaaktijd aftellen en kamer schoonmaken
 public class Schoonmaker extends Persoon {
 
     // aantal ticks dat een schoonmaakbeurt duurt
@@ -53,7 +52,6 @@ public class Schoonmaker extends Persoon {
     }
 
     // wijs een kamer toe die schoongemaakt moet worden
-    // de echte schoonmaak start pas als de schoonmaker in de kamer aankomt
     public void maakKamerSchoon(Kamer k) {
         this.kamer = k;
         this.bezig = true;
@@ -63,19 +61,14 @@ public class Schoonmaker extends Persoon {
     @Override
     public void beweeg() {
         Kamer oudeKamer = null;
-
-        if (huidigVakje != null) {
-            if (huidigVakje.ruimte instanceof Kamer) {
-                oudeKamer = (Kamer) huidigVakje.ruimte;
-            }
+        if (huidigVakje != null && huidigVakje.ruimte instanceof Kamer) {
+            oudeKamer = (Kamer) huidigVakje.ruimte;
         }
 
-        // als de schoonmaker al in de doelkamer staat, tel schoonmaaktijd af
+        // als de schoonmaker in de doelkamer staat, tel schoonmaaktijd af
         if (bezig && kamer != null && huidigVakje != null && huidigVakje.ruimte == kamer && resterendeSchoonmaakTicks > 0) {
             resterendeSchoonmaakTicks--;
-            if (resterendeSchoonmaakTicks == 0) {
-                rondSchoonmaakAf();
-            }
+            if (resterendeSchoonmaakTicks == 0) rondSchoonmaakAf();
             return;
         }
 
@@ -88,6 +81,19 @@ public class Schoonmaker extends Persoon {
         }
     }
 
+    // overschrijft evacueer() van Persoon
+    // schoonmaker onthoudt zijn kamer zodat hij die na het alarm kan afmaken
+    // daarna loopt hij ook naar de uitgang via de trap
+    @Override
+    public void evacueer(Vakje uitgang, Pathfinder pathfinder) {
+        if (huidigVakje == null || pathfinder == null) return;
+        // wis alleen de route, niet de kamertoewijzing
+        // kamer blijft bewaard zodat de schoonmaker na het alarm verder kan
+        wisRoute();
+        // gebruik altijd de trap, nooit de lift
+        pathfinder.zetRouteTrap(this, uitgang);
+    }
+
     // zet een nieuwe route naar een kamer, wist de oude route eerst
     public void zetRouteNaarKamer(Vakje doelVakje) {
         wisRoute();
@@ -96,32 +102,24 @@ public class Schoonmaker extends Persoon {
     }
 
     public void setLogger(ILogger logger) { this.logger = logger; }
-
     public void setHuidigeTijd(int huidigeTijd) { this.huidigeTijd = huidigeTijd; }
-
     public void setWachtVakje(Vakje wachtVakje) { this.wachtVakje = wachtVakje; }
-
-    // markeer deze schoonmaker als voorkeurskeuze voor noodgevallen of gewone checkout-schoonmaak
     public void setNoodSchoonmaker(boolean noodSchoonmaker) { this.noodSchoonmaker = noodSchoonmaker; }
-
     public boolean isNoodSchoonmaker() { return noodSchoonmaker; }
 
-    // maak de kamer schoon en ga terug naar de wachtplek als die bekend is
+    // maak de kamer schoon en ga terug naar de wachtplek
     private void rondSchoonmaakAf() {
         kamer.schoonmaken();
         if (logger != null) logger.log("[" + huidigeTijd + "] Schoonmaker heeft " + kamer.getKamernummer() + " schoon gemaakt");
         bezig = false;
         kamer = null;
-        // ga ook voor de terugweg via de pathfinder, zodat de schoonmaker
-        // net als op de heenweg steeds de trap blijft gebruiken
         if (wachtVakje != null && huidigVakje != null && huidigVakje != wachtVakje) {
             wisRoute();
             zetRouteViaTrap(wachtVakje);
         }
     }
 
-    // gebruik altijd de traproute wanneer de schoonmaker een nieuw doel krijgt;
-    // zo loopt hij niet dwars door kamers heen bij een andere verdieping
+    // gebruik altijd de traproute zodat de schoonmaker nooit de lift neemt
     private void zetRouteViaTrap(Vakje doelVakje) {
         if (doelVakje == null) return;
         if (getPathfinder() != null) {
@@ -131,7 +129,6 @@ public class Schoonmaker extends Persoon {
         }
     }
 
-    // ga naar de optimale positie in het hotel
     public void gaNaarOptimalePositie() {}
 
     @Override

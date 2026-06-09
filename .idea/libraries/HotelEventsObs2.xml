@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="json-20251224">
+  <library name="HotelEventsObs">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/libs/json-20251224.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/HotelEventsObs 1/HotelEventsObs.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
