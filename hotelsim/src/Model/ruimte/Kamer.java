@@ -122,6 +122,9 @@ public class Kamer extends Ruimte {
     @Override
     public boolean isKamer() { return true; }
 
+    @Override
+    public String getNaam() { return "kamer " + kamernummer; }
+
     // geef de status van de kamer terug voor het observatiescherm
     @Override
     public String getStatusTekst() {

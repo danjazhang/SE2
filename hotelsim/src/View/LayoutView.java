@@ -9,26 +9,6 @@ import Model.ruimte.*;
 import java.awt.*;
 import javax.swing.*;
 
-/**
- * Tekent het hotel op het scherm.
- *
- * Coördinaten-systeem:
- *   Model y=1  = "buiten" — evacuatiebestemming, buiten het gebouw
- *   Model y=2  = lobby (onderaan het gebouw)
- *   Model y=3..hoogte = kamers en andere ruimtes (hoog y = bovenaan scherm)
- *
- * Flip-formule voor een ruimte met posY en hoogte h:
- *   tekenY = (hotel.hoogte - posY - h) * tileSize
- *
- * Voor een enkel vakje op y:
- *   schermY = (hotel.hoogte - y - 1) * tileSize
- *
- * Voorbeelden met hoogte=11:
- *   y=1  (buiten)         → (11-1-1)*64 = 576px  (onderaan, onder de lobby)
- *   y=2  (lobby)          → (11-2-1)*64 = 512px
- *   y=3  (laagste kamer)  → (11-3-1)*64 = 448px
- *   y=10 (bovenste kamer) → (11-10-1)*64 = 0px   (bovenaan) ✓
- */
 public class LayoutView extends JPanel implements ModelListener {
 
     Hotel hotel;
@@ -45,11 +25,21 @@ public class LayoutView extends JPanel implements ModelListener {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (LayoutView.this.hotel == null || LayoutView.this.hotel.layout == null) return;
-                int x = e.getX() / tileSize + 1;
-                int y = LayoutView.this.hotel.hoogte - e.getY() / tileSize; // flip terug naar model-y
-                Ruimte r = LayoutView.this.hotel.krijgRuimteOp(x, y);
-                if (r instanceof Lobby && onLobbyClick != null) {
-                    onLobbyClick.run();
+
+                // lobby klik detecteren via de posY van het lobby object
+                if (LayoutView.this.hotel.lobby != null) {
+                    Lobby lobby = LayoutView.this.hotel.lobby;
+                    int lobbyPixelY = ruimteTekenY(lobby.posY, lobby.hoogte, 0);
+                    // lobby begint rechts van de lift (1 tileSize vanaf links)
+                    int lobbyPixelX = tileSize;
+                    // lobby eindigt links van de trap (2 tiles vanaf rechts)
+                    int lobbyEinde = (LayoutView.this.hotel.breedte - 2) * tileSize;
+                    if (e.getY() >= lobbyPixelY && e.getY() < lobbyPixelY + tileSize
+                            && e.getX() >= lobbyPixelX && e.getX() < lobbyEinde
+                            && onLobbyClick != null) {
+                        onLobbyClick.run();
+                        return;
+                    }
                 }
             }
         });
@@ -126,8 +116,11 @@ public class LayoutView extends JPanel implements ModelListener {
 
                 // kleur per ruimtetype
                 if (r instanceof Kamer) {
-                    g.setColor(((Kamer) r).isBezet()
-                            ? new Color(220, 80, 80) : new Color(222, 229, 240));
+                    if (((Kamer) r).isBezet()) {
+                        g.setColor(new Color(220, 80, 80));
+                        } else {
+                        g.setColor(new Color(222, 229, 240));
+                        }
                 } else if (r instanceof Restaurant) {
                     g.setColor(new Color(220, 193, 185));
                 } else if (r instanceof Bioscoop) {

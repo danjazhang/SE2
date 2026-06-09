@@ -81,4 +81,9 @@ public class Ruimte {
     public boolean isFaciliteit() {
         return false;
     }
+
+    // geef een leesbare naam terug — subklassen overschrijven dit voor specifieke namen
+    public String getNaam() {
+        return getClass().getSimpleName().toLowerCase();
+    }
 }

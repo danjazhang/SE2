@@ -84,10 +84,8 @@ public class Gast extends Persoon {
             locatie = "in lift";
         } else if (huidigVakje == null) {
             locatie = "geen positie";
-        } else if (huidigVakje.ruimte instanceof Kamer) {
-            locatie = "kamer " + ((Kamer) huidigVakje.ruimte).getKamernummer();
         } else if (huidigVakje.ruimte != null) {
-            locatie = huidigVakje.ruimte.getClass().getSimpleName().toLowerCase();
+            locatie = huidigVakje.ruimte.getNaam();
         } else {
             locatie = "(" + huidigVakje.x + "," + huidigVakje.y + ")";
         }
