@@ -93,4 +93,13 @@ public class Fitnessruimte extends Ruimte implements IEventListener {
 
     // laat een gast de fitnessruimte verlaten
     public void verlaatFitness() {}
+
+    @Override
+    public boolean isFaciliteit() { return true; }
+
+    // geef de status van de fitnessruimte terug voor het observatiescherm
+    @Override
+    public String getStatusTekst() {
+        return "Fitness : " + getAanwezigen().size() + " aanwezig";
+    }
 }

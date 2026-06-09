@@ -104,4 +104,19 @@ public class Bioscoop extends Ruimte implements IEventListener {
 
     // laat een gast de bioscoop betreden
     public void betreedBioscoop() {}
+
+    @Override
+    public boolean isFaciliteit() { return true; }
+
+    // geef de status van de bioscoop terug voor het observatiescherm
+    @Override
+    public String getStatusTekst() {
+        String film;
+        if (filmBezig) {
+            film = "film bezig";
+        } else {
+            film = "geen film";
+        }
+        return "Bioscoop : " + getAanwezigen().size() + " aanwezig, " + film;
+    }
 }

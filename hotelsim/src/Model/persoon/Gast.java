@@ -61,4 +61,40 @@ public class Gast extends Persoon {
             kamer.gastVerlaatKamer(this);
         }
     }
+
+    @Override
+    public boolean isGast() { return true; }
+
+    @Override
+    public String getStatusTekst() {
+        String locatie;
+        if (inLift) {
+            locatie = "in lift";
+        } else if (huidigVakje == null) {
+            locatie = "geen positie";
+        } else if (huidigVakje.ruimte instanceof Kamer) {
+            locatie = "kamer " + ((Kamer) huidigVakje.ruimte).getKamernummer();
+        } else if (huidigVakje.ruimte != null) {
+            locatie = huidigVakje.ruimte.getClass().getSimpleName().toLowerCase();
+        } else {
+            locatie = "(" + huidigVakje.x + "," + huidigVakje.y + ")";
+        }
+
+        String activiteit;
+        if (uitcheckend) {
+            activiteit = "aan het uitchecken";
+        } else if (inLift) {
+            activiteit = "in lift";
+        } else if (wachtOpLift) {
+            activiteit = "wacht op lift";
+        } else if (kamer != null && huidigVakje != null && huidigVakje.ruimte == kamer) {
+            activiteit = "in kamer";
+        } else if (doelVakje != null) {
+            activiteit = "onderweg";
+        } else {
+            activiteit = "wacht";
+        }
+
+        return "Gast " + gastId + " (" + gewensteSterren + "★) : " + locatie + " — " + activiteit;
+    }
 }

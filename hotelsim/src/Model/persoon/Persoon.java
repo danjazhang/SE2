@@ -132,4 +132,20 @@ public abstract class Persoon {
     }
 
     public void voerTaakUit() {}
+
+    // geeft true als deze persoon een gast is — Gast overschrijft dit
+    public boolean isGast() {
+        return false;
+    }
+
+    // geeft true als deze persoon een schoonmaker is — Schoonmaker overschrijft dit
+    public boolean isSchoonmaker() {
+        return false;
+    }
+
+    // geef een statustekst terug voor het lobbyscherm
+    // subklassen overschrijven dit om hun eigen status te tonen
+    public String getStatusTekst() {
+        return "";
+    }
 }

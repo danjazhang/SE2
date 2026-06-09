@@ -118,4 +118,24 @@ public class Kamer extends Ruimte {
     public int getKamernummer() {
         return kamernummer;
     }
+
+    @Override
+    public boolean isKamer() { return true; }
+
+    // geef de status van de kamer terug voor het observatiescherm
+    @Override
+    public String getStatusTekst() {
+        if (isBezet()) {
+            String gastInfo = "";
+            for (Gast g : getIngecheckteGasten()) {
+                if (!gastInfo.isEmpty()) gastInfo += ", ";
+                gastInfo += "gast " + g.gastId;
+            }
+            return "Kamer " + kamernummer + " (" + getSterrenLabel() + ") : BEZET (" + gastInfo + ")";
+        } else if (!isSchoon()) {
+            return "Kamer " + kamernummer + " (" + getSterrenLabel() + ") : WORDT SCHOONGEMAAKT";
+        } else {
+            return "Kamer " + kamernummer + " (" + getSterrenLabel() + ") : vrij";
+        }
+    }
 }

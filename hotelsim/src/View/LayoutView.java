@@ -206,8 +206,9 @@ public class LayoutView extends JPanel implements ModelListener {
                 }
 
                 if (r instanceof Lift) {
-                    // cabine positie: verdieping 1 is onderaan de schacht (net boven de lobby)
-                    int cabineY = (hotel.hoogte - hotel.lift.getHuidigeVerdieping() - 1) * tileSize + offsetY;
+                    // zelfde formule als ruimtes: ondersteRij = huidigeVerdieping, hoogte = 1
+                    int ondersteRij = hotel.lift.getHuidigeVerdieping();
+                    int cabineY = (hotel.hoogte - ondersteRij - 1) * tileSize + offsetY;
 
                     g.setColor(new Color(202, 152, 150));
                     g.fillRect(tekenX, cabineY, tileSize, tileSize);
