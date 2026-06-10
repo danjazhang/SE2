@@ -38,6 +38,8 @@ public class Hotel {
     public Trap trap;
     public Lobby lobby;
 
+    public BrandalarmService brandalarmService;
+
     // of het brandalarm momenteel actief is
     public boolean brandalarmActief = false;
 
@@ -51,6 +53,10 @@ public class Hotel {
     // voeg een persoon toe aan het hotel
     public void voegPersoonToe(Persoon p) {
         personen.add(p);
+        //als brandalarm actief is: direct evacueren
+        if (brandalarmService != null && brandalarmActief) {
+            brandalarmService.evacueerNieuwePersoon(p);
+        }
     }
 
     // geef de ruimte op positie (x, y) terug

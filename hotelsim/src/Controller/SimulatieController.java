@@ -46,7 +46,7 @@ public class SimulatieController {
         switch (keuze) {
             case "Langzaam" -> snelheid = 0;
             case "Normaal"  -> snelheid = 1;
-            case "Snel"     -> snelheid = 4;
+            case "Snel"     -> snelheid = 50;
             default         -> snelheid = 1;
         }
     }
@@ -72,9 +72,10 @@ public class SimulatieController {
         int stappen = 1;
         if (snelheid <= 0) {
             if (tikTeller % 2 != 0) { hotelController.notifyListeners(); return; }
-        } else if (snelheid >= 4) {
-            stappen = snelheid;
         }
+        //else if (snelheid >= 4) {
+        //    stappen = snelheid;
+        //}
 
         for (int i = 0; i < stappen; i++) {
             if (hotel.lift != null) hotel.lift.tik();
@@ -85,8 +86,9 @@ public class SimulatieController {
             List<Persoon> copy = new ArrayList<>(hotel.personen);
             for (Persoon p : copy) p.beweeg();
             hotelController.notifyListeners();
-            try { Thread.sleep(225); } catch (InterruptedException e) { e.printStackTrace(); }
+
         }
+        try { Thread.sleep(225 / Math.max(1,snelheid)); } catch (InterruptedException e) { e.printStackTrace(); }
     }
 
     // -----------------------------------------------------------------------
@@ -179,7 +181,8 @@ public class SimulatieController {
                     && !g.inLift
                     && !g.uitcheckend
                     && !inRuimte
-                    && g.huidigVakje != null;
+                    && g.huidigVakje != null
+                    && g.huidigVakje.y != hotel.lobby.posY - 1;
 
             if (stilstaand) {
                 g.wachtTicks++;

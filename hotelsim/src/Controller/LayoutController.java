@@ -96,6 +96,10 @@ public class LayoutController {
 
         nieuwHotel.pathfinder = new Pathfinder(nieuwHotel);
 
+        // koppel de brandalarmservice aan het hotel
+        BrandalarmService brandalarmService = new BrandalarmService(nieuwHotel, logger);
+        nieuwHotel.brandalarmService = brandalarmService;
+
         // laat de personenfactory de standaard schoonmakers voor dit hotel opzetten
         PersonenFactory personenFactory = new PersonenFactory();
         personenFactory.maakStandaardSchoonmakers(nieuwHotel, gridBreedte, gridHoogte, lobbyPosY);
