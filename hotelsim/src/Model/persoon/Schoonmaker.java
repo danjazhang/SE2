@@ -9,7 +9,7 @@ import Model.ruimte.Kamer;
 public class Schoonmaker extends Persoon {
 
     // aantal ticks dat een schoonmaakbeurt duurt
-    private static final int SCHOONMAAKDUUR = 6;
+    private static final int SCHOONMAAKDUUR = 20;
 
     // of de schoonmaker momenteel bezig is
     public boolean bezig;
@@ -106,17 +106,22 @@ public class Schoonmaker extends Persoon {
     public void setWachtVakje(Vakje wachtVakje) { this.wachtVakje = wachtVakje; }
     public void setNoodSchoonmaker(boolean noodSchoonmaker) { this.noodSchoonmaker = noodSchoonmaker; }
     public boolean isNoodSchoonmaker() { return noodSchoonmaker; }
+    public boolean staatOpWachtVakje() { return wachtVakje != null && huidigVakje == wachtVakje; }
 
-    // maak de kamer schoon en ga terug naar de wachtplek
+    public void gaNaarWachtVakje() {
+        if (wachtVakje != null && huidigVakje != null && huidigVakje != wachtVakje) {
+            wisRoute();
+            zetRouteViaTrap(wachtVakje);
+        }
+    }
+
+    // maak de kamer schoon; een nieuwe taak of terugkeer naar de wachtplek
+    // wordt centraal afgehandeld door de schoonmaakservice
     private void rondSchoonmaakAf() {
         kamer.schoonmaken();
         if (logger != null) logger.log("[" + huidigeTijd + "] Schoonmaker heeft " + kamer.getKamernummer() + " schoon gemaakt");
         bezig = false;
         kamer = null;
-        if (wachtVakje != null && huidigVakje != null && huidigVakje != wachtVakje) {
-            wisRoute();
-            zetRouteViaTrap(wachtVakje);
-        }
     }
 
     // gebruik altijd de traproute zodat de schoonmaker nooit de lift neemt

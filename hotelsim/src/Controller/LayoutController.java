@@ -4,8 +4,6 @@ import Model.*;
 import Model.layout.Layout;
 import Model.layout.LayoutParser;
 import Model.layout.ParseResultaat;
-import Model.layout.Vakje;
-import Model.persoon.Schoonmaker;
 import Model.ruimte.Lift;
 import Model.ruimte.Lobby;
 import Model.ruimte.Ruimte;
@@ -98,19 +96,9 @@ public class LayoutController {
 
         nieuwHotel.pathfinder = new Pathfinder(nieuwHotel);
 
-        // schoonmaker 1: wacht in de lobby (y=2)
+        // laat de personenfactory de standaard schoonmakers voor dit hotel opzetten
         PersonenFactory personenFactory = new PersonenFactory();
-        Vakje wachtVakjeLinks = nieuwHotel.layout.krijgVakje(Math.max(2, gridBreedte / 2 - 1), lobbyPosY);
-        Schoonmaker schoonmakerCheckOut = personenFactory.maakSchoonmaker(nieuwHotel.pathfinder, wachtVakjeLinks);
-        schoonmakerCheckOut.setWachtVakje(wachtVakjeLinks);
-        nieuwHotel.voegPersoonToe(schoonmakerCheckOut);
-
-        // schoonmaker 2 (nood): wacht bij de trap op de bovenste verdieping
-        Vakje wachtVakjeRechts = nieuwHotel.layout.krijgVakje(gridBreedte - 1, gridHoogte - 1);
-        Schoonmaker schoonmakerNood = personenFactory.maakSchoonmaker(nieuwHotel.pathfinder, wachtVakjeRechts);
-        schoonmakerNood.setWachtVakje(wachtVakjeRechts);
-        schoonmakerNood.setNoodSchoonmaker(true);
-        nieuwHotel.voegPersoonToe(schoonmakerNood);
+        personenFactory.maakStandaardSchoonmakers(nieuwHotel, gridBreedte, gridHoogte, lobbyPosY);
 
         //sla de layout op in hotelmanager met bestandsnaam als naam
         int id = hotelManager.addLayout(bestandsnaam, nieuwHotel.layout);
