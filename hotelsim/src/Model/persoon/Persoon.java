@@ -117,6 +117,7 @@ public abstract class Persoon {
         if (huidigVakje == null || pathfinder == null) return;
         // wis de huidige route zodat de persoon niet meer naar zijn oude bestemming loopt
         wisRoute();
+        this.doelVakje = uitgang;
         // gebruik altijd de trap, nooit de lift
         pathfinder.zetRouteTrap(this, uitgang);
     }
