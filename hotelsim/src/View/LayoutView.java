@@ -142,10 +142,9 @@ public class LayoutView extends JPanel implements ModelListener {
                 int tekenB = r.breedte * tileSize;
                 int tekenH = r.hoogte * tileSize;
 
-                // lift en trap beslaan alleen de kamerrijen (y=3..hoogte), niet lobby (y=2) of buiten (y=1)
                 if (r instanceof Lift || r instanceof Trap) {
                     tekenY = offsetY;
-                    tekenH = (hotel.hoogte - 2) * tileSize; // hoogte - 2 rijen (zonder lobby en buiten)
+                    tekenH = (hotel.hoogte - 2) * tileSize;
                 }
 
                 g.fillRect(tekenX, tekenY, tekenB, tekenH);
@@ -184,6 +183,15 @@ public class LayoutView extends JPanel implements ModelListener {
                     g.drawString("Lift", tekenX + 4, cabineY + 16);
                 }
             }
+        }
+
+        // teken de lobby naam apart zodat die niet bedekt wordt door lift/trap
+        if (hotel.lobby != null) {
+            int lobbyTekenY = ruimteTekenY(hotel.lobby.posY, hotel.lobby.hoogte, offsetY);
+            int lobbyTekenX = (hotel.lobby.posX ) * tileSize;
+            g.setColor(Color.BLACK);
+            g.setFont(new Font("Arial", Font.BOLD, 12));
+            g.drawString("Lobby", lobbyTekenX + 4, lobbyTekenY + 16);
         }
 
         // teken personen

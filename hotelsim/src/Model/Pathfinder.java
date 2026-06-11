@@ -64,8 +64,6 @@ public class Pathfinder {
         if (p instanceof Gast g) g.eindbestemming = bestemming;
         // zelfde verdieping: direct lopen
         if (start.y == doel.y) { p.zetDoel(doel); return; }
-        // aangrenzende verdieping: direct lopen zonder lift of trap
-        if (Math.abs(start.y - doel.y) == 1) { p.zetDoel(doel); return; }
         if (p instanceof Schoonmaker) { routeViaTrap(p, start, doel); return; }
         int trapTijd = Math.abs(start.y - doel.y) * hotel.trap.tijdperverdieping;
         int liftTijd = schatLiftTijd(start, doel);
@@ -94,7 +92,7 @@ public class Pathfinder {
         g.gebruiktLift = true;
         g.gewensteVerdieping = doel.y;
         p.zetDoel(liftVakje);
-        hotel.lift.roep(p, start.y);
+        hotel.lift.roep(g, start.y);
     }
 
     // route via trap
@@ -118,7 +116,8 @@ public class Pathfinder {
         int wacht = Math.abs(lift.getHuidigeVerdieping() - start.y);
         int rit = Math.abs(start.y - doel.y);
         int queue = lift.aantalWachtend(start.y);
-        return wacht + rit + queue;
+        // +1 voor instappen, +1 voor uitstappen
+        return wacht + rit + queue + 2;
     }
 
     private Vakje vindTrap(int y) {

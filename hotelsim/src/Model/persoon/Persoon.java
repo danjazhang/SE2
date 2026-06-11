@@ -21,6 +21,9 @@ public abstract class Persoon {
     // wachtrij van tussendoelen die na het huidige doel afgewerkt worden
     private Queue<Vakje> tussendoelen = new LinkedList<>();
 
+    // teller voor trapvertraging: hoeveel ticks nog wachten voor de volgende stap
+    private int trapTicks = 0;
+
     public Persoon() {
         this.huidigVakje = null;
         this.doelVakje = null;
@@ -65,6 +68,22 @@ public abstract class Persoon {
 
         // stop als er geen huidige positie is
         if (huidigVakje == null) return;
+
+        // als persoon op de trap staat: trapvertraging toepassen
+        if (huidigVakje.ruimte instanceof Model.ruimte.Trap) {
+            Model.ruimte.Trap trap = (Model.ruimte.Trap) huidigVakje.ruimte;
+            // zet teller als die nog niet gezet is voor dit vakje
+            if (trapTicks == 0) {
+                trapTicks = trap.tijdperverdieping;
+            }
+            trapTicks--;
+            if (trapTicks > 0) {
+                return; // nog niet klaar met wachten
+            }
+        } else {
+            // niet op trap: reset teller
+            trapTicks = 0;
+        }
 
         // doel bereikt: pak het volgende tussendoel uit de wachtrij
         if (huidigVakje.equals(doelVakje)) {
