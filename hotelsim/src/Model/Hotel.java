@@ -3,6 +3,7 @@ package Model;
 import Model.layout.Layout;
 import Model.layout.Vakje;
 import Model.persoon.Persoon;
+import Model.ruimte.Kamer;
 import Model.ruimte.Lift;
 import Model.ruimte.Lobby;
 import Model.ruimte.Ruimte;
@@ -30,6 +31,9 @@ public class Hotel {
     // lijst van alle personen in het hotel
     public List<Persoon> personen;
 
+    // kamers die nog wachten op een schoonmaker
+    public List<Kamer> wachtendeSchoonmaakKamers;
+
     public Lift lift;
     public Trap trap;
     public Lobby lobby;
@@ -43,6 +47,7 @@ public class Hotel {
     public Hotel() {
         ruimtes = new ArrayList<>();
         personen = new ArrayList<>();
+        wachtendeSchoonmaakKamers = new ArrayList<>();
     }
 
     // voeg een persoon toe aan het hotel
@@ -60,5 +65,14 @@ public class Hotel {
         Vakje vakje = layout.krijgVakje(x, y);
         if (vakje != null) return vakje.ruimte;
         return null;
+    }
+
+    public void voegWachtendeSchoonmaakToe(Kamer kamer) {
+        if (kamer == null || wachtendeSchoonmaakKamers.contains(kamer)) return;
+        wachtendeSchoonmaakKamers.add(kamer);
+    }
+
+    public void verwijderWachtendeSchoonmaak(Kamer kamer) {
+        wachtendeSchoonmaakKamers.remove(kamer);
     }
 }

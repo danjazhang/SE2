@@ -16,7 +16,6 @@ public class SimulatieController {
     private HotelEventManager eventManager;
     private EventController eventController;
     private HotelController hotelController;
-    private int snelheid = 1;
     private int tikTeller = 0;
 
     private long startTijdMs = 0;
@@ -40,14 +39,24 @@ public class SimulatieController {
 
     public void pauzeer() { eventManager.pauze(); }
     public void stop() { eventManager.stop(); }
-    public void setSnelheid(int snelheid) { this.snelheid = snelheid; }
 
+    // Snelheid wordt nu alleen nog via de library geregeld.
+    // We passen dus de HTE van HotelEventManager aan in plaats van lokaal
+    // extra sleeps of meerdere stappen per tick te gebruiken.
     public void pasSnelheidToe(String keuze) {
         switch (keuze) {
-            case "Langzaam" -> snelheid = 0;
-            case "Normaal"  -> snelheid = 1;
-            case "Snel"     -> snelheid = 50;
-            default         -> snelheid = 1;
+            case "Langzaam" -> {
+                eventManager.setHte(1500);
+            }
+            case "Normaal"  -> {
+                eventManager.setHte(1000);
+            }
+            case "Snel"     -> {
+                eventManager.setHte(10);
+            }
+            default         -> {
+                eventManager.setHte(1000);
+            }
         }
     }
 
@@ -67,28 +76,18 @@ public class SimulatieController {
         Hotel hotel = hotelController.getHotel();
         if (hotel == null) return;
 
+        // Deze methode verwerkt precies één lokale simulatietick.
+        // De library bepaalt hoe snel tik() wordt aangeroepen via de ingestelde HTE.
         tikTeller++;
 
-        int stappen = 1;
-        if (snelheid <= 0) {
-            if (tikTeller % 2 != 0) { hotelController.notifyListeners(); return; }
-        }
-        //else if (snelheid >= 4) {
-        //    stappen = snelheid;
-        //}
-
-        for (int i = 0; i < stappen; i++) {
-            if (hotel.lift != null) hotel.lift.tik();
-            verwerkUitstappendeGasten(hotel);
-            verwerkWachtendeGasten(hotel);
-            verwerkWachttijden(hotel);
-            verwerkRestaurantWachtrij(hotel);
-            List<Persoon> copy = new ArrayList<>(hotel.personen);
-            for (Persoon p : copy) p.beweeg();
-            hotelController.notifyListeners();
-
-        }
-        try { Thread.sleep(225 / Math.max(1,snelheid)); } catch (InterruptedException e) { e.printStackTrace(); }
+        if (hotel.lift != null) hotel.lift.tik();
+        verwerkUitstappendeGasten(hotel);
+        verwerkWachtendeGasten(hotel);
+        verwerkWachttijden(hotel);
+        verwerkRestaurantWachtrij(hotel);
+        List<Persoon> copy = new ArrayList<>(hotel.personen);
+        for (Persoon p : copy) p.beweeg();
+        hotelController.notifyListeners();
     }
 
     // -----------------------------------------------------------------------

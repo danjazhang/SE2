@@ -19,6 +19,7 @@ public class EventController implements HotelEventListener {
     private SimulatieController simulatieController;
     private ILogger logger;
     private GastRoutingService gastRoutingService;
+    private SchoonmaakService schoonmaakService;
     private List<Persoon> personen = new ArrayList<>();
     private List<IEventListener> listeners = new ArrayList<>();
 
@@ -36,6 +37,7 @@ public class EventController implements HotelEventListener {
 
     public void setLogger(ILogger logger) {
         this.logger = logger;
+        if (schoonmaakService != null) schoonmaakService.setLogger(logger);
     }
 
     public void registreer() {
@@ -48,6 +50,7 @@ public class EventController implements HotelEventListener {
 
     public void registreerHotelListeners(Hotel hotel) {
         listeners.clear();
+        schoonmaakService = null;
         gastRoutingService = new GastRoutingService(hotel);
         if (hotel == null) return;
         for (Model.ruimte.Ruimte r : hotel.ruimtes) {
@@ -59,6 +62,8 @@ public class EventController implements HotelEventListener {
         for (Persoon p : hotel.personen) {
             if (p instanceof IEventListener) registreerListener((IEventListener) p);
         }
+        schoonmaakService = new SchoonmaakService(hotel, logger);
+        registreerListener(schoonmaakService);
     }
 
     private void stuurNaarListeners(HotelEvent event) {
@@ -119,6 +124,10 @@ public class EventController implements HotelEventListener {
                 if (simulatieController != null) simulatieController.tik();
                 break;
             default: break;
+        }
+
+        if (schoonmaakService != null) {
+            schoonmaakService.verwerkWachtendeTaken(evt.getTime());
         }
     }
 }
