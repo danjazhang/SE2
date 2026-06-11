@@ -65,7 +65,7 @@ public class Pathfinder {
         // zelfde verdieping: direct lopen
         if (start.y == doel.y) { p.zetDoel(doel); return; }
         // aangrenzende verdieping: direct lopen zonder lift of trap
-        if (Math.abs(start.y - doel.y) == 1) { p.zetDoel(doel); return; }
+        //if (Math.abs(start.y - doel.y) == 1) { p.zetDoel(doel); return; }
         if (p instanceof Schoonmaker) { routeViaTrap(p, start, doel); return; }
         int trapTijd = Math.abs(start.y - doel.y) * hotel.trap.tijdperverdieping;
         int liftTijd = schatLiftTijd(start, doel);

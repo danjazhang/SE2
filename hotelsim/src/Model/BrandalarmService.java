@@ -36,6 +36,26 @@ public class BrandalarmService {
         // roep evacueer() aan op elke persoon
         // elke subklasse beslist zelf wat er extra gebeurt via @Override
         for (Persoon p : hotel.personen) {
+            // gasten die wachten op de lift of in de lift zitten: reset lift-status eerst
+            if (p instanceof Model.persoon.Gast) {
+                Model.persoon.Gast g = (Model.persoon.Gast) p;
+                if (g.wachtOpLift || g.inLift) {
+                    g.wachtOpLift = false;
+                    g.gebruiktLift = false;
+                    // als in de lift: zet op het lift-vakje zodat evacueer() werkt
+                    if (g.inLift && hotel.lift != null) {
+                        int uitstapX = hotel.lift.posX + 1;
+                        int uitstapY = hotel.lift.getHuidigeVerdieping();
+                        Model.layout.Vakje uitstapVakje = hotel.layout.krijgVakje(uitstapX, uitstapY);
+                        if (uitstapVakje != null) {
+                            if (g.huidigVakje != null) g.huidigVakje.verwijderPersoon(g);
+                            g.huidigVakje = uitstapVakje;
+                            uitstapVakje.voegPersoonToe(g);
+                        }
+                        g.inLift = false;
+                    }
+                }
+            }
             p.evacueer(uitgang, hotel.pathfinder);
         }
 
