@@ -36,5 +36,8 @@ public class Main {
 
         // open het venster
         hotelView = new HotelView(hotelController, logView, eventController, simulatieController);
+
+
     }
+
 }

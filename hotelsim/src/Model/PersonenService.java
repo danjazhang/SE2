@@ -5,82 +5,61 @@ import Model.persoon.Gast;
 import Model.persoon.Persoon;
 import Model.persoon.Schoonmaker;
 
-// Verantwoordelijkheid: personen aanmaken en opzoeken in het hotel.
-// PersonenService is de tussenlaag tussen de controllers en de PersonenFactory.
+// Verantwoordelijkheid: eenvoudige persoon-gerichte opzoeklogica.
+// Deze service houdt zich bewust alleen bezig met het vinden of maken van personen.
+// Keuzes zoals "welke schoonmaker moet welke kamer krijgen" horen niet hier,
+// maar in SchoonmaakService waar de taaklogica centraal zit.
 public class PersonenService {
 
-    // Het hotel waar de personen in staan.
+    // Hotelreferentie zodat we toegang hebben tot de huidige personenlijst.
     private Hotel hotel;
 
-    // De factory die nieuwe personen aanmaakt.
+    // Factory die nieuwe persoonsobjecten kan opbouwen.
     private PersonenFactory factory;
 
-    // Constructor: sla het hotel op en maak een nieuwe factory aan.
+    // Constructor: bewaar het hotel en maak meteen een factory aan.
     public PersonenService(Hotel hotel) {
+        // Sla het hotel op zodat andere methoden door hotel.personen kunnen lopen.
         this.hotel = hotel;
+        // Maak de factory waarmee we later gasten kunnen opbouwen.
         this.factory = new PersonenFactory();
     }
 
-    // Maak een nieuwe gast aan via de factory, voeg hem toe aan het hotel en geef hem terug.
+    // Maak een gast aan met een bepaald id, sterrenwens en startpositie.
     public Gast maakGast(int gastId, int gewensteSterren, Vakje startVakje) {
+        // Laat de factory de echte gast construeren met pathfinder en startvakje.
         Gast gast = factory.maakGast(gastId, gewensteSterren, hotel.pathfinder, startVakje);
+        // Voeg de nieuwe gast direct toe aan het hotelmodel.
         hotel.voegPersoonToe(gast);
+        // Geef de nieuwe gast terug zodat de aanroeper er verder mee kan werken.
         return gast;
     }
 
-    // Zoek een gast op via zijn gastId door de personenlijst door te lopen.
-    // 'p instanceof Gast' betekent: als de persoon een Gast is.
-    // '((Gast) p).gastId == gastId' betekent: het gastId is gelijk aan het gezochte id.
-    // Als de gast niet gevonden wordt, geef null terug.
+    // Zoek een gast puur op guest id.
     public Gast vindGast(int gastId) {
+        // Doorloop alle personen die op dit moment in het hotel zitten.
         for (Persoon p : hotel.personen) {
+            // Controleer of deze persoon een gast is en of het id overeenkomt.
             if (p instanceof Gast && ((Gast) p).gastId == gastId) {
+                // Juiste gast gevonden: geef die meteen terug.
                 return (Gast) p;
             }
         }
+        // Geen gast met dit id gevonden.
         return null;
     }
 
-    // Zoek een vrije schoonmaker: loop door de personenlijst en geef de eerste schoonmaker terug
-    // die een Schoonmaker is én niet bezig is (bezig is gelijk aan false).
-    // Als er geen vrije schoonmaker is, geef null terug.
+    // Zoek gewoon de eerste vrije schoonmaker zonder verdere taakverdeling.
     public Schoonmaker vindVrijeSchoonmaker() {
+        // Doorloop opnieuw alle personen van het hotel.
         for (Persoon p : hotel.personen) {
+            // We zoeken alleen een schoonmaker die op dit moment niet bezig is.
             if (p instanceof Schoonmaker && !((Schoonmaker) p).bezig) {
+                // Eerste vrije kandidaat gevonden: direct teruggeven.
                 return (Schoonmaker) p;
             }
         }
+        // Er is nu geen vrije schoonmaker beschikbaar.
         return null;
-    }
-
-    // Zoek een vrije schoonmaker voor check-outtaken.
-    // Geeft de voorkeur aan de gewone schoonmaker (isNoodSchoonmaker is false).
-    // Als alleen de noodschoonmaker vrij is, wordt die als fallback gebruikt.
-    public Schoonmaker vindVrijeSchoonmakerVoorCheckOut() {
-        Schoonmaker fallback = null;
-        for (Persoon p : hotel.personen) {
-            // 'continue' betekent: sla deze iteratie over en ga verder met de volgende.
-            // Als p geen Schoonmaker is of als hij bezig is, sla hem dan over.
-            if (!(p instanceof Schoonmaker schoonmaker) || schoonmaker.bezig) continue;
-            // Als hij geen noodschoonmaker is, geef hem dan meteen terug.
-            if (!schoonmaker.isNoodSchoonmaker()) return schoonmaker;
-            // Anders bewaar hem als fallback als er nog geen fallback is.
-            if (fallback == null) fallback = schoonmaker;
-        }
-        return fallback;
-    }
-
-    // Zoek een vrije schoonmaker voor noodsituaties.
-    // Geeft de voorkeur aan de noodschoonmaker (isNoodSchoonmaker is true).
-    // Als die bezig is, wordt de gewone schoonmaker als fallback gebruikt.
-    public Schoonmaker vindVrijeSchoonmakerVoorNoodsituatie() {
-        Schoonmaker fallback = null;
-        for (Persoon p : hotel.personen) {
-            if (!(p instanceof Schoonmaker schoonmaker) || schoonmaker.bezig) continue;
-            // Als hij een noodschoonmaker is, geef hem dan meteen terug.
-            if (schoonmaker.isNoodSchoonmaker()) return schoonmaker;
-            if (fallback == null) fallback = schoonmaker;
-        }
-        return fallback;
     }
 }

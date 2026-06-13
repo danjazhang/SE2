@@ -3,6 +3,7 @@ package Model;
 import Model.layout.Layout;
 import Model.layout.Vakje;
 import Model.persoon.Persoon;
+import Model.ruimte.Kamer;
 import Model.ruimte.Lift;
 import Model.ruimte.Lobby;
 import Model.ruimte.Ruimte;
@@ -11,61 +12,67 @@ import Model.ruimte.Trap;
 import java.util.ArrayList;
 import java.util.List;
 
-// Verantwoordelijkheid: de dataklas van het hotel.
-// Hotel slaat alle ruimtes, personen en de layout op.
-// Dit is een pure dataklas: hij slaat dingen op maar berekent niks zelf.
+// Model klasse: bevat alle data van het hotel
 public class Hotel {
 
-    // Het aantal kolommen (vakjes breed) van het hotel grid.
+    // breedte en hoogte van het hotel grid
     public int breedte;
-
-    // Het aantal rijen (vakjes hoog) van het hotel grid.
     public int hoogte;
 
-    // De layout bevat het volledige grid van vakjes.
+    // de huidige layout van het hotel
     public Layout layout;
 
-    // De pathfinder berekent routes van A naar B in het grid.
+    // pathfinder voor het berekenen van routes
     public Pathfinder pathfinder;
 
-    // De lijst van alle ruimtes in het hotel (kamers, restaurant, lobby, lift, trap, etc.).
+    // lijst van alle ruimtes in het hotel
     public List<Ruimte> ruimtes;
 
-    // De lijst van alle personen in het hotel (gasten en schoonmakers).
+    // lijst van alle personen in het hotel
     public List<Persoon> personen;
 
-    // Directe referentie naar de lift zodat we hem snel kunnen bereiken.
+    // kamers die nog wachten op een schoonmaker
+    public List<Kamer> wachtendeSchoonmaakKamers;
+
     public Lift lift;
-
-    // Directe referentie naar de trap zodat we hem snel kunnen bereiken.
     public Trap trap;
-
-    // Directe referentie naar de lobby zodat we hem snel kunnen bereiken.
     public Lobby lobby;
 
-    // Sla op of het brandalarm momenteel actief is: true = actief, false = niet actief.
-    // Als dit true is, worden geen nieuwe activiteiten naar gasten gestuurd.
+    public BrandalarmService brandalarmService;
+
+    // of het brandalarm momenteel actief is
     public boolean brandalarmActief = false;
 
-    // Constructor: maak lege lijsten aan voor ruimtes en personen.
+    // constructor: maak lege lijsten aan
     public Hotel() {
         ruimtes = new ArrayList<>();
         personen = new ArrayList<>();
+        wachtendeSchoonmaakKamers = new ArrayList<>();
     }
 
-    // Voeg persoon p toe aan de personenlijst van het hotel.
+    // voeg een persoon toe aan het hotel
     public void voegPersoonToe(Persoon p) {
         personen.add(p);
+        //als brandalarm actief is: direct evacueren
+        if (brandalarmService != null && brandalarmActief) {
+            brandalarmService.evacueerNieuwePersoon(p);
+        }
     }
 
-    // Geef de ruimte terug die op positie (x, y) in het grid staat.
-    // Als de layout leeg is (null), geef dan null terug.
-    // 'layout.krijgVakje(x, y)' geeft het vakje op die positie terug.
-    // Als het vakje niet leeg is (niet null), geef dan de ruimte van dat vakje terug.
+    // geef de ruimte op positie (x, y) terug
     public Ruimte krijgRuimteOp(int x, int y) {
-        if (layout == null) return null;
+        if (layout== null) return null;
         Vakje vakje = layout.krijgVakje(x, y);
         if (vakje != null) return vakje.ruimte;
         return null;
+    }
+
+    public void voegWachtendeSchoonmaakToe(Kamer kamer) {
+        if (kamer == null || wachtendeSchoonmaakKamers.contains(kamer)) return;
+        wachtendeSchoonmaakKamers.add(kamer);
+    }
+
+    public void verwijderWachtendeSchoonmaak(Kamer kamer) {
+        wachtendeSchoonmaakKamers.remove(kamer);
     }
 }

@@ -5,106 +5,157 @@ import Model.layout.Vakje;
 import java.util.LinkedList;
 import java.util.Queue;
 
-// Verantwoordelijkheid: basisklasse voor alle personen in het hotel.
+// Basisklasse voor alle personen in het hotel
+// Gast en Schoonmaker erven van deze klasse
 public abstract class Persoon {
 
+    // huidige positie op het grid
     public Vakje huidigVakje;
+
+    // huidige bestemming
     public Vakje doelVakje;
+
+    // pathfinding systeem voor het berekenen van routes
     private Pathfinder pathfinder;
 
-    // queue van type Vakje met de naam tussendoelen is een nieuwe LinkedList, die rij wordt opgeslagen.
+    // wachtrij van tussendoelen die na het huidige doel afgewerkt worden
     private Queue<Vakje> tussendoelen = new LinkedList<>();
 
-// start
+    // teller voor trapvertraging: hoeveel ticks nog wachten voor de volgende stap
+    private int trapTicks = 0;
+
     public Persoon() {
         this.huidigVakje = null;
         this.doelVakje = null;
     }
 
-    // setPathfinder met een pathfinder als parameter, dus ik geef een pathfinder door aan deze methode
+    // stel de pathfinder in
     public void setPathfinder(Pathfinder pathfinder) {
         this.pathfinder = pathfinder;
     }
 
-    // geeft de opgeslagen pathfinder van dit object terug aan degene die het aanroept
+    // geef de pathfinder terug
     public Pathfinder getPathfinder() {
         return this.pathfinder;
     }
 
-    // sla dit vakje op als doelvakje van dit object
+    // stel het hoofddoel in
     public void zetDoel(Vakje v) {
         this.doelVakje = v;
     }
 
-    // Voeg vakje v toe aan het einde van de tussendoelenwachtrij.
+    // voeg een tussendoel toe aan de wachtrij
     public void voegTussendoelToe(Vakje v) {
         tussendoelen.add(v);
     }
 
-    // Zet de startpositie: sla vakje v op als huidigVakje en voeg deze persoon toe aan dat vakje.
+    // zet de startpositie van de persoon
     public void zetStartPositie(Vakje v) {
         huidigVakje = v;
         v.voegPersoonToe(this);
     }
 
-    // kern van de bewegingslogica.
+    // verplaats de persoon één stap richting het doel
     public void beweeg() {
-        //
+
+        // gasten in lift bewegen niet zelfstandig, de lift verplaatst hen
         if (this instanceof Gast g) {
             if (g.inLift) return;
         }
 
+        // stop als er geen doel is
         if (doelVakje == null && tussendoelen.isEmpty()) return;
 
+        // stop als er geen huidige positie is
         if (huidigVakje == null) return;
 
+        // als persoon op de trap staat: trapvertraging toepassen
+        if (huidigVakje.ruimte instanceof Model.ruimte.Trap) {
+            Model.ruimte.Trap trap = (Model.ruimte.Trap) huidigVakje.ruimte;
+            // zet teller als die nog niet gezet is voor dit vakje
+            if (trapTicks == 0) {
+                trapTicks = trap.tijdperverdieping;
+            }
+            trapTicks--;
+            if (trapTicks > 0) {
+                return; // nog niet klaar met wachten
+            }
+        } else {
+            // niet op trap: reset teller
+            trapTicks = 0;
+        }
 
+        // doel bereikt: pak het volgende tussendoel uit de wachtrij
         if (huidigVakje.equals(doelVakje)) {
-            //het volgende vakje uit de wachtrij met poll en dat wordt het nieuwe doe
             doelVakje = tussendoelen.poll();
         }
 
+        // stop als er geen nieuw doel is
         if (doelVakje == null) return;
 
+        // gast wacht op de lift, beweeg niet
         if (this instanceof Gast g) {
             if (g.wachtOpLift) return;
         }
 
+        // stop als er geen pathfinder is
         if (pathfinder == null) return;
 
-        //wat de volgende stap is van mijn huidige vakje naar mijn doelvakje en sla dat op in de variabele nieuw
+        // vraag de volgende stap op aan de pathfinder
         Vakje nieuw = pathfinder.volgendeStap(huidigVakje, doelVakje);
 
-
+        // stop als er geen mogelijke stap is
         if (nieuw == null) return;
 
-        //bij verplaatsing
+        // verwijder persoon van het oude vakje
         huidigVakje.verwijderPersoon(this);
 
-        // Als het huidige vakje een ruimte heeft , deze persoon de ruimte verlaat.
+        // meld vertrek uit de ruimte als die er is
         if (huidigVakje.ruimte != null) huidigVakje.ruimte.verlaat(this);
 
-        // Sla het nieuwe vakje op als huidigVakje, de persoon is nu verplaatst.
+        // verplaats persoon naar het nieuwe vakje
         huidigVakje = nieuw;
 
-        // Voeg deze persoon toe aan het nieuwe vakje.
+        // Voeg toe aan nieuw vakje
         nieuw.voegPersoonToe(this);
 
-        // Als het nieuwe vakje een ruimte heeft , persoon betreed de ruimte.
+        // meld binnenkomst in de ruimte als die er is
         if (nieuw.ruimte != null) nieuw.ruimte.betreed(this);
     }
 
-    // verwijderen van routen
+    // wis de huidige route zodat de persoon stopt met bewegen
     public void wisRoute() {
         doelVakje = null;
         tussendoelen.clear();
     }
 
-    // Stuur de persoon naar de uitgang bij een brandalarm.
+    // evacueer naar de uitgang via de trap
+    // standaard gedrag: wis route en loop naar de uitgang
+    // subklassen kunnen dit overschrijven voor ander gedrag
     public void evacueer(Vakje uitgang, Pathfinder pathfinder) {
         if (huidigVakje == null || pathfinder == null) return;
+        // wis de huidige route zodat de persoon niet meer naar zijn oude bestemming loopt
         wisRoute();
-        // route berekenen met trap voor persoon
+        this.doelVakje = uitgang;
+        // gebruik altijd de trap, nooit de lift
         pathfinder.zetRouteTrap(this, uitgang);
+    }
+
+    public void voerTaakUit() {}
+
+    // geeft true als deze persoon een gast is — Gast overschrijft dit
+    public boolean isGast() {
+        return false;
+    }
+
+    // geeft true als deze persoon een schoonmaker is — Schoonmaker overschrijft dit
+    public boolean isSchoonmaker() {
+        return false;
+    }
+
+    // geef een statustekst terug voor het lobbyscherm
+    // subklassen overschrijven dit om hun eigen status te tonen
+    public String getStatusTekst() {
+        return "";
     }
 }

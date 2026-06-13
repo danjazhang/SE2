@@ -5,34 +5,26 @@ import Model.persoon.Persoon;
 import java.util.ArrayList;
 import java.util.List;
 
-// Verantwoordelijkheid: basisklasse voor alle ruimtes in het hotel.
-// Kamer, Restaurant, Bioscoop, Fitnessruimte en Lobby erven van deze klasse via 'extends Ruimte'.
-// Ruimte slaat positie, afmetingen en aanwezige personen op.
+
+// Kamer, Restaurant, Bioscoop, Fitnesruimte en Lobby erven van deze klasse
 public class Ruimte {
 
-    // De x-positie van deze ruimte op het grid (kolom).
+    // positie in het grid
     public int posX;
-
-    // De y-positie van deze ruimte op het grid (rij).
     public int posY;
 
-    // Het aantal vakjes breed dat deze ruimte is.
+    // afmetingen in vakjes
     public int breedte;
-
-    // Het aantal vakjes hoog dat deze ruimte is.
     public int hoogte;
 
-    // De x-positie van de ingang van de ruimte op het grid.
+    // positie van de ingang van de ruimte
     private int ingangX;
-
-    // De y-positie van de ingang van de ruimte op het grid.
     private int ingangY;
 
-    // De lijst van personen die momenteel in de ruimte zijn.
-    // 'List<Persoon>' betekent: een lijst die alleen Persoon-objecten mag bevatten.
+    // lijst van personen die momenteel in de ruimte zijn
     private List<Persoon> aanwezigen;
 
-    // Constructor met positie en afmetingen: sla alle waarden op en maak een lege aanwezigenlijst.
+    // constructor met positie en afmetingen
     public Ruimte(int posX, int posY, int breedte, int hoogte) {
         this.posX = posX;
         this.posY = posY;
@@ -41,13 +33,11 @@ public class Ruimte {
         this.aanwezigen = new ArrayList<>();
     }
 
-    // Lege constructor voor subklassen die hun eigen constructor willen gebruiken.
-    // Maakt wel alvast een lege aanwezigenlijst aan.
+    // lege constructor voor subklassen
     public Ruimte() {
         this.aanwezigen = new ArrayList<>();
     }
 
-    // Setters en getters: methoden om private variabelen van buitenaf in te stellen of op te vragen.
     public void setPositie(int x, int y) { this.posX = x; this.posY = y; }
     public void setAfmetingen(int b, int h) { this.breedte = b; this.hoogte = h; }
     public int getX() { return posX; }
@@ -55,27 +45,45 @@ public class Ruimte {
     public int getBreedte() { return breedte; }
     public int getHoogte() { return hoogte; }
 
-    // Voeg persoon p toe aan de aanwezigenlijst. Wordt aangeroepen als iemand de ruimte betreedt.
+    // voeg een persoon toe aan de ruimte
     public void betreed(Persoon p) { aanwezigen.add(p); }
 
-    // Verwijder persoon p uit de aanwezigenlijst. Wordt aangeroepen als iemand de ruimte verlaat.
+    // verwijder een persoon uit de ruimte
     public void verlaat(Persoon p) { aanwezigen.remove(p); }
 
-    // Geef een kopie van de aanwezigenlijst terug.
-    // 'new ArrayList<>(aanwezigen)' maakt een nieuwe lijst met dezelfde inhoud,
-    // zodat de aanroeper de originele lijst niet per ongeluk kan aanpassen.
-    public List<Persoon> getAanwezigen() {
+    //geef alle aanwezigen terug
+    public List<Persoon> getAanwezigen(){
         return new ArrayList<>(aanwezigen);
     }
 
-    // Sla de ingangspositie op in ingangX en ingangY.
-    public void setIngang(int x, int y) { this.ingangX = x; this.ingangY = y; }
+    // geef deze ruimte terug als vrije kamer, standaard null
+    // Kamer overschrijft dit als die vrij en schoon is
+    public Kamer getVrijeKamer() { return null; }
 
-    // Geef de ingangspositie terug als een array met twee getallen: [x, y].
-    // 'new int[]{ingangX, ingangY}' maakt een nieuwe int-array van twee elementen.
+    // geef de ingang positie terug als array [x, y]
     public int[] krijgIngang() { return new int[]{ingangX, ingangY}; }
 
-    // Standaard geeft een ruimte geen vrije kamer terug: return null.
-    // Kamer overschrijft deze methode via '@Override' zodat hij zichzelf teruggeeft als hij vrij en schoon is.
-    public Kamer getVrijeKamer() { return null; }
+    // sla de ingang positie op
+    public void setIngang(int x, int y) { this.ingangX = x; this.ingangY = y; }
+
+    // geef een statustekst terug voor het lobbyscherm
+    // subklassen overschrijven dit om hun eigen status te tonen
+    public String getStatusTekst() {
+        return "";
+    }
+
+    // geeft true als deze ruimte een kamer is — Kamer overschrijft dit
+    public boolean isKamer() {
+        return false;
+    }
+
+    // geeft true als deze ruimte een faciliteit is — Restaurant/Fitness/Bioscoop overschrijven dit
+    public boolean isFaciliteit() {
+        return false;
+    }
+
+    // geef een leesbare naam terug — subklassen overschrijven dit voor specifieke namen
+    public String getNaam() {
+        return getClass().getSimpleName().toLowerCase();
+    }
 }
