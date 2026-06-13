@@ -146,6 +146,7 @@ public class EventController implements HotelEventListener {
         // Geef de huidige tick door aan alle schoonmakers zodat hun logberichten de juiste tijd tonen.
         for (Persoon p : hotel.personen) {
             if (p instanceof Schoonmaker) {
+                //typecast, zet persoon om naar schoonmaker
                 ((Schoonmaker) p).setHuidigeTijd(evt.getTime());
             }
         }

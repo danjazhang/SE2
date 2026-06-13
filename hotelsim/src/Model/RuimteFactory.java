@@ -79,7 +79,9 @@ public class RuimteFactory {
         // Als ondersteKamerPosY gelijk is aan 0, gebruik dan verdieping 1.
         int verdieping;
         if (ondersteKamerPosY > 0) {
-            verdieping = Math.max(1, ondersteKamerPosY - posY + 1);
+            // posY=ondersteKamerPosY is de onderste verdieping = verdieping 1
+            // posY=1 is de bovenste verdieping = hoogste verdiepingsnummer
+            verdieping = Math.max(1, posY);
         } else {
             verdieping = 1;
         }
