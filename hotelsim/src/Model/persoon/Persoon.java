@@ -5,119 +5,106 @@ import Model.layout.Vakje;
 import java.util.LinkedList;
 import java.util.Queue;
 
-// Basisklasse voor alle personen in het hotel
-// Gast en Schoonmaker erven van deze klasse
+// Verantwoordelijkheid: basisklasse voor alle personen in het hotel.
 public abstract class Persoon {
 
-    // huidige positie op het grid
     public Vakje huidigVakje;
-
-    // huidige bestemming
     public Vakje doelVakje;
-
-    // pathfinding systeem voor het berekenen van routes
     private Pathfinder pathfinder;
 
-    // wachtrij van tussendoelen die na het huidige doel afgewerkt worden
+    // queue van type Vakje met de naam tussendoelen is een nieuwe LinkedList, die rij wordt opgeslagen.
     private Queue<Vakje> tussendoelen = new LinkedList<>();
 
+// start
     public Persoon() {
         this.huidigVakje = null;
         this.doelVakje = null;
     }
 
-    // stel de pathfinder in
+    // setPathfinder met een pathfinder als parameter, dus ik geef een pathfinder door aan deze methode
     public void setPathfinder(Pathfinder pathfinder) {
         this.pathfinder = pathfinder;
     }
 
-    // geef de pathfinder terug
+    // geeft de opgeslagen pathfinder van dit object terug aan degene die het aanroept
     public Pathfinder getPathfinder() {
         return this.pathfinder;
     }
 
-    // stel het hoofddoel in
+    // sla dit vakje op als doelvakje van dit object
     public void zetDoel(Vakje v) {
         this.doelVakje = v;
     }
 
-    // voeg een tussendoel toe aan de wachtrij
+    // Voeg vakje v toe aan het einde van de tussendoelenwachtrij.
     public void voegTussendoelToe(Vakje v) {
         tussendoelen.add(v);
     }
 
-    // zet de startpositie van de persoon
+    // Zet de startpositie: sla vakje v op als huidigVakje en voeg deze persoon toe aan dat vakje.
     public void zetStartPositie(Vakje v) {
         huidigVakje = v;
         v.voegPersoonToe(this);
     }
 
-    // verplaats de persoon één stap richting het doel
+    // kern van de bewegingslogica.
     public void beweeg() {
-
-        // gasten in lift bewegen niet zelfstandig, de lift verplaatst hen
+        //
         if (this instanceof Gast g) {
             if (g.inLift) return;
         }
 
-        // stop als er geen doel is
         if (doelVakje == null && tussendoelen.isEmpty()) return;
 
-        // stop als er geen huidige positie is
         if (huidigVakje == null) return;
 
-        // doel bereikt: pak het volgende tussendoel uit de wachtrij
+
         if (huidigVakje.equals(doelVakje)) {
+            //het volgende vakje uit de wachtrij met poll en dat wordt het nieuwe doe
             doelVakje = tussendoelen.poll();
         }
 
-        // stop als er geen nieuw doel is
         if (doelVakje == null) return;
 
-        // gast wacht op de lift, beweeg niet
         if (this instanceof Gast g) {
             if (g.wachtOpLift) return;
         }
 
-        // stop als er geen pathfinder is
         if (pathfinder == null) return;
 
-        // vraag de volgende stap op aan de pathfinder
+        //wat de volgende stap is van mijn huidige vakje naar mijn doelvakje en sla dat op in de variabele nieuw
         Vakje nieuw = pathfinder.volgendeStap(huidigVakje, doelVakje);
 
-        // stop als er geen mogelijke stap is
+
         if (nieuw == null) return;
 
-        // verwijder persoon van het oude vakje
+        //bij verplaatsing
         huidigVakje.verwijderPersoon(this);
 
-        // meld vertrek uit de ruimte als die er is
+        // Als het huidige vakje een ruimte heeft , deze persoon de ruimte verlaat.
         if (huidigVakje.ruimte != null) huidigVakje.ruimte.verlaat(this);
 
-        // verplaats persoon naar het nieuwe vakje
+        // Sla het nieuwe vakje op als huidigVakje, de persoon is nu verplaatst.
         huidigVakje = nieuw;
+
+        // Voeg deze persoon toe aan het nieuwe vakje.
         nieuw.voegPersoonToe(this);
 
-        // meld binnenkomst in de ruimte als die er is
+        // Als het nieuwe vakje een ruimte heeft , persoon betreed de ruimte.
         if (nieuw.ruimte != null) nieuw.ruimte.betreed(this);
     }
 
-    // wis de huidige route zodat de persoon stopt met bewegen
+    // verwijderen van routen
     public void wisRoute() {
         doelVakje = null;
         tussendoelen.clear();
     }
 
-    // evacueer naar de uitgang via de trap
-    // standaard gedrag: wis route en loop naar de uitgang
-    // subklassen kunnen dit overschrijven voor ander gedrag
+    // Stuur de persoon naar de uitgang bij een brandalarm.
     public void evacueer(Vakje uitgang, Pathfinder pathfinder) {
         if (huidigVakje == null || pathfinder == null) return;
-        // wis de huidige route zodat de persoon niet meer naar zijn oude bestemming loopt
         wisRoute();
-        // gebruik altijd de trap, nooit de lift
+        // route berekenen met trap voor persoon
         pathfinder.zetRouteTrap(this, uitgang);
     }
-
-    public void voerTaakUit() {}
 }

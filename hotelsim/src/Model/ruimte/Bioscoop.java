@@ -12,36 +12,40 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-// Bij GOTO_CINEMA registreert hij de gast
-// Bij START_CINEMA slaat hij de eindtijd op
-// Bij NONE checkt hij elke tick of de film klaar is
+// Verantwoordelijkheid: gasten registreren, een film starten en gasten na de film terugsturen.
+// Bij GOTO_CINEMA registreert de bioscoop de gast.
+// Bij START_CINEMA slaat de bioscoop de eindtijd op.
+// Bij NONE checkt de bioscoop elke tick of de film klaar is.
+// Bioscoop erft van Ruimte en implementeert IEventListener.
 public class Bioscoop extends Ruimte implements IEventListener {
 
-    // of er momenteel een film bezig is
+    // Sla op of er momenteel een film bezig is: true = bezig, false = geen film.
     public boolean filmBezig;
 
-    // de duur van de huidige film in ticks
+    // De duur van de huidige film in ticks.
     public int filmDuur;
 
-    // de gasten die momenteel in de bioscoop zijn
+    // Lijst van gasten die momenteel in de bioscoop zijn (legacy, aanvulling op aanwezigeGastIds).
     public List<Gast> gasten;
 
-    // het tijdstip waarop de huidige film eindigt
+    // Het tijdstip waarop de huidige film eindigt.
     private int filmEindTijd;
 
-    // gastIds van gasten die momenteel in de bioscoop zitten
+    // Een set van gastIds van gasten die momenteel in de bioscoop zitten.
+    // 'Set<Integer>' betekent: een verzameling van unieke int-waarden, geen duplicaten.
     private Set<Integer> aanwezigeGastIds = new HashSet<>();
 
-    // een film duurt dit aantal ticks na START_CINEMA
+    // 'private static final' betekent: dit getal is voor alle Bioscoopobjecten hetzelfde en verandert nooit.
+    // Een film duurt 40 ticks na START_CINEMA.
     private static final int FILMDUUR = 40;
 
-    // logger voor het loggen naar de GUI
+    // Logger voor het sturen van berichten naar de GUI.
     private ILogger logger;
 
-    // service voor het terugsturen van gasten naar hun kamer
+    // Service voor het terugsturen van gasten naar hun kamer nadat de film afgelopen is.
     private GastRoutingService gastTerugService;
 
-    // constructor met logger
+    // Constructor met logger: zet filmBezig op false en maak een lege gastenlijst aan.
     public Bioscoop(ILogger logger) {
         this.gasten = new ArrayList<>();
         this.filmBezig = false;
@@ -50,7 +54,7 @@ public class Bioscoop extends Ruimte implements IEventListener {
         this.logger = logger;
     }
 
-    // lege constructor voor als er geen logger nodig is (bijv. in testen)
+    // Lege constructor voor als er geen logger nodig is, bijvoorbeeld in tests.
     public Bioscoop() {
         this.gasten = new ArrayList<>();
         this.filmBezig = false;
@@ -58,50 +62,55 @@ public class Bioscoop extends Ruimte implements IEventListener {
         this.filmEindTijd = 0;
     }
 
-    // stel de terugservice in
+    // Sla de gastTerugService op zodat we gasten na de film kunnen terugsturen.
     public void setGastTerugService(GastRoutingService gastTerugService) {
         this.gastTerugService = gastTerugService;
     }
 
-    // wordt aangeroepen door EventController als er een library event binnenkomt
+    // '@Override' betekent: deze methode vervangt onEvent() van de interface IEventListener.
+    // Wordt aangeroepen door EventController bij elk binnenkomend event.
     @Override
     public void onEvent(HotelEvent event) {
-        // GOTO_CINEMA: gast komt binnen, registreer hem en log
+
+        // GOTO_CINEMA: een gast gaat naar de bioscoop. Voeg zijn gastId toe aan de set en log het.
+        // 'aanwezigeGastIds.add(event.getGuestId())' betekent: voeg de gastId toe aan de set.
         if (event.getEventType() == HotelEventType.GOTO_CINEMA) {
             aanwezigeGastIds.add(event.getGuestId());
             if (logger != null) logger.log("[" + event.getTime() + "] Bioscoop: gast " + event.getGuestId() + " komt binnen");
         }
-        // START_CINEMA: film start, sla eindtijd op en log
+
+        // START_CINEMA: een film start. Zet filmBezig op true en sla de eindtijd op.
+        // 'filmEindTijd = event.getTime() + FILMDUUR' betekent: eindtijd is gelijk aan huidigeTijd plus 40.
         else if (event.getEventType() == HotelEventType.START_CINEMA) {
             filmBezig = true;
             filmEindTijd = event.getTime() + FILMDUUR;
             if (logger != null) logger.log("[" + event.getTime() + "] Bioscoop: film start");
         }
-        // NONE: elke tick checkt de bioscoop of de film klaar is
+
+        // NONE: elke tick controleren we of de film klaar is.
         else if (event.getEventType() == HotelEventType.NONE) {
             int tijd = event.getTime();
+            // Als filmBezig gelijk is aan true én de huidige tijd groter is dan of gelijk aan (>=) de eindtijd:
             if (filmBezig && tijd >= filmEindTijd) {
+                // Zet filmBezig op false want de film is klaar.
                 filmBezig = false;
                 FilmEindEvent eindEvent = new FilmEindEvent(tijd, -1);
                 if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Bioscoop: film eindigt");
 
-                // stuur alle aanwezige gasten terug naar hun kamer
+                // Stuur alle gasten in de set terug naar hun kamer.
                 if (gastTerugService != null) {
                     for (int gastId : aanwezigeGastIds) {
                         gastTerugService.stuurTerugNaarKamer(gastId);
                     }
                 }
+                // Maak de set leeg zodat die klaar is voor de volgende film.
                 aanwezigeGastIds.clear();
             }
         }
     }
 
-    // start een film
+    // Lege methoden als placeholders.
     public void startFilm() {}
-
-    // stop een film
     public void stopFilm() {}
-
-    // laat een gast de bioscoop betreden
     public void betreedBioscoop() {}
 }

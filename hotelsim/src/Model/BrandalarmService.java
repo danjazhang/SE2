@@ -3,43 +3,44 @@ package Model;
 import Model.layout.Vakje;
 import Model.persoon.Persoon;
 
-// Verantwoordelijkheid: brandalarm activeren en alle personen naar de uitgang sturen
-// Gebruikt polymorfisme via evacueer() zodat elke persoon zijn eigen gedrag bepaalt
-// Gast wist zijn route en loopt naar buiten
-// Schoonmaker onthoudt zijn kamer en loopt ook naar buiten
+// Verantwoordelijkheid: het brandalarm activeren en alle personen naar de uitgang sturen.
+
 public class BrandalarmService {
 
     private Hotel hotel;
+
     private ILogger logger;
 
+    // Constructor van BrandalarmService met hotel en logger als parameters.
     public BrandalarmService(Hotel hotel, ILogger logger) {
+        // slaat op
         this.hotel = hotel;
         this.logger = logger;
     }
 
-    // activeer het brandalarm: zet lift uit en stuur iedereen naar de uitgang
+    // start alarm
     public void activeer(int tijd) {
-        // markeer het alarm als actief in het hotel
+        // Zet brandalarmActief op true zodat geen nieuwe activiteiten naar gasten gestuurd worden.
         hotel.brandalarmActief = true;
 
-        // zet de lift buiten gebruik zodat niemand er meer in kan
+        // Als de lift bestaat (niet null), zet hem dan buiten gebruik via zetUitBedrijf(true).
         if (hotel.lift != null) {
             hotel.lift.zetUitBedrijf(true);
         }
 
-        // zoek de uitgang eenmalig op zodat we hem niet per persoon opnieuw hoeven te zoeken
+        // Maak een variabele uitgang en haal de uitgang op via vindUitgang
         Vakje uitgang = vindUitgang();
 
-        // roep evacueer() aan op elke persoon
-        // elke subklasse beslist zelf wat er extra gebeurt via @Override
+        // loop personen in hotel
         for (Persoon p : hotel.personen) {
+            //Roep evacueer aan op elke persoon en geef uitgang en pathfinder mee.
             p.evacueer(uitgang, hotel.pathfinder);
         }
-
         if (logger != null) logger.log("[" + tijd + "] BRANDALARM: iedereen evacueren via de trap!");
     }
 
-    // zoek het uitgang vakje: het onderste vakje van de lobby
+
+    // bepaalt waar de uitgang van het hotel is in het grid.
     private Vakje vindUitgang() {
         if (hotel.lobby == null) return null;
         return hotel.layout.krijgVakje(hotel.lobby.posX, hotel.lobby.posY);

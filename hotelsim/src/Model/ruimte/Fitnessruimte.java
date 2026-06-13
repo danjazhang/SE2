@@ -12,73 +12,81 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Bij GOTO_FITNESS slaat hij de eindtijd op
-// Bij NONE checkt hij elke tick of gasten klaar zijn
+// Verantwoordelijkheid: bijhouden wanneer gasten klaar zijn met sporten en hen daarna terugsturen.
+// Bij GOTO_FITNESS slaat de fitnessruimte de eindtijd op.
+// Bij NONE checkt de fitnessruimte elke tick of er gasten klaar zijn.
+// Fitnessruimte erft van Ruimte en implementeert IEventListener.
 public class Fitnessruimte extends Ruimte implements IEventListener {
 
-    // de gasten die momenteel in de fitnessruimte zijn
+    // Lijst van gasten die momenteel in de fitnessruimte zijn.
     public List<Gast> gasten;
 
-    // bijhoudt wanneer elke gast klaar is met sporten: gastId -> eindtijd
+    // Een map die per gast bijhoudt wanneer hij klaar is met sporten.
+    // 'Map<Integer, Integer>' betekent: sleutel is gastId (int), waarde is eindtijd (int).
     private Map<Integer, Integer> sportEindTijden;
 
-    // een fitness sessie duurt dit aantal ticks
+    // 'private static final' betekent: dit getal is voor alle Fitnessruimtes hetzelfde en verandert nooit.
+    // Een fitness sessie duurt 20 ticks.
     private static final int SPORTDUUR = 20;
 
-    // logger voor het loggen naar de GUI
+    // Logger voor het sturen van berichten naar de GUI.
     private ILogger logger;
 
-    // service voor het terugsturen van gasten naar hun kamer
+    // Service voor het terugsturen van gasten naar hun kamer nadat ze klaar zijn.
     private GastRoutingService gastTerugService;
 
-    // constructor met logger
+    // Constructor met logger: maak lege lijsten aan en sla de logger op.
     public Fitnessruimte(ILogger logger) {
         this.gasten = new ArrayList<>();
         this.logger = logger;
         this.sportEindTijden = new HashMap<>();
     }
 
-    // lege constructor voor als er geen logger nodig is (bijv. in testen)
+    // Lege constructor voor als er geen logger nodig is, bijvoorbeeld in tests.
     public Fitnessruimte() {
         this.gasten = new ArrayList<>();
         this.sportEindTijden = new HashMap<>();
     }
 
-    // stel de terugservice in
+    // Sla de gastTerugService op zodat we gasten na het sporten kunnen terugsturen.
     public void setGastTerugService(GastRoutingService gastTerugService) {
         this.gastTerugService = gastTerugService;
     }
 
-    // wordt aangeroepen door EventController als er een library event binnenkomt
+    // '@Override' betekent: deze methode vervangt onEvent() van de interface IEventListener.
+    // Wordt aangeroepen door EventController bij elk binnenkomend event.
     @Override
     public void onEvent(HotelEvent event) {
-        // GOTO_FITNESS: gast gaat sporten, sla eindtijd op en log
+
+        // GOTO_FITNESS: een gast gaat sporten. Sla zijn eindtijd op en log het.
+        // 'sportEindTijden.put(gastId, event.getTime() + SPORTDUUR)' betekent:
+        // sla op dat gastId klaar is op tijdstip huidigetijd plus 20.
         if (event.getEventType() == HotelEventType.GOTO_FITNESS) {
             int gastId = event.getGuestId();
             sportEindTijden.put(gastId, event.getTime() + SPORTDUUR);
             if (logger != null) logger.log("[" + event.getTime() + "] Fitness: gast " + gastId + " gaat sporten");
         }
-        // NONE: elke tick checkt de fitnessruimte of gasten klaar zijn
+
+        // NONE: elke tick controleren we de sportEindTijden.
         else if (event.getEventType() == HotelEventType.NONE) {
-            //sla huidige tijdstip van event op als tijd
+            // Haal het huidige tijdstip op uit het event.
             int tijd = event.getTime();
 
-            // maak lege lijst voor gasten die klaar zijn met sporten
+            // Maak een lege lijst voor gasten die klaar zijn met sporten.
             List<Integer> klaar = new ArrayList<>();
 
-            //loop door de sleutel-waarde paren in de map
+            // Loop door alle sleutel-waarde paren in de map.
+            // 'entry.getKey()' is de gastId (de sleutel), 'entry.getValue()' is de eindtijd (de waarde).
             for (Map.Entry<Integer, Integer> entry : sportEindTijden.entrySet()) {
-                
-                //gastid is sleutel
                 int gastId = entry.getKey();
-                //eindtijd is waarde
                 int eindTijd = entry.getValue();
+                // Als de huidige tijd groter is dan of gelijk is aan (>=) de eindtijd, is de gast klaar.
                 if (tijd >= eindTijd) {
                     klaar.add(gastId);
                 }
             }
 
-            // verwerk elke klare gast: verwijder uit lijst, log en stuur terug
+            // Verwerk elke klare gast: verwijder hem uit de map, log het, en stuur hem terug naar zijn kamer.
             for (int gastId : klaar) {
                 sportEindTijden.remove(gastId);
                 FitnessEindEvent eindEvent = new FitnessEindEvent(tijd, gastId);
@@ -88,9 +96,7 @@ public class Fitnessruimte extends Ruimte implements IEventListener {
         }
     }
 
-    // laat een gast sporten
+    // Lege methoden als placeholders.
     public void breedteFitness() {}
-
-    // laat een gast de fitnessruimte verlaten
     public void verlaatFitness() {}
 }
