@@ -14,4 +14,7 @@ public class Trap extends Ruimte {
 
     // laat een persoon de trap gebruiken
     public void gebruikTrap(Persoon p) {}
+
+    @Override
+    public void setTijdPerVerdieping(int duur) { this.tijdperverdieping = duur; }
 }

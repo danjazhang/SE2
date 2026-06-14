@@ -141,6 +141,9 @@ public abstract class Persoon {
         pathfinder.zetRouteTrap(this, uitgang);
     }
 
+    // stel de schoonmaakduur in — Schoonmaker overschrijft dit
+    public void setSchoonmaakDuur(int duur) {}
+
     public void voerTaakUit() {}
 
     // geeft true als deze persoon een gast is — Gast overschrijft dit

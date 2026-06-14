@@ -20,8 +20,8 @@ public class SimulatieController {
 
     private long startTijdMs = 0;
 
-    // gast wordt gesummond na dit aantal stilstaande ticks
-    private static final int MAX_WACHT_TICKS = 5;
+    // gast wordt gesummond na dit aantal stilstaande ticks — instelbaar via setMaxWachtTicks()
+    private int maxWachtTicks = 5;
     // summoning animatie duurt dit aantal ticks
     private static final int SUMMON_DUUR = 8;
 
@@ -39,6 +39,9 @@ public class SimulatieController {
 
     public void pauzeer() { eventManager.pauze(); }
     public void stop() { eventManager.stop(); }
+
+    // stel de maximale wachttijd in voordat een gast gesummoned wordt
+    public void setMaxWachtTicks(int ticks) { this.maxWachtTicks = ticks; }
 
     // Snelheid wordt nu alleen nog via de library geregeld.
     // We passen dus de HTE van HotelEventManager aan in plaats van lokaal
@@ -185,7 +188,7 @@ public class SimulatieController {
 
             if (stilstaand) {
                 g.wachtTicks++;
-                if (g.wachtTicks >= MAX_WACHT_TICKS) {
+                if (g.wachtTicks >= maxWachtTicks) {
                     g.summonTick = 0;
                     g.wisRoute();
                 }

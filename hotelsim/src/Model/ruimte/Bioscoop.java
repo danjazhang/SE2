@@ -32,8 +32,8 @@ public class Bioscoop extends Ruimte implements IEventListener {
     // gastIds van gasten die momenteel in de bioscoop zitten
     private Set<Integer> aanwezigeGastIds = new HashSet<>();
 
-    // een film duurt dit aantal ticks na START_CINEMA
-    private static final int FILMDUUR = 40;
+    // een film duurt dit aantal ticks na START_CINEMA — instelbaar via setFilmDuur()
+    private int filmDuurTicks = 40;
 
     // logger voor het loggen naar de GUI
     private ILogger logger;
@@ -74,7 +74,7 @@ public class Bioscoop extends Ruimte implements IEventListener {
         // START_CINEMA: film start, sla eindtijd op en log
         else if (event.getEventType() == HotelEventType.START_CINEMA) {
             filmBezig = true;
-            filmEindTijd = event.getTime() + FILMDUUR;
+            filmEindTijd = event.getTime() + filmDuurTicks;
             if (logger != null) logger.log("[" + event.getTime() + "] Bioscoop: film start");
         }
         // NONE: elke tick checkt de bioscoop of de film klaar is
@@ -104,6 +104,9 @@ public class Bioscoop extends Ruimte implements IEventListener {
 
     // laat een gast de bioscoop betreden
     public void betreedBioscoop() {}
+
+    // stel de filmduur in — standaard 40 ticks
+    public void setFilmDuur(int duur) { this.filmDuurTicks = duur; }
 
     @Override
     public boolean isFaciliteit() { return true; }

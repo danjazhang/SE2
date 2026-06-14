@@ -39,7 +39,7 @@ public class LobbyOverzichtView extends JDialog {
         rechtsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         // splits het venster in twee kolommen
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, linksArea, new JScrollPane(rechtsArea));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(linksArea), new JScrollPane(rechtsArea));
         splitPane.setDividerLocation(550);
         splitPane.setResizeWeight(0.5);
         add(splitPane, BorderLayout.CENTER);
