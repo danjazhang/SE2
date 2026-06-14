@@ -94,7 +94,8 @@ public class Pathfinder {
         g.gebruiktLift = true;
         g.gewensteVerdieping = doel.y;
         p.zetDoel(liftVakje);
-        hotel.lift.roep(p, start.y);
+        // Cast naar Persoon is nodig omdat roep() een Persoon verwacht
+        hotel.lift.roep(g, start.y);
     }
 
     // route via trap

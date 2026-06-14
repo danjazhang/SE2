@@ -10,7 +10,9 @@ import Model.ruimte.Ruimte;
 import Model.ruimte.Trap;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 // Model klasse: bevat alle data van het hotel
 public class Hotel {
@@ -43,11 +45,26 @@ public class Hotel {
     // of het brandalarm momenteel actief is
     public boolean brandalarmActief = false;
 
+    // De kolommen die momenteel in brand staan door Godzilla.
+    // Een Set van kolomnummers (x-waarden). Als een kolom in deze set staat, sterft elke persoon die erop staat.
+    // 'Set<Integer>' betekent: een verzameling van unieke gehele getallen, geen dubbelen.
+    public Set<Integer> brandendeKolommen = new HashSet<>();
+
+    // De lijst van personen die gestorven zijn door Godzilla.
+    // Ze worden hier naartoe verplaatst aan het einde van de tick.
+    public List<Persoon> slachtoffers = new ArrayList<>();
+
+    // Sla op of Godzilla momenteel actief is: true = aanval bezig, false = geen aanval.
+    // Als dit true is, worden routing-events genegeerd.
+    public boolean godzillaActief = false;
+
     // constructor: maak lege lijsten aan
     public Hotel() {
         ruimtes = new ArrayList<>();
         personen = new ArrayList<>();
         wachtendeSchoonmaakKamers = new ArrayList<>();
+        brandendeKolommen = new HashSet<>();
+        slachtoffers = new ArrayList<>();
     }
 
     // voeg een persoon toe aan het hotel

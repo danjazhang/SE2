@@ -194,6 +194,21 @@ public class LayoutView extends JPanel implements ModelListener {
             g.drawString("Lobby", lobbyTekenX + 4, lobbyTekenY + 16);
         }
 
+        // teken vuur over alle brandende kolommen
+        // de brandende kolommen blijven zichtbaar ook als de simulatie gestopt is
+        if (!hotel.brandendeKolommen.isEmpty()) {
+            g.setFont(new Font("Serif", Font.PLAIN, tileSize - 4));
+            for (int kolom : hotel.brandendeKolommen) {
+                // bereken de scherm-x van de kolom: kolom 1 begint op x = 0
+                int vuurX = (kolom - 1) * tileSize;
+                // teken het vuur over alle rijen van die kolom van boven naar beneden
+                for (int rij = 1; rij <= hotel.hoogte; rij++) {
+                    int vuurY = schermY(rij, offsetY) + tileSize - 4;
+                    g.drawString("\uD83D\uDD25", vuurX, vuurY);
+                }
+            }
+        }
+
         // teken personen
         for (Persoon p : hotel.personen) {
             if (p.huidigVakje == null) continue;

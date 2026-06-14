@@ -1,6 +1,7 @@
 package Controller;
 
 import Model.Hotel;
+import Model.GodzillaService;
 import Model.layout.Vakje;
 import Model.persoon.Gast;
 import Model.persoon.Persoon;
@@ -86,8 +87,47 @@ public class SimulatieController {
             verwerkWachttijden(hotel);
             verwerkRestaurantWachtrij(hotel);
 
+            // --- Godzilla tick-volgorde (deterministisch) ---
+            // Stap 1: breidt vuur uit naar de volgende kolom en markeer doden op die kolom.
+            //         Personen worden hier alleen gemarkeerd (gestorven = true), nooit verwijderd.
+            GodzillaService godzilla = eventController.getGodzillaService();
+            if (godzilla != null && hotel.godzillaActief) {
+                godzilla.behandel(tikTeller);
+            }
+
+            // Stap 2: alleen levende personen bewegen (gestorven personen worden overgeslagen).
             List<Persoon> copy = new ArrayList<>(hotel.personen);
-            for (Persoon p : copy) p.beweeg();
+            for (Persoon p : copy) {
+                // Als de persoon gestorven is, beweegt hij niet meer.
+                if (p.gestorven) continue;
+                p.beweeg();
+            }
+
+            // Stap 3: controleer na de beweging of personen op een brandende kolom terecht zijn gekomen.
+            //         Die worden ook gemarkeerd. Nog steeds geen verwijdering.
+            if (hotel.godzillaActief && godzilla != null) {
+                for (int kolom : hotel.brandendeKolommen) {
+                    godzilla.markeerDodenOpKolom(kolom, tikTeller);
+                }
+            }
+
+            // Stap 4 (einde tick): verwijder alle gestorven personen uit hotel.personen
+            //         en verplaats ze naar hotel.slachtoffers.
+            //         Dit is het enige moment waarop verwijdering plaatsvindt — nooit eerder.
+            if (hotel.godzillaActief) {
+                hotel.personen.removeIf(p -> {
+                    if (p.gestorven) {
+                        // Verwijder de persoon van zijn vakje zodat hij niet meer zichtbaar is.
+                        if (p.huidigVakje != null) {
+                            p.huidigVakje.verwijderPersoon(p);
+                            p.huidigVakje = null;
+                        }
+                        hotel.slachtoffers.add(p);
+                        return true;
+                    }
+                    return false;
+                });
+            }
 
             hotelController.notifyListeners();
         }
