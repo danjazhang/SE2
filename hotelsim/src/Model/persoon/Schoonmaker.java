@@ -82,15 +82,14 @@ public class Schoonmaker extends Persoon {
     }
 
     // overschrijft evacueer() van Persoon
-    // schoonmaker onthoudt zijn kamer zodat hij die na het alarm kan afmaken
-    // daarna loopt hij ook naar de uitgang via de trap
+    // schoonmaker onthoudt zijn kamer en pauzeert het schoonmaken
     @Override
     public void evacueer(Vakje uitgang, Pathfinder pathfinder) {
         if (huidigVakje == null || pathfinder == null) return;
-        // wis alleen de route, niet de kamertoewijzing
-        // kamer blijft bewaard zodat de schoonmaker na het alarm verder kan
+        // pauzeer schoonmaken — ticks worden niet verder afgeteld tijdens evacuatie
+        resterendeSchoonmaakTicks = 0;
+        // wis route maar bewaar kamer-toewijzing zodat we later verder kunnen
         wisRoute();
-        // gebruik altijd de trap, nooit de lift
         pathfinder.zetRouteTrap(this, uitgang);
     }
 
