@@ -5,7 +5,6 @@ import Model.events.IEventListener;
 import Model.ILogger;
 import Model.layout.Vakje;
 import Model.persoon.Gast;
-import Model.persoon.Schoonmaker;
 import hotelevents.HotelEvent;
 import hotelevents.HotelEventType;
 
@@ -66,13 +65,8 @@ public class Lobby extends Ruimte implements IEventListener {
         // sla kamer op want na uitchecken is kamer null
         Kamer kamer = gast.kamer;
         if (kamer != null) kamer.ontkoppelGast(gast);
-        // gebruik bij gewone check-out eerst de standaard schoonmaker
-        Schoonmaker schoonmaker = personenService.vindVrijeSchoonmakerVoorCheckOut();
-        // check of er een schoonmaker is en of de gast een kamer had
-        if (schoonmaker != null && kamer != null) {
-            schoonmaker.maakKamerSchoon(kamer);
-            // stuur schoonmaker naar de kamer via een route
-            hotel.pathfinder.zetRoute(schoonmaker, kamer);
+        if (kamer != null) {
+            hotel.voegWachtendeSchoonmaakToe(kamer);
         }
         // markeer gast als uitcheckend, wis oude route en stuur naar het midden van de lobby
         // zodra de gast de lobby betreedt wordt hij grafisch verwijderd via betreed()
