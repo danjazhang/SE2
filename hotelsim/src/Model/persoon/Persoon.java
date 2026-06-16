@@ -25,8 +25,7 @@ public abstract class Persoon {
     private int trapTicks = 0;
 
     // Sla op of deze persoon gestorven is door Godzilla.
-    // Als dit gelijk is aan true, beweegt de persoon niet meer en wordt hij aan het einde van de tick verwijderd.
-    // Een gestorven persoon kan nooit meer tot leven komen.
+    // Als dit true is, beweegt de persoon niet meer en wordt hij aan het einde van de tick verwijderd.
     public boolean gestorven = false;
 
     public Persoon() {
@@ -132,6 +131,8 @@ public abstract class Persoon {
     public void wisRoute() {
         doelVakje = null;
         tussendoelen.clear();
+        // als de persoon een gast is die in de lift-wachtrij staat: verwijder hem
+        // (het hotel-object is niet beschikbaar hier, dat wordt via Pathfinder gedaan)
     }
 
     // evacueer naar de uitgang via de trap
@@ -145,6 +146,9 @@ public abstract class Persoon {
         // gebruik altijd de trap, nooit de lift
         pathfinder.zetRouteTrap(this, uitgang);
     }
+
+    // stel de schoonmaakduur in — Schoonmaker overschrijft dit
+    public void setSchoonmaakDuur(int duur) {}
 
     public void voerTaakUit() {}
 

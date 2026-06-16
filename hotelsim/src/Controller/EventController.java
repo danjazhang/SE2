@@ -20,8 +20,9 @@ public class EventController implements HotelEventListener {
     private ILogger logger;
     private GastRoutingService gastRoutingService;
     private SchoonmaakService schoonmaakService;
-    // De GodzillaService wordt aangemaakt als het GODZILLA event binnenkomt en daarna bewaard.
-    // Zo kan SimulatieController hem elke tick opvragen via getGodzillaService().
+    // Deze service bestaat pas vanaf het moment dat het GODZILLA-event echt binnenkomt.
+    // Daarna bewaart EventController de service zodat SimulatieController ze bij elke tick
+    // opnieuw kan gebruiken voor vuuruitbreiding en slachtoffercontrole.
     private GodzillaService godzillaService;
     private List<Persoon> personen = new ArrayList<>();
     private List<IEventListener> listeners = new ArrayList<>();
@@ -77,14 +78,12 @@ public class EventController implements HotelEventListener {
 
     public void notificeerPersoon(Persoon p, HotelEvent evt) {}
 
-    // Geef de GodzillaService terug zodat SimulatieController hem elke tick kan aanroepen.
-    // Is leeg (null) zolang het GODZILLA event nog niet ontvangen is.
+    // Geef de actieve GodzillaService terug.
+    // Zolang het GODZILLA-event nog niet ontvangen is, blijft dit null.
     public GodzillaService getGodzillaService() {
         return godzillaService;
     }
 
-    // Stuur de gast naar de juiste ruimte op basis van het eventtype.
-    // Wordt overgeslagen als het brandalarm actief is of als Godzilla actief is.
     private void stuurGastNaarRuimte(HotelEvent evt) {
         if (gastRoutingService == null) return;
         switch (evt.getEventType()) {
@@ -115,7 +114,8 @@ public class EventController implements HotelEventListener {
             }
         }
 
-        // tijdens brandalarm én tijdens Godzilla geen nieuwe routing-events sturen naar gasten
+        // Tijdens brandalarm en tijdens Godzilla geven we geen nieuwe vrijetijdsactiviteiten meer aan gasten.
+        // Anders zouden gasten nog naar restaurant/fitness/bioscoop vertrekken terwijl een globale noodsituatie loopt.
         if (!hotel.brandalarmActief && !hotel.godzillaActief) {
             stuurGastNaarRuimte(evt);
         }
@@ -129,8 +129,8 @@ public class EventController implements HotelEventListener {
                 if (logger != null) logger.log("[" + evt.getTime() + "] HOTEL: evacuatie gestart!");
                 break;
             case GODZILLA:
-                // Maak de GodzillaService aan en start de aanval.
-                // Daarna roept SimulatieController elke tick godzillaService.behandel() aan via getGodzillaService().
+                // Maak de GodzillaService precies op het moment van het event aan.
+                // Vanaf hier neemt de tick-logica in SimulatieController de verdere afhandeling over.
                 godzillaService = new GodzillaService(hotel, logger);
                 godzillaService.start(evt.getTime());
                 break;

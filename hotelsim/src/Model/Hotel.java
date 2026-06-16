@@ -47,7 +47,6 @@ public class Hotel {
 
     // De kolommen die momenteel in brand staan door Godzilla.
     // Een Set van kolomnummers (x-waarden). Als een kolom in deze set staat, sterft elke persoon die erop staat.
-    // 'Set<Integer>' betekent: een verzameling van unieke gehele getallen, geen dubbelen.
     public Set<Integer> brandendeKolommen = new HashSet<>();
 
     // De lijst van personen die gestorven zijn door Godzilla.

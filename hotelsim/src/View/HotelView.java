@@ -155,6 +155,28 @@ public class HotelView extends JFrame {
             simulatieView.pasSnelheidToe();
             //haal het gekozen scenario op uit de simulatieview en start daarmee
             int scenario = simulatieView.getGekozenScenario();
+
+
+            // stel de schoonmaaktijd in op alle schoonmakers voor het starten
+            int schoonmaakDuur = simulatieView.getSchoonmaakDuur();
+            for (Model.persoon.Persoon p : this.hotel.personen) {
+                if (p.isSchoonmaker()) {
+                    p.setSchoonmaakDuur(schoonmaakDuur);
+                }
+            }
+            // stel de filmduur in op alle bioscopen voor het starten
+            int filmDuur = simulatieView.getFilmDuur();
+            for (Model.ruimte.Ruimte r : this.hotel.ruimtes) {
+                r.setFilmDuur(filmDuur);
+            }
+            // stel de traptijd in op de trap voor het starten
+            int trapTijd = simulatieView.getTrapTijd();
+            for (Model.ruimte.Ruimte r : this.hotel.ruimtes) {
+                r.setTijdPerVerdieping(trapTijd);
+            }
+            // stel de maximale wachttijd in op de simulatiecontroller
+            simulatieController.setMaxWachtTicks(simulatieView.getMaxWachtTicks());
+
             simulatieController.start(scenario);
             // start de gebruikstijd timer mee met de simulatie
             gebruikstijdTimer.start();
@@ -188,6 +210,19 @@ public class HotelView extends JFrame {
         //maak de simulatieview
         simulatieView = new SimulatieView(simulatieController);
         top.add(simulatieView);
+
+        // pas instellingen direct toe als ze tijdens de simulatie worden aangepast
+        simulatieView.setOnInstellingenOpgeslagen(() -> {
+            if (this.hotel == null) return;
+            for (Model.persoon.Persoon p : this.hotel.personen) {
+                if (p.isSchoonmaker()) p.setSchoonmaakDuur(simulatieView.getSchoonmaakDuur());
+            }
+            for (Model.ruimte.Ruimte r : this.hotel.ruimtes) {
+                r.setFilmDuur(simulatieView.getFilmDuur());
+                r.setTijdPerVerdieping(simulatieView.getTrapTijd());
+            }
+            simulatieController.setMaxWachtTicks(simulatieView.getMaxWachtTicks());
+        });
 
 
         //krijgt boolean terug van simulatieview als pauze is ingedrukt (true)

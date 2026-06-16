@@ -82,6 +82,12 @@ public class Ruimte {
         return false;
     }
 
+    // stel de filmduur in — Bioscoop overschrijft dit
+    public void setFilmDuur(int duur) {}
+
+    // stel de traptijd in — Trap overschrijft dit
+    public void setTijdPerVerdieping(int duur) {}
+
     // geef een leesbare naam terug — subklassen overschrijven dit voor specifieke namen
     public String getNaam() {
         return getClass().getSimpleName().toLowerCase();

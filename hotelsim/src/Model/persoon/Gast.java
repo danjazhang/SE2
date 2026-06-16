@@ -48,6 +48,10 @@ public class Gast extends Persoon {
     // Het restaurant waar de gast op wacht
     public Model.ruimte.Restaurant wachtRestaurant = null;
 
+    // True zolang de gast na een brandalarm nog terug het hotel in en naar zijn kamer moet.
+    // Tijdens deze fase negeren we nieuwe activiteiten-events tijdelijk.
+    public boolean keertTerugNaAlarm = false;
+
     public Gast(int gastId, int gewensteSterren) {
 
         this.gastId = gastId;

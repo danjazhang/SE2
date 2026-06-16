@@ -8,8 +8,8 @@ import Model.ruimte.Kamer;
 // Verantwoordelijkheid: bewegen, schoonmaaktijd aftellen en kamer schoonmaken
 public class Schoonmaker extends Persoon {
 
-    // aantal ticks dat een schoonmaakbeurt duurt
-    private static final int SCHOONMAAKDUUR = 20;
+    // aantal ticks dat een schoonmaakbeurt duurt — instelbaar via setSchoonmaakDuur()
+    private int schoonmaakDuur = 20;
 
     // of de schoonmaker momenteel bezig is
     public boolean bezig;
@@ -76,21 +76,20 @@ public class Schoonmaker extends Persoon {
 
         // check of de schoonmaker net de doelkamer is binnengekomen
         if (bezig && kamer != null && huidigVakje != null && huidigVakje.ruimte == kamer && oudeKamer != kamer) {
-            resterendeSchoonmaakTicks = SCHOONMAAKDUUR;
+            resterendeSchoonmaakTicks = schoonmaakDuur;
             if (logger != null) logger.log("[" + huidigeTijd + "] Schoonmaker begint kamer " + kamer.getKamernummer() + " schoon te maken");
         }
     }
 
     // overschrijft evacueer() van Persoon
-    // schoonmaker onthoudt zijn kamer zodat hij die na het alarm kan afmaken
-    // daarna loopt hij ook naar de uitgang via de trap
+    // schoonmaker onthoudt zijn kamer en pauzeert het schoonmaken
     @Override
     public void evacueer(Vakje uitgang, Pathfinder pathfinder) {
         if (huidigVakje == null || pathfinder == null) return;
-        // wis alleen de route, niet de kamertoewijzing
-        // kamer blijft bewaard zodat de schoonmaker na het alarm verder kan
+        // pauzeer schoonmaken — ticks worden niet verder afgeteld tijdens evacuatie
+        resterendeSchoonmaakTicks = 0;
+        // wis route maar bewaar kamer-toewijzing zodat we later verder kunnen
         wisRoute();
-        // gebruik altijd de trap, nooit de lift
         pathfinder.zetRouteTrap(this, uitgang);
     }
 
@@ -102,6 +101,10 @@ public class Schoonmaker extends Persoon {
     }
 
     public void setLogger(ILogger logger) { this.logger = logger; }
+
+    // stel de schoonmaakduur in — standaard 20 ticks
+    public void setSchoonmaakDuur(int duur) { this.schoonmaakDuur = duur; }
+    public int getSchoonmaakDuur() { return schoonmaakDuur; }
     public void setHuidigeTijd(int huidigeTijd) { this.huidigeTijd = huidigeTijd; }
     public void setWachtVakje(Vakje wachtVakje) { this.wachtVakje = wachtVakje; }
     public void setNoodSchoonmaker(boolean noodSchoonmaker) { this.noodSchoonmaker = noodSchoonmaker; }

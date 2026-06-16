@@ -52,10 +52,18 @@ public class Lobby extends Ruimte implements IEventListener {
         // maak gast aan met zijn gewenste sterrenklasse
         Gast gast = personenService.maakGast(gastId, gewensteSterren, startVakje);
 
-        // koppel de gast aan de kamer en stuur hem erheen
+        // koppel de gast aan de kamer — kamer wordt altijd onthouden
         kamer.koppelGast(gast);
-        hotel.pathfinder.zetRoute(gast, kamer);
-        if (logger != null) logger.log("[" + tijd + "] Lobby: gast " + gastId + " (" + gewensteSterren + "★) checkt in kamer " + kamer.getKamernummer() + " (" + kamer.sterren + "★)");
+
+        if (hotel.brandalarmActief) {
+            // tijdens evacuatie: kamer is onthouden maar gast gaat direct naar buiten
+            // Hotel.voegPersoonToe zorgt al voor de evacuatie via brandalarmService
+            if (logger != null) logger.log("[" + tijd + "] Lobby: gast " + gastId + " checkt in kamer " + kamer.getKamernummer() + " maar evacuatie is actief — gaat naar buiten");
+        } else {
+            // normaal: stuur gast naar zijn kamer
+            hotel.pathfinder.zetRoute(gast, kamer);
+            if (logger != null) logger.log("[" + tijd + "] Lobby: gast " + gastId + " (" + gewensteSterren + "★) checkt in kamer " + kamer.getKamernummer() + " (" + kamer.sterren + "★)");
+        }
     }
 
     private void behandelCheckOut(int gastId, int tijd) {
@@ -122,10 +130,11 @@ public class Lobby extends Ruimte implements IEventListener {
             if (gast.uitcheckend && gast.huidigVakje != null
                     && gast.huidigVakje.x == balieX
                     && gast.huidigVakje.y == balieY) {
-                // gast heeft het midden van de lobby bereikt — verwijder hem
                 gast.huidigVakje.verwijderPersoon(gast);
                 gast.huidigVakje = null;
                 gast.wisRoute();
+                // ook uit lift-wachtrij/-passagiers verwijderen
+                if (hotel.lift != null) hotel.lift.verwijderUitWachtrij(gast);
                 hotel.personen.remove(gast);
             }
         }
