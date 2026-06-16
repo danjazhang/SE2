@@ -20,7 +20,8 @@ public class BrandalarmService {
         this.logger = logger;
     }
 
-    // activeer het brandalarm: zet lift uit en stuur iedereen naar de uitgang
+    // Activeer het brandalarm onmiddellijk.
+    // Dit is de eerste omschakeling: lift uit, uitgang bepalen, iedereen naar buiten sturen.
     public void activeer(int tijd) {
         // markeer het alarm als actief in het hotel
         hotel.brandalarmActief = true;
@@ -62,7 +63,8 @@ public class BrandalarmService {
         if (logger != null) logger.log("[" + tijd + "] BRANDALARM: iedereen evacueren via de trap!");
     }
 
-    //gebruik dit bij het toevoegen van personen
+    // Als tijdens een actief alarm nog een persoon aan het hotel toegevoegd wordt,
+    // krijgt die hier meteen dezelfde evacuatieroute als iedereen anders.
     public void evacueerNieuwePersoon(Persoon p) {
         if (hotel.brandalarmActief && uitgang != null) {
             p.evacueer(uitgang, hotel.pathfinder);

@@ -91,6 +91,13 @@ public class LayoutView extends JPanel implements ModelListener {
             g.setFont(new Font("Arial", Font.BOLD, 18));
             g.drawString("BRANDALARM - EVACUEER DIRECT", 10, 26);
             offsetY += 40;
+        } else if (hotel.godzillaActief) {
+            g.setColor(new Color(180, 70, 10));
+            g.fillRect(0, 0, getWidth(), 40);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.BOLD, 18));
+            g.drawString("GODZILLA - HOTEL IN BRAND", 10, 26);
+            offsetY += 40;
         }
 
         // tick teller en klok
@@ -142,10 +149,9 @@ public class LayoutView extends JPanel implements ModelListener {
                 int tekenB = r.breedte * tileSize;
                 int tekenH = r.hoogte * tileSize;
 
-                // lift en trap beslaan alleen de kamerrijen (y=3..hoogte), niet lobby (y=2) of buiten (y=1)
                 if (r instanceof Lift || r instanceof Trap) {
                     tekenY = offsetY;
-                    tekenH = (hotel.hoogte - 2) * tileSize; // hoogte - 2 rijen (zonder lobby en buiten)
+                    tekenH = (hotel.hoogte - 2) * tileSize;
                 }
 
                 g.fillRect(tekenX, tekenY, tekenB, tekenH);
@@ -183,6 +189,30 @@ public class LayoutView extends JPanel implements ModelListener {
                     g.drawRect(tekenX, cabineY, tileSize, tileSize);
                     g.drawString("Lift", tekenX + 4, cabineY + 16);
                 }
+            }
+        }
+
+        // teken de lobby naam apart zodat die niet bedekt wordt door lift/trap
+        if (hotel.lobby != null) {
+            int lobbyTekenY = ruimteTekenY(hotel.lobby.posY, hotel.lobby.hoogte, offsetY);
+            int lobbyTekenX = (hotel.lobby.posX ) * tileSize;
+            g.setColor(Color.BLACK);
+            g.setFont(new Font("Arial", Font.BOLD, 12));
+            g.drawString("Lobby", lobbyTekenX + 4, lobbyTekenY + 16);
+        }
+
+        // teken brandende kolommen van Godzilla duidelijk over het hele hotel
+        if (hotel.godzillaActief) {
+            Graphics2D g2 = (Graphics2D) g;
+            for (int kolom : hotel.brandendeKolommen) {
+                int kolomX = (kolom - 1) * tileSize;
+                int kolomY = offsetY;
+                int kolomH = (hotel.hoogte - 1) * tileSize;
+                g2.setColor(new Color(255, 90, 0, 110));
+                g2.fillRect(kolomX, kolomY, tileSize, kolomH);
+                g2.setColor(new Color(255, 220, 0, 150));
+                g2.drawRect(kolomX, kolomY, tileSize, kolomH);
+                g2.drawString("FIRE", kolomX + 6, kolomY + 18);
             }
         }
 
@@ -309,6 +339,12 @@ public class LayoutView extends JPanel implements ModelListener {
                 g.fillOval(px, py, grootte, grootte);
                 g.setColor(Color.BLACK);
                 g.drawOval(px, py, grootte, grootte);
+            }
+
+            if (p.gestorven) {
+                g.setColor(new Color(170, 0, 0));
+                g.drawLine(px, py, px + grootte, py + grootte);
+                g.drawLine(px + grootte, py, px, py + grootte);
             }
         }
     }

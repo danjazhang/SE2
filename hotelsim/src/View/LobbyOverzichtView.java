@@ -39,7 +39,7 @@ public class LobbyOverzichtView extends JDialog {
         rechtsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         // splits het venster in twee kolommen
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, linksArea, new JScrollPane(rechtsArea));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(linksArea), new JScrollPane(rechtsArea));
         splitPane.setDividerLocation(550);
         splitPane.setResizeWeight(0.5);
         add(splitPane, BorderLayout.CENTER);
@@ -77,6 +77,9 @@ public class LobbyOverzichtView extends JDialog {
             brandalarmStatus = "uit";
         }
         text += "Brandalarm      : " + brandalarmStatus + "\n\n";
+        text += "Godzilla        : " + (hotel.godzillaActief ? "ACTIEF" : "uit") + "\n";
+        text += "Brandkolommen   : " + hotel.brandendeKolommen.size() + "\n";
+        text += "Slachtoffers    : " + hotel.slachtoffers.size() + "\n\n";
 
         // lift
         if (hotel.lift != null) {
@@ -141,6 +144,15 @@ public class LobbyOverzichtView extends JDialog {
             text += "  " + p.getStatusTekst() + "\n\n";
         }
         if (!schoonmakerGevonden) text += "  Geen schoonmakers\n";
+
+        text += "\n=== SLACHTOFFERS ===\n";
+        if (hotel.slachtoffers.isEmpty()) {
+            text += "  Geen slachtoffers\n";
+        } else {
+            for (Persoon p : hotel.slachtoffers) {
+                text += "  " + p.getStatusTekst() + " [OMGEKOMEN]\n\n";
+            }
+        }
 
         rechtsArea.setText(text);
         rechtsArea.setCaretPosition(0);
