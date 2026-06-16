@@ -24,6 +24,10 @@ public abstract class Persoon {
     // teller voor trapvertraging: hoeveel ticks nog wachten voor de volgende stap
     private int trapTicks = 0;
 
+    // Sla op of deze persoon gestorven is door Godzilla.
+    // Als dit true is, beweegt de persoon niet meer en wordt hij aan het einde van de tick verwijderd.
+    public boolean gestorven = false;
+
     public Persoon() {
         this.huidigVakje = null;
         this.doelVakje = null;

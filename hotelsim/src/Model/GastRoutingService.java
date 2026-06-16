@@ -24,6 +24,9 @@ public class GastRoutingService {
     public Restaurant stuurNaarRestaurant(int gastId) {
         Gast gast = vindGast(gastId);
         if (gast == null || gast.huidigVakje == null) return null;
+        // Tijdens de terugkeerfase na een brandalarm negeren we nieuwe activiteiten tijdelijk.
+        // Eerst moet de gast weer ordelijk het hotel in en terug naar zijn normale toestand.
+        if (gast.keertTerugNaAlarm) return null;
 
         // zoek dichtstbijzijnd niet-vol restaurant
         Restaurant doelRuimte = (Restaurant) vindDichtstbijzijndeNietVolleRuimte(gast, "restaurant");
@@ -52,6 +55,8 @@ public class GastRoutingService {
     public Fitnessruimte stuurNaarFitness(int gastId) {
         Gast gast = vindGast(gastId);
         if (gast == null || gast.huidigVakje == null) return null;
+        // Ook fitness-events worden tijdelijk genegeerd zolang de gast nog terugkeert na evacuatie.
+        if (gast.keertTerugNaAlarm) return null;
         Ruimte doelRuimte = vindDichtstbijzijndeRuimte(gast, "fitness");
         if (doelRuimte == null) return null;
         hotel.pathfinder.zetRoute(gast, doelRuimte);
@@ -62,6 +67,8 @@ public class GastRoutingService {
     public Bioscoop stuurNaarBioscoop(int gastId) {
         Gast gast = vindGast(gastId);
         if (gast == null || gast.huidigVakje == null) return null;
+        // Ook bioscoop-events worden tijdelijk genegeerd zolang de gast nog terugkeert na evacuatie.
+        if (gast.keertTerugNaAlarm) return null;
         Ruimte doelRuimte = vindDichtstbijzijndeRuimte(gast, "bioscoop");
         if (doelRuimte == null) return null;
         hotel.pathfinder.zetRoute(gast, doelRuimte);
