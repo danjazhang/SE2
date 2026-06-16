@@ -41,7 +41,6 @@ public class Pathfinder {
         }
 
         // zelfde x als doel en doel is direct erboven of eronder: stap verticaal
-        // (bijv. van lobby-rij naar eerste trap-vakje, of van gang naar kamer)
         if (x == doel.x) {
             if (y < doel.y) return layout.krijgVakje(x, y + 1);
             if (y > doel.y) return layout.krijgVakje(x, y - 1);
@@ -62,10 +61,10 @@ public class Pathfinder {
         Vakje doel = layout.krijgVakje(bestemming.posX, bestemming.posY);
         if (start == null || doel == null) return;
         if (p instanceof Gast g) g.eindbestemming = bestemming;
+        // als de gast al in de lift-wachtrij stond: verwijder hem eerst
+        resetLiftStatusAlsNodig(p);
         // zelfde verdieping: direct lopen
         if (start.y == doel.y) { p.zetDoel(doel); return; }
-        // aangrenzende verdieping: direct lopen zonder lift of trap
-        if (Math.abs(start.y - doel.y) == 1) { p.zetDoel(doel); return; }
         if (p instanceof Schoonmaker) { routeViaTrap(p, start, doel); return; }
         int trapTijd = Math.abs(start.y - doel.y) * hotel.trap.tijdperverdieping;
         int liftTijd = schatLiftTijd(start, doel);
@@ -80,10 +79,23 @@ public class Pathfinder {
     public void zetRouteTrap(Persoon p, Vakje doel) {
         Vakje start = p.huidigVakje;
         if (start == null || doel == null) return;
+        // als de gast al in de lift-wachtrij stond: verwijder hem eerst
+        resetLiftStatusAlsNodig(p);
         // zelfde verdieping: direct lopen zonder trap
         if (start.y == doel.y) { p.zetDoel(doel); return; }
         // altijd via trap, lift wordt nooit overwogen
         routeViaTrap(p, start, doel);
+    }
+
+    // reset lift-gerelateerde status als de gast wacht op de lift maar een nieuwe route krijgt
+    private void resetLiftStatusAlsNodig(Persoon p) {
+        if (!(p instanceof Gast)) return;
+        Gast g = (Gast) p;
+        if (g.gebruiktLift && !g.inLift) {
+            g.gebruiktLift = false;
+            g.wachtOpLift  = false;
+            if (hotel.lift != null) hotel.lift.verwijderUitWachtrij(g);
+        }
     }
 
     // route via lift
@@ -94,7 +106,7 @@ public class Pathfinder {
         g.gebruiktLift = true;
         g.gewensteVerdieping = doel.y;
         p.zetDoel(liftVakje);
-        hotel.lift.roep(p, start.y);
+        hotel.lift.roep(g, start.y);
     }
 
     // route via trap
@@ -116,9 +128,10 @@ public class Pathfinder {
     private int schatLiftTijd(Vakje start, Vakje doel) {
         Lift lift = hotel.lift;
         int wacht = Math.abs(lift.getHuidigeVerdieping() - start.y);
-        int rit = Math.abs(start.y - doel.y);
+        int rit   = Math.abs(start.y - doel.y);
         int queue = lift.aantalWachtend(start.y);
-        return wacht + rit + queue;
+        // +2 voor instappen en uitstappen (statusmachine ticks)
+        return wacht + rit + queue + 2;
     }
 
     private Vakje vindTrap(int y) {

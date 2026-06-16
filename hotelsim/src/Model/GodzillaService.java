@@ -93,7 +93,7 @@ public class GodzillaService {
     // De cabine beweegt door de schacht - als de schachtkolom brandt, sterven zij ook.
     // hotel.lift.getPassagiers() geeft altijd de actuele lijst terug.
     private void markeerLiftPassagiers(int tijd) {
-        for (Model.persoon.Gast g : hotel.lift.getPassagiers()) {
+        for (Persoon g : hotel.lift.getPassagiers()) {
             if (g.gestorven) continue;
             g.gestorven = true;
             if (logger != null) logger.log("[" + tijd + "] GODZILLA: liftpassagier omgekomen in brandende schacht.");
