@@ -87,6 +87,12 @@ public class SimulatieController {
 
         if (hotel.lift != null) hotel.lift.tik();
 
+        if (hotel.brandalarmActief) {
+            verwerkEvacuatieLoop(hotel);
+        } else {
+            verwerkNaEvacuatieRoute(hotel);
+        }
+
         // Zolang het brandalarm actief is, blijft deze methode controleren of iedereen al buiten staat
         // en zo niet, of iedereen nog steeds een geldige evacuatieroute heeft.
         if (hotel.brandalarmActief) verwerkEvacuatieLoop(hotel);
