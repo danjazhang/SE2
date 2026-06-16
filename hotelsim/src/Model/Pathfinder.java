@@ -41,7 +41,6 @@ public class Pathfinder {
         }
 
         // zelfde x als doel en doel is direct erboven of eronder: stap verticaal
-        // (bijv. van lobby-rij naar eerste trap-vakje, of van gang naar kamer)
         if (x == doel.x) {
             if (y < doel.y) return layout.krijgVakje(x, y + 1);
             if (y > doel.y) return layout.krijgVakje(x, y - 1);
@@ -104,7 +103,6 @@ public class Pathfinder {
         if (!(p instanceof Gast)) return;
         Gast g = (Gast) p;
         if (g.gebruiktLift && !g.inLift) {
-            // gast wacht op de lift maar gaat nu ergens anders heen
             g.gebruiktLift = false;
             g.wachtOpLift  = false;
             if (hotel.lift != null) hotel.lift.verwijderUitWachtrij(g);
@@ -141,9 +139,9 @@ public class Pathfinder {
     private int schatLiftTijd(Vakje start, Vakje doel) {
         Lift lift = hotel.lift;
         int wacht = Math.abs(lift.getHuidigeVerdieping() - start.y);
-        int rit = Math.abs(start.y - doel.y);
+        int rit   = Math.abs(start.y - doel.y);
         int queue = lift.aantalWachtend(start.y);
-        // +1 voor instappen, +1 voor uitstappen
+        // +2 voor instappen en uitstappen (statusmachine ticks)
         return wacht + rit + queue + 2;
     }
 

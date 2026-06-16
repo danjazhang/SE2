@@ -45,9 +45,6 @@ public class SimulatieController {
     // stel de maximale wachttijd in voordat een gast gesummoned wordt
     public void setMaxWachtTicks(int ticks) { this.maxWachtTicks = ticks; }
 
-    // Snelheid wordt nu alleen nog via de library geregeld.
-    // We passen dus de HTE van HotelEventManager aan in plaats van lokaal
-    // extra sleeps of meerdere stappen per tick te gebruiken.
     public void pasSnelheidToe(String keuze) {
         switch (keuze) {
             case "Langzaam" -> eventManager.setHte(1500);
@@ -72,23 +69,59 @@ public class SimulatieController {
     public void tik() {
         Hotel hotel = hotelController.getHotel();
         if (hotel == null) return;
+
         tikTeller++;
 
         if (hotel.lift != null) hotel.lift.tik();
 
-        if (hotel.brandalarmActief) {
-            verwerkEvacuatieLoop(hotel);
-        } else {
-            verwerkNaEvacuatieRoute(hotel);
-        }
+        // evacuatie-beheer
+        if (hotel.brandalarmActief) verwerkEvacuatieLoop(hotel);
+
+        // na alarm: gasten terug naar binnen via lobby
+        verwerkTerugkerendeGastenNaAlarm(hotel);
 
         verwerkUitstappendeGasten(hotel);
         verwerkWachtendeGasten(hotel);
         verwerkWachttijden(hotel);
         verwerkRestaurantWachtrij(hotel);
 
+        // Godzilla: breidt vuur uit en markeert doden
+        GodzillaService godzilla = eventController.getGodzillaService();
+        if (godzilla != null && hotel.godzillaActief) {
+            godzilla.behandel(tikTeller);
+        }
+
         List<Persoon> copy = new ArrayList<>(hotel.personen);
-        for (Persoon p : copy) p.beweeg();
+        for (Persoon p : copy) {
+            if (p.gestorven) continue;
+            p.beweeg();
+        }
+
+        // na beweging: controleer brandende kolommen opnieuw
+        if (hotel.godzillaActief && godzilla != null) {
+            for (int kolom : hotel.brandendeKolommen) {
+                godzilla.markeerDodenOpKolom(kolom, tikTeller);
+            }
+        }
+
+        // verwijder gestorven personen aan het einde van de tick
+        if (hotel.godzillaActief) {
+            hotel.personen.removeIf(p -> {
+                if (p.gestorven) {
+                    if (p.huidigVakje != null) {
+                        p.huidigVakje.verwijderPersoon(p);
+                        p.huidigVakje = null;
+                    }
+                    hotel.slachtoffers.add(p);
+                    return true;
+                }
+                return false;
+            });
+
+            if (godzilla != null && godzilla.isKlaar()) {
+                eventManager.stop();
+            }
+        }
 
         hotelController.notifyListeners();
     }
@@ -130,14 +163,11 @@ public class SimulatieController {
         }
 
         if (iederBuiten) {
-            // alarm uit, lift terug aan
             hotel.brandalarmActief = false;
             if (hotel.lift != null) {
                 hotel.lift.zetUitBedrijf(false);
                 hotel.lift.resetWachtrijen();
             }
-
-            Vakje lobbyVakje = hotel.layout.krijgVakje(midX, hotel.lobby.posY);
 
             for (Persoon p : hotel.personen) {
                 if (p.huidigVakje == null) continue;
@@ -145,11 +175,9 @@ public class SimulatieController {
 
                 if (p instanceof Gast) {
                     Gast g = (Gast) p;
-                    Model.ruimte.Ruimte doel = (g.eindbestemming != null) ? g.eindbestemming : g.kamer;
-                    if (doel != null) {
-                        g.eindbestemming = doel;
-                        if (lobbyVakje != null) g.zetDoel(lobbyVakje);
-                    }
+                    // gasten keren terug via lobby — vandaar normale routing naar kamer
+                    g.keertTerugNaAlarm = true;
+                    stuurGastNaarLobbyNaAlarm(hotel, g);
                 } else if (p instanceof Schoonmaker) {
                     Schoonmaker s = (Schoonmaker) p;
                     if (s.bezig && s.kamer != null) {
@@ -163,12 +191,11 @@ public class SimulatieController {
             return;
         }
 
-        // alarm nog actief: iedereen die nog niet buiten is krijgt evacuatieroute
+        // alarm actief: iedereen zonder evacuatieroute sturen
         for (Persoon p : new ArrayList<>(hotel.personen)) {
             if (p.huidigVakje == null) continue;
             if (p.huidigVakje.y == buitenY) continue;
 
-            // gast in of wachtend op lift: reset en via trap
             if (p instanceof Gast) {
                 Gast g = (Gast) p;
                 if (g.wachtOpLift || g.inLift) {
@@ -195,23 +222,52 @@ public class SimulatieController {
         }
     }
 
-    // Na evacuatie: gasten in lobby zonder doel sturen naar hun kamer
-    private void verwerkNaEvacuatieRoute(Hotel hotel) {
-        if (hotel.pathfinder == null || hotel.lobby == null) return;
+    // Stuur gast eerst naar de lobby als tussenstop na evacuatie
+    private void stuurGastNaarLobbyNaAlarm(Hotel hotel, Gast g) {
+        g.wachtOpLift       = false;
+        g.gebruiktLift      = false;
+        g.inLift            = false;
+        g.moetUitstappen    = false;
+        g.wachtOpRestaurant = false;
+        g.wachtRestaurant   = null;
+        if (hotel.lobby != null) {
+            Vakje lobbyVakje = hotel.layout.krijgVakje(
+                    hotel.lobby.posX + hotel.lobby.breedte / 2, hotel.lobby.posY);
+            if (lobbyVakje != null) {
+                hotel.pathfinder.zetRouteTrap(g, lobbyVakje);
+            }
+        }
+    }
 
-        for (Persoon p : hotel.personen) {
+    // Na alarm: gasten in lobby zonder doel sturen naar hun kamer via normale routing
+    private void verwerkTerugkerendeGastenNaAlarm(Hotel hotel) {
+        if (hotel.lobby == null || hotel.pathfinder == null) return;
+
+        int buitenY = hotel.lobby.posY - 1;
+        Vakje lobbyVakje = hotel.layout.krijgVakje(
+                hotel.lobby.posX + hotel.lobby.breedte / 2, hotel.lobby.posY);
+
+        for (Persoon p : new ArrayList<>(hotel.personen)) {
             if (!(p instanceof Gast)) continue;
             Gast g = (Gast) p;
-            if (g.huidigVakje == null || g.doelVakje != null) continue;
+            if (!g.keertTerugNaAlarm || g.huidigVakje == null) continue;
 
-            Model.ruimte.Ruimte bestemming = (g.eindbestemming != null) ? g.eindbestemming : g.kamer;
-            if (bestemming == null) continue;
-
-            // lobby of hoger bereikt: stuur naar kamer via normale routing
-            if (g.huidigVakje.y >= hotel.lobby.posY) {
-                g.eindbestemming = null;
-                hotel.pathfinder.zetRoute(g, bestemming);
+            // nog buiten en geen doel: opnieuw naar lobby sturen
+            if (g.huidigVakje.y == buitenY) {
+                if (g.doelVakje == null && lobbyVakje != null) {
+                    hotel.pathfinder.zetRouteTrap(g, lobbyVakje);
+                }
+                continue;
             }
+
+            // nog onderweg of in lift: wachten
+            if (g.doelVakje != null || g.inLift || g.wachtOpLift) continue;
+
+            // in lobby of hoger: stuur naar kamer via normale routing (lift of trap)
+            if (g.kamer != null) {
+                hotel.pathfinder.zetRoute(g, g.kamer);
+            }
+            g.keertTerugNaAlarm = false;
         }
     }
 
@@ -291,7 +347,7 @@ public class SimulatieController {
             if (!(p instanceof Gast)) continue;
             Gast g = (Gast) p;
 
-            // uitcheckende gast buiten: direct verwijderen
+            // uitcheckende gast op buiten-rij: direct verwijderen
             if (g.uitcheckend && g.huidigVakje != null && hotel.lobby != null
                     && g.huidigVakje.y == hotel.lobby.posY - 1) {
                 g.huidigVakje.verwijderPersoon(g);
@@ -301,7 +357,7 @@ public class SimulatieController {
                 continue;
             }
 
-            // summoning animatie
+            // summoning animatie loopt
             if (g.summonTick >= 0) {
                 g.summonTick++;
                 if (g.summonTick >= SUMMON_DUUR) {
@@ -322,14 +378,12 @@ public class SimulatieController {
                     && g.huidigVakje.y == hotel.lobby.posY - 1;
 
             boolean stilstaand = g.doelVakje == null && !g.inLift && !g.uitcheckend
-                    && !inRuimte && !buiten && g.eindbestemming == null && g.huidigVakje != null;
+                    && !inRuimte && !buiten && g.eindbestemming == null
+                    && !g.keertTerugNaAlarm && g.huidigVakje != null;
 
             if (stilstaand) {
                 g.wachtTicks++;
-                if (g.wachtTicks >= maxWachtTicks) {
-                    g.summonTick = 0;
-                    g.wisRoute();
-                }
+                if (g.wachtTicks >= maxWachtTicks) { g.summonTick = 0; g.wisRoute(); }
             } else {
                 g.wachtTicks = 0;
             }
@@ -351,12 +405,14 @@ public class SimulatieController {
 
             Model.ruimte.Restaurant r = g.wachtRestaurant;
             if (!r.isVol()) {
-                g.wachtOpRestaurant = false; g.wachtRestaurant = null;
+                g.wachtOpRestaurant = false;
+                g.wachtRestaurant   = null;
                 hotel.pathfinder.zetRoute(g, r);
             } else {
                 Model.ruimte.Restaurant alt = vindNietVolRestaurant(hotel, g, r);
                 if (alt != null) {
-                    g.wachtOpRestaurant = false; g.wachtRestaurant = null;
+                    g.wachtOpRestaurant = false;
+                    g.wachtRestaurant   = null;
                     hotel.pathfinder.zetRoute(g, alt);
                 }
             }

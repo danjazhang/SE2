@@ -3,7 +3,6 @@ package Model.ruimte;
 import Model.Hotel;
 import Model.layout.Vakje;
 import Model.persoon.Gast;
-
 import java.util.*;
 
 public class Lift extends Ruimte {
@@ -58,6 +57,22 @@ public class Lift extends Ruimte {
         if (!q.contains(g)) q.add(g);
     }
 
+    // reset alle wachtrijen — aanroepen na brandalarm zodat oude oproepen verdwijnen
+    public void resetWachtrijen() {
+        for (Queue<Gast> q : wachtrijen.values()) {
+            q.clear();
+        }
+        status = LiftStatus.RIJDEN;
+    }
+
+    // verwijder een gast uit alle wachtrijen en passagierslijst (bij summoning/verwijdering)
+    public void verwijderUitWachtrij(Gast g) {
+        for (Queue<Gast> q : wachtrijen.values()) {
+            q.remove(g);
+        }
+        passagiers.remove(g);
+    }
+
     // één simulatie-tick
     public void tik() {
         if (uitBedrijf) {
@@ -74,7 +89,6 @@ public class Lift extends Ruimte {
 
         // statusmachine: elke status duurt precies 1 tick
         if (status == LiftStatus.UITSTAPPEN) {
-            // tick 1 na aankomst: passagiers stappen uit
             uitstappen();
             // alleen naar INSTAPPEN als iemand wacht, anders direct RIJDEN
             Queue<Gast> wacht = wachtrijen.get(huidigeVerdieping);
@@ -87,7 +101,6 @@ public class Lift extends Ruimte {
         }
 
         if (status == LiftStatus.INSTAPPEN) {
-            // tick 2 na aankomst: wachtenden stappen in
             instappen();
             status = LiftStatus.RIJDEN;
             return;
@@ -96,12 +109,11 @@ public class Lift extends Ruimte {
         // RIJDEN: beweeg naar doel
         int doel = bepaalDoel();
         if (huidigeVerdieping != doel) {
-            // nog niet op doel: beweeg 1 stap
             if (huidigeVerdieping < doel) huidigeVerdieping++;
             else huidigeVerdieping--;
             updatePassagierPosities();
         } else {
-            // op doel aangekomen: check wat er gedaan moet worden
+            // op doel aangekomen
             updatePassagierPosities();
             boolean iemandWilUitstappen = false;
             for (Gast g : passagiers) {
@@ -111,13 +123,10 @@ public class Lift extends Ruimte {
                 }
             }
             Queue<Gast> wacht = wachtrijen.get(huidigeVerdieping);
-            boolean iemandWachtHier = wacht != null && !wacht.isEmpty();
-
+            boolean iemandWachtHier = wacht != null && heeftGeldigeWachter(wacht);
             if (iemandWilUitstappen) {
-                // iemand stapt uit: 1 tick uitstappen, dan 1 tick instappen
                 status = LiftStatus.UITSTAPPEN;
             } else if (iemandWachtHier) {
-                // niemand stapt uit maar iemand wacht: direct naar instappen (1 tick)
                 status = LiftStatus.INSTAPPEN;
             }
         }
@@ -133,32 +142,26 @@ public class Lift extends Ruimte {
         }
     }
 
-    // bepaal doelverdieping:
-    // 1. passagiers aan boord → ga naar hun gewenste y
-    // 2. iemand wacht in de lobby → ga eerst naar de lobby (lobby heeft prioriteit)
-    // 3. iemand wacht op andere verdieping → ga naar dichtstbijzijnde
-    // 4. niemand → terug naar lobby
+    /**
+     * Bepaal doelverdieping:
+     * 1. passagiers aan boord → ga naar hun gewenste y
+     * 2. lobby heeft prioriteit als er iemand wacht (gasten komen altijd van de lobby)
+     * 3. dichtstbijzijnde andere wachtrij
+     * 4. niemand → terug naar lobby
+     */
     private int bepaalDoel() {
         // passagiers aan boord
         if (!passagiers.isEmpty()) {
             return passagiers.get(0).gewensteVerdieping;
         }
-        // wachtrijen doorlopen, lobby krijgt prioriteit
+
         int lobbyMetWachter = -1;
         int best = -1;
         int minDist = Integer.MAX_VALUE;
-        for (Map.Entry<Integer, Queue<Gast>> entry : wachtrijen.entrySet()) {
-            Queue<Gast> q = entry.getValue();
-            if (q.isEmpty()) continue;
-            // controleer of er nog iemand met een geldig huidigVakje in de wachtrij staat
-            boolean heeftGeldigeWachter = false;
-            for (Gast g : q) {
-                if (g.huidigVakje != null) { heeftGeldigeWachter = true; break; }
-            }
-            if (!heeftGeldigeWachter) continue;
 
+        for (Map.Entry<Integer, Queue<Gast>> entry : wachtrijen.entrySet()) {
+            if (!heeftGeldigeWachter(entry.getValue())) continue;
             int y = entry.getKey();
-            // onthoud of de lobby wacht
             if (y == lobbyVerdieping) {
                 lobbyMetWachter = y;
             }
@@ -173,6 +176,15 @@ public class Lift extends Ruimte {
         if (lobbyMetWachter != -1) return lobbyMetWachter;
         if (best != -1) return best;
         return lobbyVerdieping;
+    }
+
+    // controleer of een wachtrij minstens één gast heeft met een geldig huidigVakje
+    private boolean heeftGeldigeWachter(Queue<Gast> q) {
+        if (q == null || q.isEmpty()) return false;
+        for (Gast g : q) {
+            if (g.huidigVakje != null) return true;
+        }
+        return false;
     }
 
     // laat passagiers uitstappen op hun gewenste y-positie
@@ -190,7 +202,7 @@ public class Lift extends Ruimte {
     }
 
     // laat wachtende gasten instappen als ze fysiek naast de lift staan
-    // verwijder ook personen met null huidigVakje (gesummond/verwijderd)
+    // verwijder ook gasten met null huidigVakje (gesummond/verwijderd)
     private void instappen() {
         Queue<Gast> q = wachtrijen.get(huidigeVerdieping);
         if (q == null || q.isEmpty()) return;
@@ -198,7 +210,7 @@ public class Lift extends Ruimte {
         Iterator<Gast> it = q.iterator();
         while (it.hasNext()) {
             Gast g = it.next();
-            // verwijder gasten die niet meer bestaan (gesummond of verwijderd)
+            // verwijder gasten die niet meer bestaan
             if (g.huidigVakje == null) { it.remove(); continue; }
             // gast moet op de wachtplek staan: x = posX+1, zelfde y
             if (g.huidigVakje.x != this.posX + 1) continue;
@@ -213,21 +225,6 @@ public class Lift extends Ruimte {
         }
     }
 
-    // reset alle wachtrijen — aanroepen na brandalarm
-    public void resetWachtrijen() {
-        for (Queue<Gast> q : wachtrijen.values()) {
-            q.clear();
-        }
-    }
-
-    // verwijder persoon uit wachtrijen en passagierslijst (bij summoning/verwijdering)
-    public void verwijderUitWachtrij(Gast g) {
-        for (Queue<Gast> q : wachtrijen.values()) {
-            q.remove(g);
-        }
-        passagiers.remove(g);
-    }
-
     public int getHuidigeVerdieping() { return huidigeVerdieping; }
 
     // geeft een kopie terug zodat de originele lijst niet gewijzigd kan worden van buiten
@@ -235,10 +232,6 @@ public class Lift extends Ruimte {
 
     public int aantalWachtend(int verdieping) {
         Queue<Gast> q = wachtrijen.get(verdieping);
-        if (q == null) {
-            return 0;
-        } else {
-            return q.size();
-        }
+        return q == null ? 0 : q.size();
     }
 }
