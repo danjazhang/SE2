@@ -131,6 +131,8 @@ public abstract class Persoon {
     public void wisRoute() {
         doelVakje = null;
         tussendoelen.clear();
+        // als de persoon een gast is die in de lift-wachtrij staat: verwijder hem
+        // (het hotel-object is niet beschikbaar hier, dat wordt via Pathfinder gedaan)
     }
 
     // evacueer naar de uitgang via de trap

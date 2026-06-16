@@ -80,11 +80,25 @@ public class Pathfinder {
     public void zetRouteTrap(Persoon p, Vakje doel) {
         Vakje start = p.huidigVakje;
         if (start == null || doel == null) return;
+        // als de gast al in de lift-wachtrij stond: verwijder hem eerst
+        resetLiftStatusAlsNodig(p);
         // zelfde verdieping: direct lopen zonder trap
         if (start.y == doel.y) { p.zetDoel(doel); return; }
         // altijd via trap, lift wordt nooit overwogen
         routeViaTrap(p, start, doel);
     }
+    // reset lift-gerelateerde status als de gast wacht op de lift maar een nieuwe route krijgt
+    private void resetLiftStatusAlsNodig(Persoon p) {
+        if (!(p instanceof Gast)) return;
+        Gast g = (Gast) p;
+        if (g.gebruiktLift && !g.inLift) {
+            // gast wacht op de lift maar gaat nu ergens anders heen
+            g.gebruiktLift = false;
+            g.wachtOpLift  = false;
+            if (hotel.lift != null) hotel.lift.verwijderUitWachtrij(g);
+        }
+    }
+
     // reset lift-gerelateerde status als de gast wacht op de lift maar een nieuwe route krijgt
     private void resetLiftStatusAlsNodig(Persoon p) {
         if (!(p instanceof Gast)) return;
