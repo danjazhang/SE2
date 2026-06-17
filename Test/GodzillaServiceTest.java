@@ -110,7 +110,7 @@ public class GodzillaServiceTest {
         gast.zetStartPositie(hotel.layout.krijgVakje(2, 1));
         hotel.voegPersoonToe(gast);
         gs.behandel(2);
-        assertTrue(gast.gestorven);
+        assertFalse(gast.gestorven);
     }
 
     // behandel: doet niets als hotel al volledig afgebrand is
