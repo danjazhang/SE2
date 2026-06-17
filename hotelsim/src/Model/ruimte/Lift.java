@@ -87,20 +87,10 @@ public class Lift extends Ruimte {
             return;
         }
 
-        // statusmachine: elke status duurt precies 1 tick
+        // statusmachine: 1 tick voor uitstappen, dan direct instappen
         if (status == LiftStatus.UITSTAPPEN) {
             uitstappen();
-            // alleen naar INSTAPPEN als iemand wacht, anders direct RIJDEN
-            Queue<Gast> wacht = wachtrijen.get(huidigeVerdieping);
-            if (wacht != null && !wacht.isEmpty()) {
-                status = LiftStatus.INSTAPPEN;
-            } else {
-                status = LiftStatus.RIJDEN;
-            }
-            return;
-        }
-
-        if (status == LiftStatus.INSTAPPEN) {
+            // direct instappen als iemand wacht, anders terug naar RIJDEN
             instappen();
             status = LiftStatus.RIJDEN;
             return;
@@ -113,22 +103,10 @@ public class Lift extends Ruimte {
             else huidigeVerdieping--;
             updatePassagierPosities();
         } else {
-            // op doel aangekomen
+            // op doel aangekomen: direct uitstappen én instappen
             updatePassagierPosities();
-            boolean iemandWilUitstappen = false;
-            for (Gast g : passagiers) {
-                if (g.gewensteVerdieping == huidigeVerdieping) {
-                    iemandWilUitstappen = true;
-                    break;
-                }
-            }
-            Queue<Gast> wacht = wachtrijen.get(huidigeVerdieping);
-            boolean iemandWachtHier = wacht != null && heeftGeldigeWachter(wacht);
-            if (iemandWilUitstappen) {
-                status = LiftStatus.UITSTAPPEN;
-            } else if (iemandWachtHier) {
-                status = LiftStatus.INSTAPPEN;
-            }
+            uitstappen();
+            instappen();
         }
     }
 
@@ -232,6 +210,11 @@ public class Lift extends Ruimte {
 
     public int aantalWachtend(int verdieping) {
         Queue<Gast> q = wachtrijen.get(verdieping);
-        return q == null ? 0 : q.size();
+
+        if (q == null) {
+            return 0;
+        } else {
+            return q.size();
+        }
     }
 }

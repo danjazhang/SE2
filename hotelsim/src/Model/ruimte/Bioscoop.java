@@ -96,15 +96,6 @@ public class Bioscoop extends Ruimte implements IEventListener {
         }
     }
 
-    // start een film
-    public void startFilm() {}
-
-    // stop een film
-    public void stopFilm() {}
-
-    // laat een gast de bioscoop betreden
-    public void betreedBioscoop() {}
-
     // stel de filmduur in — standaard 40 ticks
     public void setFilmDuur(int duur) { this.filmDuurTicks = duur; }
 

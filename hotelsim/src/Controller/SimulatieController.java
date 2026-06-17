@@ -291,9 +291,7 @@ public class SimulatieController {
         return null;
     }
 
-    // -----------------------------------------------------------------------
     // Lift-afhandeling
-    // -----------------------------------------------------------------------
 
     private void verwerkUitstappendeGasten(Hotel hotel) {
         for (Persoon p : hotel.personen) {
@@ -336,9 +334,7 @@ public class SimulatieController {
         }
     }
 
-    // -----------------------------------------------------------------------
     // Summoning
-    // -----------------------------------------------------------------------
 
     private void verwerkWachttijden(Hotel hotel) {
         List<Persoon> teVerwijderen = new ArrayList<>();

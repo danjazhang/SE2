@@ -29,13 +29,6 @@ public class HotelManager {
     //sla hotel op in loadedHotels map met id als sleutel
     public void loadHotel(int id, Hotel hotel) { loadedHotels.put(id, hotel); }
 
-    //geef layout terug op basis van id
-    public Layout getLayout(int id) { return allLayouts.get(id); }
-
-    //verwijder layout uit allLayouts map
-    public void removeLayout(int id) { allLayouts.remove(id); }
-    // geef alle layout ids terug
-    public Set<Integer> getAllLayoutIds() { return allLayouts.keySet(); }
     // geef hotel terug op basis van id
     public Hotel getHotel(int id) { return loadedHotels.get(id); }
 }

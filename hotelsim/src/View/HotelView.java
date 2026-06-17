@@ -22,9 +22,6 @@ public class HotelView extends JFrame {
     //panel met stop en pauze knop
     private SimulatieView simulatieView;
     //beheert start pauze en stop
-    private SimulatieController simulatieController;
-    //beheert hotel model
-    private HotelController hotelController;
     //beheert laden van layouts
     private LayoutController layoutController;
     //dropdown om tussen geladen layouts te switchen
@@ -50,10 +47,8 @@ public class HotelView extends JFrame {
     //constructor
     public HotelView(HotelController hotelController, EventLogView eventLogView, EventController eventController, SimulatieController simulatieController) {
 
-        this.hotelController = hotelController;
         this.eventLogView = eventLogView;
         this.eventController = eventController;
-        this.simulatieController = simulatieController;
         //haal layoutcontroller op via hotelcontroller
         this.layoutController = hotelController.getLayoutController();
         this.hotel = hotelController.getHotel();

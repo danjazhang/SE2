@@ -87,9 +87,6 @@ public class LobbyTest {
         assertEquals(2, l.posY);
         assertEquals(3, l.breedte);
         assertEquals(4, l.hoogte);
-
-        assertEquals(5, l.getBalieX());
-        assertEquals(6, l.getBalieY());
     }
 
     // =========================================================

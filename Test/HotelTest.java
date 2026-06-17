@@ -1,246 +1,207 @@
+import Model.BrandalarmService;
 import Model.Hotel;
 import Model.Pathfinder;
 import Model.layout.Layout;
 import Model.persoon.Gast;
-import Model.persoon.Persoon;
+import Model.persoon.Schoonmaker;
 import Model.ruimte.Kamer;
 import Model.ruimte.Lift;
+import Model.ruimte.Lobby;
 import Model.ruimte.Trap;
-import Model.ruimte.Ruimte;
-
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
+// Tests voor Hotel: constructor, personen, ruimtes, schoonmaak, alarmen
 public class HotelTest {
 
-    // -------------------------------------------------
-    // Constructor tests
-    // -------------------------------------------------
-
-    // ik maak een nieuw Hotel object aan; ik verwacht dat de lijsten ruimtes en personen leeg zijn
-    @Test
-    void testConstructor() {
-
-        Hotel h = new Hotel();
-
-        assertTrue(h.ruimtes.isEmpty());
-
-        assertTrue(h.personen.isEmpty());
+    // hulpmethode: bouw een volledig hotel
+    static Hotel maakVolledigHotel() {
+        Hotel hotel = new Hotel();
+        hotel.layout = new Layout(8, 6);
+        hotel.breedte = 8;
+        hotel.hoogte = 6;
+        Lift lift = new Lift(hotel);
+        lift.posX = 1; lift.posY = 3; lift.breedte = 1; lift.hoogte = 4;
+        hotel.lift = lift;
+        hotel.ruimtes.add(lift);
+        hotel.layout.plaatsRuimte(lift);
+        lift.initWachtrijen(6);
+        lift.setLobbyVerdieping(2);
+        Trap trap = new Trap(2);
+        trap.posX = 7; trap.posY = 3; trap.breedte = 2; trap.hoogte = 4;
+        hotel.trap = trap;
+        hotel.ruimtes.add(trap);
+        hotel.layout.plaatsRuimte(trap);
+        Lobby lobby = new Lobby(1, 2, 5, 1, 3, 2, hotel, null);
+        hotel.lobby = lobby;
+        hotel.ruimtes.add(lobby);
+        hotel.layout.plaatsRuimte(lobby);
+        hotel.pathfinder = new Pathfinder(hotel);
+        hotel.brandalarmService = new BrandalarmService(hotel, null);
+        return hotel;
     }
 
-    // -------------------------------------------------
-    // Persoon toevoegen
-    // -------------------------------------------------
-
-    // ik voeg één gast toe aan het hotel; ik verwacht dat de personenlijst 1 persoon bevat en dat de gast erin zit
-    @Test
-    void testVoegPersoonToe() {
-
+    // constructor: lijsten zijn aangemaakt en leeg
+    @Test void testConstructorLijstenLeeg() {
         Hotel h = new Hotel();
+        assertNotNull(h.ruimtes);
+        assertNotNull(h.personen);
+        assertNotNull(h.wachtendeSchoonmaakKamers);
+        assertTrue(h.ruimtes.isEmpty());
+        assertTrue(h.personen.isEmpty());
+        assertTrue(h.wachtendeSchoonmaakKamers.isEmpty());
+    }
 
-        Gast g = new Gast(1, 2);
+    // constructor: alarmen staan uit
+    @Test void testConstructorAlarmsUit() {
+        Hotel h = new Hotel();
+        assertFalse(h.brandalarmActief);
+        assertFalse(h.godzillaActief);
+    }
 
+    // constructor: brandendeKolommen en slachtoffers zijn leeg
+    @Test void testConstructorBrandendeKolommenEnSlachtoffersLeeg() {
+        Hotel h = new Hotel();
+        assertTrue(h.brandendeKolommen.isEmpty());
+        assertTrue(h.slachtoffers.isEmpty());
+    }
+
+    // voegPersoonToe: persoon komt in de lijst
+    @Test void testVoegPersoonToe() {
+        Hotel h = new Hotel();
+        Gast g = new Gast(1, 1);
         h.voegPersoonToe(g);
-
-        assertEquals(1, h.personen.size());
-
         assertTrue(h.personen.contains(g));
     }
 
-    // ik voeg meerdere gasten toe aan het hotel; ik verwacht dat de personenlijst groeit naar 2
-    @Test
-    void testVoegMeerderePersonenToe() {
-
+    // voegPersoonToe: meerdere personen worden allemaal toegevoegd
+    @Test void testVoegMeerderePersonenToe() {
         Hotel h = new Hotel();
-
-        Gast g1 = new Gast(1, 2);
-
-        Gast g2 = new Gast(2, 3);
-
-        h.voegPersoonToe(g1);
-
-        h.voegPersoonToe(g2);
-
-        assertEquals(2, h.personen.size());
+        h.voegPersoonToe(new Gast(1, 1));
+        h.voegPersoonToe(new Gast(2, 2));
+        h.voegPersoonToe(new Schoonmaker());
+        assertEquals(3, h.personen.size());
     }
 
-    // -------------------------------------------------
-    // Ruimte ophalen (krijgRuimteOp)
-    // -------------------------------------------------
-
-    // ik plaats een kamer op een specifieke positie in de layout; ik verwacht dat die kamer wordt teruggegeven bij dezelfde coördinaten
-    @Test
-    void testKrijgRuimteOp() {
-
-        Hotel h = new Hotel();
-
-        h.layout = new Layout(5, 5);
-
-        Kamer k = new Kamer();
-
-        k.posX = 2;
-
-        k.posY = 2;
-
-        k.breedte = 1;
-
-        k.hoogte = 1;
-
-        h.ruimtes.add(k);
-
-        h.layout.plaatsRuimte(k);
-
-        assertEquals(k, h.krijgRuimteOp(2, 2));
+    // voegPersoonToe: brandalarmService null crasht niet
+    @Test void testVoegPersoonToeBrandalarmServiceNull() {
+        Hotel hotel = new Hotel();
+        hotel.brandalarmService = null;
+        assertDoesNotThrow(() -> hotel.voegPersoonToe(new Gast(1, 1)));
     }
 
-    // ik vraag een vakje op waar geen ruimte ligt; ik verwacht null als resultaat
-    @Test
-    void testKrijgRuimteOpLeegVakje() {
+    // voegPersoonToe tijdens brandalarm: nieuwe persoon wordt direct geëvacueerd
+    @Test void testVoegPersoonToeTijdensAlarm() {
+        Hotel hotel = maakVolledigHotel();
+        hotel.brandalarmActief = true;
+        hotel.brandalarmService.activeer(1);
+        Gast g = new Gast(1, 1);
+        g.setPathfinder(hotel.pathfinder);
+        g.zetStartPositie(hotel.layout.krijgVakje(3, 3));
+        hotel.voegPersoonToe(g);
+        assertNotNull(g.doelVakje);
+    }
 
+    // krijgRuimteOp: geeft null als layout null is
+    @Test void testKrijgRuimteOpZonderLayout() {
+        assertNull(new Hotel().krijgRuimteOp(1, 1));
+    }
+
+    // krijgRuimteOp: geeft de ruimte terug als die aanwezig is
+    @Test void testKrijgRuimteOpMetRuimte() {
         Hotel h = new Hotel();
-
         h.layout = new Layout(5, 5);
+        Kamer kamer = new Kamer();
+        kamer.posX = 2; kamer.posY = 2; kamer.breedte = 1; kamer.hoogte = 1;
+        h.layout.plaatsRuimte(kamer);
+        assertEquals(kamer, h.krijgRuimteOp(2, 2));
+    }
 
+    // krijgRuimteOp: geeft null als vakje geen ruimte heeft
+    @Test void testKrijgRuimteOpLeegVakje() {
+        Hotel h = new Hotel();
+        h.layout = new Layout(5, 5);
         assertNull(h.krijgRuimteOp(3, 3));
     }
 
-
-
-    // extra uitleg:
-    // deze test laat zien dat alleen exact geplaatste ruimtes worden gevonden,
-    // andere posities geven null terug
-
-    // ik plaats een kamer op positie (1,1) maar vraag (2,2) op; ik verwacht null
-    @Test
-    void testKrijgRuimteOpVerkeerdePositie() {
-
+    // krijgRuimteOp: geeft null buiten grid
+    @Test void testKrijgRuimteOpBuitenGrid() {
         Hotel h = new Hotel();
-
         h.layout = new Layout(5, 5);
-
-        Kamer k = new Kamer();
-
-        k.posX = 1;
-
-        k.posY = 1;
-
-        h.ruimtes.add(k);
-
-        h.layout.plaatsRuimte(k);
-
-        assertNull(h.krijgRuimteOp(2, 2));
+        assertNull(h.krijgRuimteOp(0, 0));
+        assertNull(h.krijgRuimteOp(6, 6));
     }
 
-    // -------------------------------------------------
-    // Pathfinder tests
-    // -------------------------------------------------
-
-    // ik initialiseer een pathfinder met een geldig hotel; ik verwacht dat dit zonder errors lukt en niet null is
-    @Test
-    void testPathfinderInstellen() {
-
+    // voegWachtendeSchoonmaakToe: kamer wordt toegevoegd
+    @Test void testVoegWachtendeSchoonmaakToe() {
         Hotel h = new Hotel();
-
-        h.layout = new Layout(5, 3);
-
-        h.breedte = 5;
-
-        h.hoogte = 3;
-
-        Lift lift = new Lift(h);
-
-        lift.posX = 1;
-
-        lift.posY = 1;
-
-        lift.breedte = 1;
-
-        lift.hoogte = 3;
-
-        h.ruimtes.add(lift);
-
-        h.layout.plaatsRuimte(lift);
-
-        Trap trap = new Trap(2);
-
-        trap.posX = 5;
-
-        trap.posY = 1;
-
-        trap.breedte = 1;
-
-        trap.hoogte = 3;
-
-        h.ruimtes.add(trap);
-
-        h.layout.plaatsRuimte(trap);
-
-        assertDoesNotThrow(() -> {
-
-            h.pathfinder = new Pathfinder(h);
-        });
-
-        assertNotNull(h.pathfinder);
+        Kamer kamer = new Kamer();
+        h.voegWachtendeSchoonmaakToe(kamer);
+        assertTrue(h.wachtendeSchoonmaakKamers.contains(kamer));
     }
 
-    // ik heb nog geen pathfinder gezet in het hotel; ik verwacht dat de waarde null is
-    @Test
-    void testPathfinderNull() {
-
+    // voegWachtendeSchoonmaakToe: dubbel toevoegen wordt genegeerd
+    @Test void testVoegWachtendeSchoonmaakToeDubbel() {
         Hotel h = new Hotel();
-
-        assertNull(h.pathfinder);
+        Kamer kamer = new Kamer();
+        h.voegWachtendeSchoonmaakToe(kamer);
+        h.voegWachtendeSchoonmaakToe(kamer);
+        assertEquals(1, h.wachtendeSchoonmaakKamers.size());
     }
 
-    // -------------------------------------------------
-    // Ruimtes lijst branches
-    // -------------------------------------------------
-
-    // ik maak een hotel zonder ruimtes toe te voegen; ik verwacht dat de ruimteslijst leeg is
-    @Test
-    void testLegeRuimtes() {
-
+    // voegWachtendeSchoonmaakToe: null kamer wordt genegeerd
+    @Test void testVoegWachtendeSchoonmaakToeNull() {
         Hotel h = new Hotel();
-
-        h.layout = new Layout(5, 5);
-
-        assertTrue(h.ruimtes.isEmpty());
+        h.voegWachtendeSchoonmaakToe(null);
+        assertTrue(h.wachtendeSchoonmaakKamers.isEmpty());
     }
 
-    // -------------------------------------------------
-    // Personen null/edge cases
-    // -------------------------------------------------
-
-    // ik voeg een null persoon toe aan het hotel; ik verwacht dat de lijst dit accepteert en null bevat
-    @Test
-    void testVoegNullPersoonToe() {
-
+    // voegWachtendeSchoonmaakToe: meerdere unieke kamers worden bijgehouden
+    @Test void testMeerdereWachtendeKamers() {
         Hotel h = new Hotel();
-
-        h.voegPersoonToe(null);
-
-        assertTrue(h.personen.contains(null));
+        h.voegWachtendeSchoonmaakToe(new Kamer());
+        h.voegWachtendeSchoonmaakToe(new Kamer());
+        h.voegWachtendeSchoonmaakToe(new Kamer());
+        assertEquals(3, h.wachtendeSchoonmaakKamers.size());
     }
 
-    // ik voeg een geldige gast en een null waarde toe; ik verwacht dat de lijst beide entries bevat
-    @Test
-    void testGemengdePersonen() {
-
+    // verwijderWachtendeSchoonmaak: kamer wordt verwijderd
+    @Test void testVerwijderWachtendeSchoonmaak() {
         Hotel h = new Hotel();
-
-        Gast g = new Gast(1, 2);
-
-        h.voegPersoonToe(g);
-
-        h.voegPersoonToe(null);
-
-        assertEquals(2, h.personen.size());
+        Kamer kamer = new Kamer();
+        h.voegWachtendeSchoonmaakToe(kamer);
+        h.verwijderWachtendeSchoonmaak(kamer);
+        assertFalse(h.wachtendeSchoonmaakKamers.contains(kamer));
     }
 
-    // -------------------------------------------------
-    // Layout null branches
-    // -------------------------------------------------
+    // verwijderWachtendeSchoonmaak: niet-aanwezige kamer geeft geen crash
+    @Test void testVerwijderWachtendeNietAanwezig() {
+        assertDoesNotThrow(() -> new Hotel().verwijderWachtendeSchoonmaak(new Kamer()));
+    }
 
+    // godzillaActief vlag: standaard false, kan op true gezet worden
+    @Test void testGodzillaActiefVlag() {
+        Hotel h = new Hotel();
+        assertFalse(h.godzillaActief);
+        h.godzillaActief = true;
+        assertTrue(h.godzillaActief);
+    }
 
+    // brandalarmActief vlag: standaard false, kan op true gezet worden
+    @Test void testBrandalarmActiefVlag() {
+        Hotel h = new Hotel();
+        assertFalse(h.brandalarmActief);
+        h.brandalarmActief = true;
+        assertTrue(h.brandalarmActief);
+    }
+
+    // brandendeKolommen: kolommen kunnen worden toegevoegd
+    @Test void testBrandendeKolommen() {
+        Hotel h = new Hotel();
+        h.brandendeKolommen.add(2);
+        h.brandendeKolommen.add(3);
+        assertTrue(h.brandendeKolommen.contains(2));
+        assertTrue(h.brandendeKolommen.contains(3));
+        assertEquals(2, h.brandendeKolommen.size());
+    }
 }

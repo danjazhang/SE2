@@ -38,13 +38,6 @@ public class Ruimte {
         this.aanwezigen = new ArrayList<>();
     }
 
-    public void setPositie(int x, int y) { this.posX = x; this.posY = y; }
-    public void setAfmetingen(int b, int h) { this.breedte = b; this.hoogte = h; }
-    public int getX() { return posX; }
-    public int getY() { return posY; }
-    public int getBreedte() { return breedte; }
-    public int getHoogte() { return hoogte; }
-
     // voeg een persoon toe aan de ruimte
     public void betreed(Persoon p) { aanwezigen.add(p); }
 
@@ -62,9 +55,6 @@ public class Ruimte {
 
     // geef de ingang positie terug als array [x, y]
     public int[] krijgIngang() { return new int[]{ingangX, ingangY}; }
-
-    // sla de ingang positie op
-    public void setIngang(int x, int y) { this.ingangX = x; this.ingangY = y; }
 
     // geef een statustekst terug voor het lobbyscherm
     // subklassen overschrijven dit om hun eigen status te tonen

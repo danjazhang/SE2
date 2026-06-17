@@ -135,9 +135,4 @@ public class LayoutController {
     public Hotel getHotel(int id) {
         return hotelManager.getHotel(id);
     }
-
-    // geef de hotelmanager terug
-    public HotelManager getHotelManager() {
-        return hotelManager;
-    }
 }

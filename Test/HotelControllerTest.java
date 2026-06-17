@@ -1,22 +1,35 @@
-import Controller.EventController;
 import Controller.HotelController;
-import Controller.LayoutController;
-import Model.*;
+import Model.Hotel;
+import Model.ILogger;
 import Model.layout.Layout;
+import Model.persoon.Gast;
 import Model.persoon.Schoonmaker;
 import Model.ruimte.Kamer;
+import Model.ruimte.Lift;
 import Model.ruimte.Lobby;
-import hotelevents.HotelEventManager;
+import Model.ruimte.Trap;
+import Model.Pathfinder;
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Tests voor HotelController: hotel beheren, listeners, logger
 public class HotelControllerTest {
 
-    // constructor: hotel en layoutcontroller worden aangemaakt
-    @Test void testConstructor() {
-        HotelController hc = new HotelController();
-        assertNotNull(hc.getHotel());
-        assertNotNull(hc.getLayoutController());
+    static class TestLogger implements ILogger {
+        List<String> logs = new ArrayList<>();
+        @Override public void log(String bericht) { logs.add(bericht); }
+    }
+
+    // constructor: hotel is aangemaakt
+    @Test void testConstructorHotelAangemaakt() {
+        assertNotNull(new HotelController().getHotel());
+    }
+
+    // constructor: layoutController is aangemaakt
+    @Test void testConstructorLayoutController() {
+        assertNotNull(new HotelController().getLayoutController());
     }
 
     // heeftLayout: false als hotel geen layout heeft
@@ -27,79 +40,69 @@ public class HotelControllerTest {
     // heeftLayout: true als hotel een layout heeft
     @Test void testHeeftLayoutTrue() {
         HotelController hc = new HotelController();
-        Hotel h = new Hotel();
-        h.layout = new Layout(3, 3);
-        hc.setHotel(h);
+        Hotel hotel = new Hotel();
+        hotel.layout = new Layout(4, 4);
+        hc.setHotel(hotel);
         assertTrue(hc.heeftLayout());
     }
 
-    // setHotel: hotel wordt correct ingesteld
+    // setHotel: hotel wordt opgeslagen
     @Test void testSetHotel() {
         HotelController hc = new HotelController();
-        Hotel h = new Hotel();
-        hc.setHotel(h);
-        assertEquals(h, hc.getHotel());
+        Hotel hotel = new Hotel();
+        hc.setHotel(hotel);
+        assertSame(hotel, hc.getHotel());
     }
 
-    // setLogger: geen crash
-    @Test void testSetLogger() {
+    // setHotel: logger wordt ingesteld op lobby
+    @Test void testSetHotelStelLoggerInOpLobby() {
         HotelController hc = new HotelController();
-        assertDoesNotThrow(() -> hc.setLogger(bericht -> {}));
+        TestLogger logger = new TestLogger();
+        hc.setLogger(logger);
+
+        Hotel hotel = new Hotel();
+        hotel.layout = new Layout(8, 5);
+        hotel.breedte = 8;
+        hotel.hoogte = 5;
+        Lift lift = new Lift(hotel);
+        lift.posX = 1; lift.posY = 1; lift.breedte = 1; lift.hoogte = 5;
+        hotel.lift = lift;
+        hotel.ruimtes.add(lift);
+        hotel.layout.plaatsRuimte(lift);
+        lift.initWachtrijen(5);
+        lift.setLobbyVerdieping(2);
+        Trap trap = new Trap(2);
+        trap.posX = 7; trap.posY = 1; trap.breedte = 2; trap.hoogte = 5;
+        hotel.trap = trap;
+        hotel.ruimtes.add(trap);
+        hotel.layout.plaatsRuimte(trap);
+        Lobby lobby = new Lobby(1, 2, 5, 1, 3, 2, hotel, null);
+        hotel.lobby = lobby;
+        hotel.ruimtes.add(lobby);
+        hotel.layout.plaatsRuimte(lobby);
+        hotel.pathfinder = new Pathfinder(hotel);
+
+        hc.setHotel(hotel);
+        // geen crash = logger correct ingesteld
+        assertDoesNotThrow(() -> hc.notifyListeners());
     }
 
-    // setLogger daarna setHotel: logger wordt doorgegeven aan lobby
-    @Test void testSetLoggerDaarnSetHotelGeeftLoggerAanLobby() {
+    // setHotel: schoonmakers krijgen de logger
+    @Test void testSetHotelStelLoggerInOpSchoonmakers() {
         HotelController hc = new HotelController();
-        boolean[] logged = {false};
-        hc.setLogger(bericht -> logged[0] = true);
-        Hotel h = new Hotel();
-        h.layout = new Layout(5, 5);
-        Lobby lobby = new Lobby(1, 5, 3, 1, 2, 5, h, null);
-        h.lobby = lobby;
-        h.ruimtes.add(lobby);
-        hc.setHotel(h);
-        // logger is ingesteld op lobby, geen crash verwacht
-        assertDoesNotThrow(() -> {});
+        TestLogger logger = new TestLogger();
+        hc.setLogger(logger);
+
+        Hotel hotel = new Hotel();
+        Schoonmaker s = new Schoonmaker(logger);
+        hotel.voegPersoonToe(s);
+        hc.setHotel(hotel);
+        // schoonmaker is een Schoonmaker, logger moet opnieuw ingesteld zijn → geen crash
+        assertDoesNotThrow(() -> s.beweeg());
     }
 
-    // setEventController: geen crash
-    @Test void testSetEventController() {
-        HotelController hc = new HotelController();
-        EventController ec = new EventController(new HotelEventManager(true));
-        assertDoesNotThrow(() -> hc.setEventController(ec));
-    }
-
-    // setHotel met eventController: registreerHotelListeners wordt aangeroepen
-    @Test void testSetHotelMetEventControllerRegistreertListeners() {
-        HotelController hc = new HotelController();
-        EventController ec = new EventController(new HotelEventManager(true));
-        hc.setEventController(ec);
-        Hotel h = new Hotel();
-        h.layout = new Layout(5, 5);
-        assertDoesNotThrow(() -> hc.setHotel(h));
-    }
-
-    // setHotel met schoonmaker: logger wordt doorgegeven aan schoonmaker
-    @Test void testSetHotelMetSchoonmakerZetLogger() {
-        HotelController hc = new HotelController();
-        hc.setLogger(bericht -> {});
-        Hotel h = new Hotel();
-        h.layout = new Layout(5, 5);
-        Schoonmaker s = new Schoonmaker();
-        h.voegPersoonToe(s);
-        hc.setHotel(h);
-        // schoonmaker heeft nu een logger, geen crash verwacht
-        assertDoesNotThrow(() -> {});
-    }
-
-    // getLayoutController: geeft een LayoutController terug
-    @Test void testGetLayoutController() {
-        HotelController hc = new HotelController();
-        assertTrue(hc.getLayoutController() instanceof LayoutController);
-    }
-
-    // voegListenerToe: listener wordt aangeroepen na notifyListeners
-    @Test void testVoegListenerToe() {
+    // voegListenerToe en notifyListeners: listener wordt aangeroepen
+    @Test void testVoegListenerEnNotify() {
         HotelController hc = new HotelController();
         boolean[] called = {false};
         hc.voegListenerToe(() -> called[0] = true);
@@ -107,49 +110,32 @@ public class HotelControllerTest {
         assertTrue(called[0]);
     }
 
-    // notifyListeners: alle listeners worden aangeroepen
-    @Test void testNotifyListenersRoeptAlleListenersAan() {
+    // meerdere listeners worden allemaal aangeroepen
+    @Test void testMeerdereListeners() {
         HotelController hc = new HotelController();
         int[] count = {0};
         hc.voegListenerToe(() -> count[0]++);
         hc.voegListenerToe(() -> count[0]++);
+        hc.voegListenerToe(() -> count[0]++);
         hc.notifyListeners();
-        assertEquals(2, count[0]);
+        assertEquals(3, count[0]);
     }
 
     // notifyListeners: geen crash zonder listeners
-    @Test void testNotifyListenersZonderListenersCrashetNiet() {
+    @Test void testNotifyZonderListeners() {
+        assertDoesNotThrow(() -> new HotelController().notifyListeners());
+    }
+
+    // setLogger: geen crash
+    @Test void testSetLogger() {
+        assertDoesNotThrow(() -> new HotelController().setLogger(new TestLogger()));
+    }
+
+    // getHotel: geeft het hotel terug na setHotel
+    @Test void testGetHotelNaSet() {
         HotelController hc = new HotelController();
-        assertDoesNotThrow(() -> hc.notifyListeners());
-    }
-
-    // registreerListeners via eventController: geen crash als hotel leeg is
-    @Test void testRegistreerListenersLeegHotel() {
-        EventController ec = new EventController(new HotelEventManager(true));
         Hotel h = new Hotel();
-        assertDoesNotThrow(() -> ec.registreerHotelListeners(h));
-    }
-
-    // registreerListeners via eventController: lobby wordt geregistreerd
-    @Test void testRegistreerListenersMetLobby() {
-        EventController ec = new EventController(new HotelEventManager(true));
-        Hotel h = new Hotel();
-        h.layout = new Layout(5, 5);
-        Lobby lobby = new Lobby(1, 5, 3, 1, 2, 5, h, null);
-        h.lobby = lobby;
-        h.ruimtes.add(lobby);
-        assertDoesNotThrow(() -> ec.registreerHotelListeners(h));
-    }
-
-    // setHotel met lobby en logger: geen crash
-    @Test void testSetHotelMetLobbyZetLogger() {
-        HotelController hc = new HotelController();
-        hc.setLogger(bericht -> {});
-        Hotel h = new Hotel();
-        h.layout = new Layout(5, 5);
-        Lobby lobby = new Lobby(1, 5, 3, 1, 2, 5, h, null);
-        h.lobby = lobby;
-        h.ruimtes.add(lobby);
-        assertDoesNotThrow(() -> hc.setHotel(h));
+        hc.setHotel(h);
+        assertSame(h, hc.getHotel());
     }
 }

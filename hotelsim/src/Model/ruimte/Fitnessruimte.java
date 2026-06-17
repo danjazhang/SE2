@@ -88,11 +88,6 @@ public class Fitnessruimte extends Ruimte implements IEventListener {
         }
     }
 
-    // laat een gast sporten
-    public void breedteFitness() {}
-
-    // laat een gast de fitnessruimte verlaten
-    public void verlaatFitness() {}
 
     @Override
     public boolean isFaciliteit() { return true; }

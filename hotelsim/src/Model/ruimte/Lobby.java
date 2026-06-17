@@ -117,9 +117,6 @@ public class Lobby extends Ruimte implements IEventListener {
     }
 
     public void setLogger(ILogger logger) { this.logger = logger; }
-    public void toonStatusScherm() { System.out.println("Status van hotel wordt getoond..."); }
-    public int getBalieX() { return balieX; }
-    public int getBalieY() { return balieY; }
 
     // als een uitcheckende gast de lobby betreedt, verwijder hem alleen als hij het balievakje bereikt
     @Override

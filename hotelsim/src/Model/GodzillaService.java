@@ -1,5 +1,6 @@
 package Model;
 
+import Model.persoon.Gast;
 import Model.persoon.Persoon;
 
 // Verantwoordelijkheid: het Godzilla-event afhandelen.
@@ -93,7 +94,7 @@ public class GodzillaService {
     // De cabine beweegt door de schacht - als de schachtkolom brandt, sterven zij ook.
     // hotel.lift.getPassagiers() geeft altijd de actuele lijst terug.
     private void markeerLiftPassagiers(int tijd) {
-        for (Persoon g : hotel.lift.getPassagiers()) {
+        for (Gast g : hotel.lift.getPassagiers()) {
             if (g.gestorven) continue;
             g.gestorven = true;
             if (logger != null) logger.log("[" + tijd + "] GODZILLA: liftpassagier omgekomen in brandende schacht.");

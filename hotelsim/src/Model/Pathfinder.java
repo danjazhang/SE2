@@ -86,17 +86,6 @@ public class Pathfinder {
         // altijd via trap, lift wordt nooit overwogen
         routeViaTrap(p, start, doel);
     }
-    // reset lift-gerelateerde status als de gast wacht op de lift maar een nieuwe route krijgt
-    private void resetLiftStatusAlsNodig(Persoon p) {
-        if (!(p instanceof Gast)) return;
-        Gast g = (Gast) p;
-        if (g.gebruiktLift && !g.inLift) {
-            // gast wacht op de lift maar gaat nu ergens anders heen
-            g.gebruiktLift = false;
-            g.wachtOpLift  = false;
-            if (hotel.lift != null) hotel.lift.verwijderUitWachtrij(g);
-        }
-    }
 
     // reset lift-gerelateerde status als de gast wacht op de lift maar een nieuwe route krijgt
     private void resetLiftStatusAlsNodig(Persoon p) {
