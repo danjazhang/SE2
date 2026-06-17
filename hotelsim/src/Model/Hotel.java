@@ -3,13 +3,16 @@ package Model;
 import Model.layout.Layout;
 import Model.layout.Vakje;
 import Model.persoon.Persoon;
+import Model.ruimte.Kamer;
 import Model.ruimte.Lift;
 import Model.ruimte.Lobby;
 import Model.ruimte.Ruimte;
 import Model.ruimte.Trap;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 // Model klasse: bevat alle data van het hotel
 public class Hotel {
@@ -30,22 +33,46 @@ public class Hotel {
     // lijst van alle personen in het hotel
     public List<Persoon> personen;
 
+    // kamers die nog wachten op een schoonmaker
+    public List<Kamer> wachtendeSchoonmaakKamers;
+
     public Lift lift;
     public Trap trap;
     public Lobby lobby;
 
+    public BrandalarmService brandalarmService;
+
     // of het brandalarm momenteel actief is
     public boolean brandalarmActief = false;
+
+    // De kolommen die momenteel in brand staan door Godzilla.
+    // Een Set van kolomnummers (x-waarden). Als een kolom in deze set staat, sterft elke persoon die erop staat.
+    public Set<Integer> brandendeKolommen = new HashSet<>();
+
+    // De lijst van personen die gestorven zijn door Godzilla.
+    // Ze worden hier naartoe verplaatst aan het einde van de tick.
+    public List<Persoon> slachtoffers = new ArrayList<>();
+
+    // Sla op of Godzilla momenteel actief is: true = aanval bezig, false = geen aanval.
+    // Als dit true is, worden routing-events genegeerd.
+    public boolean godzillaActief = false;
 
     // constructor: maak lege lijsten aan
     public Hotel() {
         ruimtes = new ArrayList<>();
         personen = new ArrayList<>();
+        wachtendeSchoonmaakKamers = new ArrayList<>();
+        brandendeKolommen = new HashSet<>();
+        slachtoffers = new ArrayList<>();
     }
 
     // voeg een persoon toe aan het hotel
     public void voegPersoonToe(Persoon p) {
         personen.add(p);
+        //als brandalarm actief is: direct evacueren
+        if (brandalarmService != null && brandalarmActief) {
+            brandalarmService.evacueerNieuwePersoon(p);
+        }
     }
 
     // geef de ruimte op positie (x, y) terug
@@ -54,5 +81,14 @@ public class Hotel {
         Vakje vakje = layout.krijgVakje(x, y);
         if (vakje != null) return vakje.ruimte;
         return null;
+    }
+
+    public void voegWachtendeSchoonmaakToe(Kamer kamer) {
+        if (kamer == null || wachtendeSchoonmaakKamers.contains(kamer)) return;
+        wachtendeSchoonmaakKamers.add(kamer);
+    }
+
+    public void verwijderWachtendeSchoonmaak(Kamer kamer) {
+        wachtendeSchoonmaakKamers.remove(kamer);
     }
 }

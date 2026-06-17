@@ -1,22 +1,27 @@
 package Model;
 
 import Model.layout.Vakje;
-import Model.persoon.Gast;
 import Model.persoon.Persoon;
-import Model.persoon.Schoonmaker;
 
 // Verantwoordelijkheid: brandalarm activeren en alle personen naar de uitgang sturen
+// Gebruikt polymorfisme via evacueer() zodat elke persoon zijn eigen gedrag bepaalt
+// Gast wist zijn route en loopt naar buiten
+// Schoonmaker onthoudt zijn kamer en loopt ook naar buiten
 public class BrandalarmService {
 
     private Hotel hotel;
     private ILogger logger;
+
+    // bewaar uitgang zodat nieuwe personen hem ook gebruiken
+    private Vakje uitgang;
 
     public BrandalarmService(Hotel hotel, ILogger logger) {
         this.hotel = hotel;
         this.logger = logger;
     }
 
-    // activeer het brandalarm: zet lift uit en stuur iedereen naar de uitgang
+    // Activeer het brandalarm onmiddellijk.
+    // Dit is de eerste omschakeling: lift uit, uitgang bepalen, iedereen naar buiten sturen.
     public void activeer(int tijd) {
         // markeer het alarm als actief in het hotel
         hotel.brandalarmActief = true;
@@ -26,34 +31,57 @@ public class BrandalarmService {
             hotel.lift.zetUitBedrijf(true);
         }
 
-        // stuur alle personen naar de uitgang via de trap
+        // zoek de uitgang eenmalig op zodat we hem niet per persoon opnieuw hoeven te zoeken
+        this.uitgang = vindUitgang();
+
+        // roep evacueer() aan op elke persoon
+        // elke subklasse beslist zelf wat er extra gebeurt via @Override
         for (Persoon p : hotel.personen) {
-            if (p instanceof Gast gast) {
-                stuurNaarUitgang(gast);
-            } else if (p instanceof Schoonmaker schoonmaker) {
-                // schoonmaker onthoudt zijn kamer maar gaat ook naar buiten
-                stuurNaarUitgang(schoonmaker);
+            // gasten die wachten op de lift of in de lift zitten: reset lift-status eerst
+            if (p instanceof Model.persoon.Gast) {
+                Model.persoon.Gast g = (Model.persoon.Gast) p;
+                if (g.wachtOpLift || g.inLift) {
+                    g.wachtOpLift = false;
+                    g.gebruiktLift = false;
+                    // als in de lift: zet op het lift-vakje zodat evacueer() werkt
+                    if (g.inLift && hotel.lift != null) {
+                        int uitstapX = hotel.lift.posX + 1;
+                        int uitstapY = hotel.lift.getHuidigeVerdieping();
+                        Model.layout.Vakje uitstapVakje = hotel.layout.krijgVakje(uitstapX, uitstapY);
+                        if (uitstapVakje != null) {
+                            if (g.huidigVakje != null) g.huidigVakje.verwijderPersoon(g);
+                            g.huidigVakje = uitstapVakje;
+                            uitstapVakje.voegPersoonToe(g);
+                        }
+                        g.inLift = false;
+                    }
+                }
             }
+            p.evacueer(uitgang, hotel.pathfinder);
         }
 
         if (logger != null) logger.log("[" + tijd + "] BRANDALARM: iedereen evacueren via de trap!");
     }
 
-    // stuur een persoon naar de uitgang via de trap, lift is niet toegestaan
-    private void stuurNaarUitgang(Persoon p) {
-        if (p.huidigVakje == null || hotel.pathfinder == null) return;
-        // wis de huidige route zodat de persoon niet meer naar zijn oude bestemming loopt
-        p.wisRoute();
-        Vakje uitgang = vindUitgang();
-        if (uitgang != null) {
-            // gebruik altijd de trap, nooit de lift
-            hotel.pathfinder.zetRouteTrap(p, uitgang);
+    // Als tijdens een actief alarm nog een persoon aan het hotel toegevoegd wordt,
+    // krijgt die hier meteen dezelfde evacuatieroute als iedereen anders.
+    public void evacueerNieuwePersoon(Persoon p) {
+        if (hotel.brandalarmActief && uitgang != null) {
+            p.evacueer(uitgang, hotel.pathfinder);
         }
     }
 
-    // zoek het uitgang vakje: het onderste vakje van de lobby
-    private Vakje vindUitgang() {
+    // zoek het uitgang vakje: de "buiten"-rij direct onder de lobby (y = lobby.posY - 1)
+    // personen wachten hier tijdens brandalarm, buiten het gebouw
+    public Vakje vindUitgang() {
         if (hotel.lobby == null) return null;
-        return hotel.layout.krijgVakje(hotel.lobby.posX, hotel.lobby.posY);
+        //vanuit de lobby -1 geeft de rij eronder voor evacuatie
+        int buitenY = hotel.lobby.posY - 1;
+        // midden van de breedte van de lobby
+        int midX = hotel.lobby.posX + hotel.lobby.breedte / 2;
+        return hotel.layout.krijgVakje(midX, buitenY);
     }
+
+
+
 }

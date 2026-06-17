@@ -2,10 +2,8 @@ package View;
 
 import Controller.SimulatieController;
 import Model.Hotel;
-import Model.persoon.Gast;
 import Model.persoon.Persoon;
-import Model.persoon.Schoonmaker;
-import Model.ruimte.*;
+import Model.ruimte.Ruimte;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,10 +38,8 @@ public class LobbyOverzichtView extends JDialog {
         rechtsArea.setEditable(false);
         rechtsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
-        // splits het venster in twee gelijke kolommen
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                linksArea,
-                new JScrollPane(rechtsArea));
+        // splits het venster in twee kolommen
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(linksArea), new JScrollPane(rechtsArea));
         splitPane.setDividerLocation(550);
         splitPane.setResizeWeight(0.5);
         add(splitPane, BorderLayout.CENTER);
@@ -81,6 +77,9 @@ public class LobbyOverzichtView extends JDialog {
             brandalarmStatus = "uit";
         }
         text += "Brandalarm      : " + brandalarmStatus + "\n\n";
+        text += "Godzilla        : " + (hotel.godzillaActief ? "ACTIEF" : "uit") + "\n";
+        text += "Brandkolommen   : " + hotel.brandendeKolommen.size() + "\n";
+        text += "Slachtoffers    : " + hotel.slachtoffers.size() + "\n\n";
 
         // lift
         if (hotel.lift != null) {
@@ -107,50 +106,16 @@ public class LobbyOverzichtView extends JDialog {
         // kamers
         text += "=== KAMERS ===\n";
         for (Ruimte r : hotel.ruimtes) {
-            if (!(r instanceof Kamer k)) continue;
-            String status;
-            if (k.isBezet()) {
-                String gastInfo = "";
-                for (Gast g : k.getIngecheckteGasten()) {
-                    if (!gastInfo.isEmpty()) gastInfo += ", ";
-                    gastInfo += "gast " + g.gastId;
-                }
-                status = "BEZET (" + gastInfo + ")";
-            } else if (!k.isSchoon()) {
-                status = "WORDT SCHOONGEMAAKT";
-            } else {
-                status = "vrij";
-            }
-            text += "  Kamer " + k.getKamernummer() + " (" + k.getSterrenLabel() + ") : " + status + "\n";
+            if (!r.isKamer()) continue;
+            text += "  " + r.getStatusTekst() + "\n";
         }
         text += "\n";
 
         // faciliteiten
         text += "=== FACILITEITEN ===\n";
         for (Ruimte r : hotel.ruimtes) {
-            if (r instanceof Restaurant) {
-                Restaurant rest = (Restaurant) r;
-                int aanwezig = rest.getAanwezigen().size();
-                String vol;
-                if (rest.capaciteit > 0 && aanwezig >= rest.capaciteit) {
-                    vol = " [VOL]";
-                } else {
-                    vol = "";
-                }
-                text += "  Restaurant (cap " + rest.capaciteit + ") : " + aanwezig + " aanwezig" + vol + "\n";
-            } else if (r instanceof Fitnessruimte) {
-                Fitnessruimte fit = (Fitnessruimte) r;
-                text += "  Fitness : " + fit.getAanwezigen().size() + " aanwezig\n";
-            } else if (r instanceof Bioscoop) {
-                Bioscoop bio = (Bioscoop) r;
-                String film;
-                if (bio.filmBezig) {
-                    film = "film bezig";
-                } else {
-                    film = "geen film";
-                }
-                text += "  Bioscoop : " + bio.getAanwezigen().size() + " aanwezig, " + film + "\n";
-            }
+            if (!r.isFaciliteit()) continue;
+            text += "  " + r.getStatusTekst() + "\n";
         }
 
         linksArea.setText(text);
@@ -164,12 +129,8 @@ public class LobbyOverzichtView extends JDialog {
         // gasten
         text += "=== GASTEN ===\n";
         for (Persoon p : hotel.personen) {
-            if (!(p instanceof Gast g)) continue;
-            String locatie = bepaalGastLocatie(g);
-            String activiteit = bepaalGastActiviteit(g);
-            text += "  Gast " + g.gastId + " (" + g.gewensteSterren + "★)\n";
-            text += "    Locatie   : " + locatie + "\n";
-            text += "    Activiteit: " + activiteit + "\n\n";
+            if (!p.isGast()) continue;
+            text += "  " + p.getStatusTekst() + "\n\n";
         }
         if (aantalGasten() == 0) text += "  Geen gasten aanwezig\n";
         text += "\n";
@@ -178,63 +139,30 @@ public class LobbyOverzichtView extends JDialog {
         text += "=== SCHOONMAKERS ===\n";
         boolean schoonmakerGevonden = false;
         for (Persoon p : hotel.personen) {
-            if (!(p instanceof Schoonmaker s)) continue;
+            if (!p.isSchoonmaker()) continue;
             schoonmakerGevonden = true;
-            String status;
-            if (s.bezig && s.kamer != null) {
-                status = "bezig met kamer " + s.kamer.getKamernummer();
-            } else if (s.bezig) {
-                status = "onderweg naar kamer";
-            } else {
-                status = "vrij inzetbaar";
-            }
-            String positie;
-            if (s.huidigVakje != null) {
-                positie = "(" + s.huidigVakje.x + "," + s.huidigVakje.y + ")";
-            } else {
-                positie = "geen positie";
-            }
-            text += "  Schoonmaker " + positie + "\n";
-            text += "    Status: " + status + "\n\n";
+            text += "  " + p.getStatusTekst() + "\n\n";
         }
         if (!schoonmakerGevonden) text += "  Geen schoonmakers\n";
 
+        text += "\n=== SLACHTOFFERS ===\n";
+        if (hotel.slachtoffers.isEmpty()) {
+            text += "  Geen slachtoffers\n";
+        } else {
+            for (Persoon p : hotel.slachtoffers) {
+                text += "  " + p.getStatusTekst() + " [OMGEKOMEN]\n\n";
+            }
+        }
+
         rechtsArea.setText(text);
         rechtsArea.setCaretPosition(0);
-    }
-
-    // bepaal de locatie van een gast als leesbare tekst
-    private String bepaalGastLocatie(Gast g) {
-        if (g.inLift) return "in lift";
-        if (g.huidigVakje == null) return "geen positie";
-        Ruimte r = g.huidigVakje.ruimte;
-        if (r instanceof Kamer k) return "kamer " + k.getKamernummer();
-        if (r instanceof Restaurant) return "restaurant";
-        if (r instanceof Fitnessruimte) return "fitness";
-        if (r instanceof Bioscoop) return "bioscoop";
-        if (r instanceof Lobby) return "lobby";
-        if (r instanceof Lift) return "lift";
-        return "(" + g.huidigVakje.x + "," + g.huidigVakje.y + ")";
-    }
-
-    // bepaal wat de gast op dit moment aan het doen is
-    private String bepaalGastActiviteit(Gast g) {
-        if (g.uitcheckend) return "aan het uitchecken";
-        if (g.inLift) return "in lift";
-        if (g.wachtOpLift) return "wacht op lift";
-        if (g.huidigVakje != null && g.huidigVakje.ruimte instanceof Restaurant) return "aan het eten";
-        if (g.huidigVakje != null && g.huidigVakje.ruimte instanceof Fitnessruimte) return "aan het sporten";
-        if (g.huidigVakje != null && g.huidigVakje.ruimte instanceof Bioscoop) return "kijkt film";
-        if (g.kamer != null && g.huidigVakje != null && g.huidigVakje.ruimte == g.kamer) return "in kamer";
-        if (g.doelVakje != null) return "onderweg";
-        return "wacht";
     }
 
     // tel het aantal gasten in de personenlijst
     private int aantalGasten() {
         int count = 0;
         for (Persoon p : hotel.personen) {
-            if (p instanceof Gast) count++;
+            if (p.isGast()) count++;
         }
         return count;
     }
@@ -242,7 +170,7 @@ public class LobbyOverzichtView extends JDialog {
     // stop de timer en hervat de simulatie bij sluiten
     @Override
     public void dispose() {
-        //zorgt ervoor dat dispose maar 1x wordt aangeroepen
+        // zorgt ervoor dat dispose maar 1x wordt aangeroepen
         if (gesloten) return;
         gesloten = true;
         if (refreshTimer != null) refreshTimer.stop();

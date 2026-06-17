@@ -1,16 +1,15 @@
 package Model.persoon;
 
 import Model.ILogger;
+import Model.Pathfinder;
 import Model.layout.Vakje;
 import Model.ruimte.Kamer;
 
-// Verantwoordelijkheid: bewegen, schoonmaaktijd aftellen en kamer schoonmaken.
-// Eventkeuze en taaktoewijzing gebeuren buiten deze klasse,
-// zodat de schoonmaker zelf alleen uitvoert.
+// Verantwoordelijkheid: bewegen, schoonmaaktijd aftellen en kamer schoonmaken
 public class Schoonmaker extends Persoon {
 
-    // aantal ticks dat een schoonmaakbeurt duurt
-    private static final int SCHOONMAAKDUUR = 6;
+    // aantal ticks dat een schoonmaakbeurt duurt — instelbaar via setSchoonmaakDuur()
+    private int schoonmaakDuur = 20;
 
     // of de schoonmaker momenteel bezig is
     public boolean bezig;
@@ -53,7 +52,6 @@ public class Schoonmaker extends Persoon {
     }
 
     // wijs een kamer toe die schoongemaakt moet worden
-    // de echte schoonmaak start pas als de schoonmaker in de kamer aankomt
     public void maakKamerSchoon(Kamer k) {
         this.kamer = k;
         this.bezig = true;
@@ -63,19 +61,14 @@ public class Schoonmaker extends Persoon {
     @Override
     public void beweeg() {
         Kamer oudeKamer = null;
-
-        if (huidigVakje != null) {
-            if (huidigVakje.ruimte instanceof Kamer) {
-                oudeKamer = (Kamer) huidigVakje.ruimte;
-            }
+        if (huidigVakje != null && huidigVakje.ruimte instanceof Kamer) {
+            oudeKamer = (Kamer) huidigVakje.ruimte;
         }
 
-        // als de schoonmaker al in de doelkamer staat, tel schoonmaaktijd af
+        // als de schoonmaker in de doelkamer staat, tel schoonmaaktijd af
         if (bezig && kamer != null && huidigVakje != null && huidigVakje.ruimte == kamer && resterendeSchoonmaakTicks > 0) {
             resterendeSchoonmaakTicks--;
-            if (resterendeSchoonmaakTicks == 0) {
-                rondSchoonmaakAf();
-            }
+            if (resterendeSchoonmaakTicks == 0) rondSchoonmaakAf();
             return;
         }
 
@@ -83,9 +76,21 @@ public class Schoonmaker extends Persoon {
 
         // check of de schoonmaker net de doelkamer is binnengekomen
         if (bezig && kamer != null && huidigVakje != null && huidigVakje.ruimte == kamer && oudeKamer != kamer) {
-            resterendeSchoonmaakTicks = SCHOONMAAKDUUR;
+            resterendeSchoonmaakTicks = schoonmaakDuur;
             if (logger != null) logger.log("[" + huidigeTijd + "] Schoonmaker begint kamer " + kamer.getKamernummer() + " schoon te maken");
         }
+    }
+
+    // overschrijft evacueer() van Persoon
+    // schoonmaker onthoudt zijn kamer en pauzeert het schoonmaken
+    @Override
+    public void evacueer(Vakje uitgang, Pathfinder pathfinder) {
+        if (huidigVakje == null || pathfinder == null) return;
+        // pauzeer schoonmaken — ticks worden niet verder afgeteld tijdens evacuatie
+        resterendeSchoonmaakTicks = 0;
+        // wis route maar bewaar kamer-toewijzing zodat we later verder kunnen
+        wisRoute();
+        pathfinder.zetRouteTrap(this, uitgang);
     }
 
     // zet een nieuwe route naar een kamer, wist de oude route eerst
@@ -97,31 +102,32 @@ public class Schoonmaker extends Persoon {
 
     public void setLogger(ILogger logger) { this.logger = logger; }
 
+    // stel de schoonmaakduur in — standaard 20 ticks
+    public void setSchoonmaakDuur(int duur) { this.schoonmaakDuur = duur; }
+    public int getSchoonmaakDuur() { return schoonmaakDuur; }
     public void setHuidigeTijd(int huidigeTijd) { this.huidigeTijd = huidigeTijd; }
-
     public void setWachtVakje(Vakje wachtVakje) { this.wachtVakje = wachtVakje; }
-
-    // markeer deze schoonmaker als voorkeurskeuze voor noodgevallen of gewone checkout-schoonmaak
     public void setNoodSchoonmaker(boolean noodSchoonmaker) { this.noodSchoonmaker = noodSchoonmaker; }
-
     public boolean isNoodSchoonmaker() { return noodSchoonmaker; }
+    public boolean staatOpWachtVakje() { return wachtVakje != null && huidigVakje == wachtVakje; }
 
-    // maak de kamer schoon en ga terug naar de wachtplek als die bekend is
-    private void rondSchoonmaakAf() {
-        kamer.schoonmaken();
-        if (logger != null) logger.log("[" + huidigeTijd + "] Schoonmaker heeft " + kamer.getKamernummer() + " schoon gemaakt");
-        bezig = false;
-        kamer = null;
-        // ga ook voor de terugweg via de pathfinder, zodat de schoonmaker
-        // net als op de heenweg steeds de trap blijft gebruiken
+    public void gaNaarWachtVakje() {
         if (wachtVakje != null && huidigVakje != null && huidigVakje != wachtVakje) {
             wisRoute();
             zetRouteViaTrap(wachtVakje);
         }
     }
 
-    // gebruik altijd de traproute wanneer de schoonmaker een nieuw doel krijgt;
-    // zo loopt hij niet dwars door kamers heen bij een andere verdieping
+    // maak de kamer schoon; een nieuwe taak of terugkeer naar de wachtplek
+    // wordt centraal afgehandeld door de schoonmaakservice
+    private void rondSchoonmaakAf() {
+        kamer.schoonmaken();
+        if (logger != null) logger.log("[" + huidigeTijd + "] Schoonmaker heeft " + kamer.getKamernummer() + " schoon gemaakt");
+        bezig = false;
+        kamer = null;
+    }
+
+    // gebruik altijd de traproute zodat de schoonmaker nooit de lift neemt
     private void zetRouteViaTrap(Vakje doelVakje) {
         if (doelVakje == null) return;
         if (getPathfinder() != null) {
@@ -131,6 +137,27 @@ public class Schoonmaker extends Persoon {
         }
     }
 
-    // ga naar de optimale positie in het hotel
-    public void gaNaarOptimalePositie() {}
+    @Override
+    public boolean isSchoonmaker() { return true; }
+
+    @Override
+    public String getStatusTekst() {
+        String status;
+        if (bezig && kamer != null) {
+            status = "bezig met kamer " + kamer.getKamernummer();
+        } else if (bezig) {
+            status = "onderweg naar kamer";
+        } else {
+            status = "vrij inzetbaar";
+        }
+
+        String positie;
+        if (huidigVakje != null) {
+            positie = "(" + huidigVakje.x + "," + huidigVakje.y + ")";
+        } else {
+            positie = "geen positie";
+        }
+
+        return "Schoonmaker " + positie + " : " + status;
+    }
 }

@@ -19,6 +19,11 @@ public class EventController implements HotelEventListener {
     private SimulatieController simulatieController;
     private ILogger logger;
     private GastRoutingService gastRoutingService;
+    private SchoonmaakService schoonmaakService;
+    // Deze service bestaat pas vanaf het moment dat het GODZILLA-event echt binnenkomt.
+    // Daarna bewaart EventController de service zodat SimulatieController ze bij elke tick
+    // opnieuw kan gebruiken voor vuuruitbreiding en slachtoffercontrole.
+    private GodzillaService godzillaService;
     private List<Persoon> personen = new ArrayList<>();
     private List<IEventListener> listeners = new ArrayList<>();
 
@@ -36,6 +41,7 @@ public class EventController implements HotelEventListener {
 
     public void setLogger(ILogger logger) {
         this.logger = logger;
+        if (schoonmaakService != null) schoonmaakService.setLogger(logger);
     }
 
     public void registreer() {
@@ -48,6 +54,7 @@ public class EventController implements HotelEventListener {
 
     public void registreerHotelListeners(Hotel hotel) {
         listeners.clear();
+        schoonmaakService = null;
         gastRoutingService = new GastRoutingService(hotel);
         if (hotel == null) return;
         for (Model.ruimte.Ruimte r : hotel.ruimtes) {
@@ -59,6 +66,8 @@ public class EventController implements HotelEventListener {
         for (Persoon p : hotel.personen) {
             if (p instanceof IEventListener) registreerListener((IEventListener) p);
         }
+        schoonmaakService = new SchoonmaakService(hotel, logger);
+        registreerListener(schoonmaakService);
     }
 
     private void stuurNaarListeners(HotelEvent event) {
@@ -68,6 +77,12 @@ public class EventController implements HotelEventListener {
     }
 
     public void notificeerPersoon(Persoon p, HotelEvent evt) {}
+
+    // Geef de actieve GodzillaService terug.
+    // Zolang het GODZILLA-event nog niet ontvangen is, blijft dit null.
+    public GodzillaService getGodzillaService() {
+        return godzillaService;
+    }
 
     private void stuurGastNaarRuimte(HotelEvent evt) {
         if (gastRoutingService == null) return;
@@ -94,12 +109,14 @@ public class EventController implements HotelEventListener {
 
         for (Persoon p : hotel.personen) {
             if (p instanceof Schoonmaker) {
+                //typecast, zet persoon om naar schoonmaker
                 ((Schoonmaker) p).setHuidigeTijd(evt.getTime());
             }
         }
 
-        // tijdens brandalarm geen nieuwe activiteiten sturen naar gasten
-        if (!hotel.brandalarmActief) {
+        // Tijdens brandalarm en tijdens Godzilla geven we geen nieuwe vrijetijdsactiviteiten meer aan gasten.
+        // Anders zouden gasten nog naar restaurant/fitness/bioscoop vertrekken terwijl een globale noodsituatie loopt.
+        if (!hotel.brandalarmActief && !hotel.godzillaActief) {
             stuurGastNaarRuimte(evt);
         }
 
@@ -112,12 +129,19 @@ public class EventController implements HotelEventListener {
                 if (logger != null) logger.log("[" + evt.getTime() + "] HOTEL: evacuatie gestart!");
                 break;
             case GODZILLA:
-                if (logger != null) logger.log("[" + evt.getTime() + "] HOTEL: GODZILLA AANVAL!");
+                // Maak de GodzillaService precies op het moment van het event aan.
+                // Vanaf hier neemt de tick-logica in SimulatieController de verdere afhandeling over.
+                godzillaService = new GodzillaService(hotel, logger);
+                godzillaService.start(evt.getTime());
                 break;
             case NONE:
                 if (simulatieController != null) simulatieController.tik();
                 break;
             default: break;
+        }
+
+        if (schoonmaakService != null) {
+            schoonmaakService.verwerkWachtendeTaken(evt.getTime());
         }
     }
 }

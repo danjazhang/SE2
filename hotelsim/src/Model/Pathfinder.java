@@ -22,16 +22,36 @@ public class Pathfinder {
         if (huidig == null || doel == null) return null;
         int x = huidig.x;
         int y = huidig.y;
+
+        // op de trap: beweeg verticaal richting doel-y, of horizontaal als y al gelijk is
+        if (huidig.ruimte instanceof Trap) {
+            if (y < doel.y) return layout.krijgVakje(x, y + 1);
+            if (y > doel.y) return layout.krijgVakje(x, y - 1);
+            // zelfde y: verlaat de trap horizontaal richting doel
+            if (x < doel.x) return layout.krijgVakje(x + 1, y);
+            if (x > doel.x) return layout.krijgVakje(x - 1, y);
+            return null;
+        }
+
+        // zelfde y als doel: beweeg horizontaal
         if (y == doel.y) {
             if (x < doel.x) x++;
             else if (x > doel.x) x--;
             return layout.krijgVakje(x, y);
         }
-        if (huidig.ruimte instanceof Trap) {
-            if (y < doel.y) y++;
-            else if (y > doel.y) y--;
-            return layout.krijgVakje(x, y);
+
+        // zelfde x als doel en doel is direct erboven of eronder: stap verticaal
+        if (x == doel.x) {
+            if (y < doel.y) return layout.krijgVakje(x, y + 1);
+            if (y > doel.y) return layout.krijgVakje(x, y - 1);
         }
+
+        // op leeg vakje/lobby: beweeg horizontaal richting doel-x
+        if (x != doel.x) {
+            if (x < doel.x) return layout.krijgVakje(x + 1, y);
+            return layout.krijgVakje(x - 1, y);
+        }
+
         return null;
     }
 
@@ -41,6 +61,9 @@ public class Pathfinder {
         Vakje doel = layout.krijgVakje(bestemming.posX, bestemming.posY);
         if (start == null || doel == null) return;
         if (p instanceof Gast g) g.eindbestemming = bestemming;
+        // als de gast al in de lift-wachtrij stond: verwijder hem eerst
+        resetLiftStatusAlsNodig(p);
+        // zelfde verdieping: direct lopen
         if (start.y == doel.y) { p.zetDoel(doel); return; }
         if (p instanceof Schoonmaker) { routeViaTrap(p, start, doel); return; }
         int trapTijd = Math.abs(start.y - doel.y) * hotel.trap.tijdperverdieping;
@@ -56,10 +79,23 @@ public class Pathfinder {
     public void zetRouteTrap(Persoon p, Vakje doel) {
         Vakje start = p.huidigVakje;
         if (start == null || doel == null) return;
+        // als de gast al in de lift-wachtrij stond: verwijder hem eerst
+        resetLiftStatusAlsNodig(p);
         // zelfde verdieping: direct lopen zonder trap
         if (start.y == doel.y) { p.zetDoel(doel); return; }
         // altijd via trap, lift wordt nooit overwogen
         routeViaTrap(p, start, doel);
+    }
+
+    // reset lift-gerelateerde status als de gast wacht op de lift maar een nieuwe route krijgt
+    private void resetLiftStatusAlsNodig(Persoon p) {
+        if (!(p instanceof Gast)) return;
+        Gast g = (Gast) p;
+        if (g.gebruiktLift && !g.inLift) {
+            g.gebruiktLift = false;
+            g.wachtOpLift  = false;
+            if (hotel.lift != null) hotel.lift.verwijderUitWachtrij(g);
+        }
     }
 
     // route via lift
@@ -70,7 +106,7 @@ public class Pathfinder {
         g.gebruiktLift = true;
         g.gewensteVerdieping = doel.y;
         p.zetDoel(liftVakje);
-        hotel.lift.roep(p, start.y);
+        hotel.lift.roep(g, start.y);
     }
 
     // route via trap
@@ -92,14 +128,19 @@ public class Pathfinder {
     private int schatLiftTijd(Vakje start, Vakje doel) {
         Lift lift = hotel.lift;
         int wacht = Math.abs(lift.getHuidigeVerdieping() - start.y);
-        int rit = Math.abs(start.y - doel.y);
+        int rit   = Math.abs(start.y - doel.y);
         int queue = lift.aantalWachtend(start.y);
-        return wacht + rit + queue;
+        // +2 voor instappen en uitstappen (statusmachine ticks)
+        return wacht + rit + queue + 2;
     }
 
     private Vakje vindTrap(int y) {
         for (Ruimte r : hotel.ruimtes) {
-            if (r instanceof Trap) return layout.krijgVakje(r.posX, y);
+            if (r instanceof Trap) {
+                // clip y naar de grenzen van de trap (posY t/m posY+hoogte-1)
+                int trapY = Math.max(r.posY, Math.min(y, r.posY + r.hoogte - 1));
+                return layout.krijgVakje(r.posX, trapY);
+            }
         }
         return null;
     }

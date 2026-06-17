@@ -6,39 +6,47 @@ import Model.events.SchoonmaakEindEvent;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Tests voor InternEvent en alle subklassen
 public class InternEventTest {
 
-    // FilmEindEvent: tijd en gastId worden correct opgeslagen
-    @Test void testFilmEindEventTijdEnGastId() {
-        FilmEindEvent e = new FilmEindEvent(50, 3);
-        assertEquals(50, e.getTijd());
-        assertEquals(3, e.getGastId());
-    }
-
-    // FitnessEindEvent: tijd en gastId worden correct opgeslagen
-    @Test void testFitnessEindEventTijdEnGastId() {
-        FitnessEindEvent e = new FitnessEindEvent(80, 7);
-        assertEquals(80, e.getTijd());
+    // FilmEindEvent: getTijd en getGastId correct
+    @Test void testFilmEindEvent() {
+        FilmEindEvent e = new FilmEindEvent(42, 7);
+        assertEquals(42, e.getTijd());
         assertEquals(7, e.getGastId());
     }
 
-    // RestaurantEindEvent: tijd en gastId worden correct opgeslagen
-    @Test void testRestaurantEindEventTijdEnGastId() {
-        RestaurantEindEvent e = new RestaurantEindEvent(100, 2);
-        assertEquals(100, e.getTijd());
+    // FitnessEindEvent: getTijd en getGastId correct
+    @Test void testFitnessEindEvent() {
+        FitnessEindEvent e = new FitnessEindEvent(10, 3);
+        assertEquals(10, e.getTijd());
+        assertEquals(3, e.getGastId());
+    }
+
+    // RestaurantEindEvent: getTijd en getGastId correct
+    @Test void testRestaurantEindEvent() {
+        RestaurantEindEvent e = new RestaurantEindEvent(99, 15);
+        assertEquals(99, e.getTijd());
+        assertEquals(15, e.getGastId());
+    }
+
+    // SchoonmaakEindEvent: getTijd en getGastId correct
+    @Test void testSchoonmaakEindEvent() {
+        SchoonmaakEindEvent e = new SchoonmaakEindEvent(5, 2);
+        assertEquals(5, e.getTijd());
         assertEquals(2, e.getGastId());
     }
 
-    // SchoonmaakEindEvent: tijd en gastId worden correct opgeslagen
-    @Test void testSchoonmaakEindEventTijdEnGastId() {
-        SchoonmaakEindEvent e = new SchoonmaakEindEvent(30, 5);
-        assertEquals(30, e.getTijd());
-        assertEquals(5, e.getGastId());
+    // tijdstip 0 is geldig
+    @Test void testTijdstip0() {
+        FilmEindEvent e = new FilmEindEvent(0, 0);
+        assertEquals(0, e.getTijd());
+        assertEquals(0, e.getGastId());
     }
 
-    // alle event klassen erven van InternEvent
-    @Test void testFilmEindEventErftVanInternEvent() { assertTrue(new FilmEindEvent(1, 1) instanceof InternEvent); }
-    @Test void testFitnessEindEventErftVanInternEvent() { assertTrue(new FitnessEindEvent(1, 1) instanceof InternEvent); }
-    @Test void testRestaurantEindEventErftVanInternEvent() { assertTrue(new RestaurantEindEvent(1, 1) instanceof InternEvent); }
-    @Test void testSchoonmaakEindEventErftVanInternEvent() { assertTrue(new SchoonmaakEindEvent(1, 1) instanceof InternEvent); }
+    // negatieve gastId is technisch geldig (library gebruikt -1 voor "alle gasten")
+    @Test void testNegatieveGastId() {
+        FilmEindEvent e = new FilmEindEvent(100, -1);
+        assertEquals(-1, e.getGastId());
+    }
 }

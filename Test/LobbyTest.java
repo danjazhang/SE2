@@ -87,9 +87,6 @@ public class LobbyTest {
         assertEquals(2, l.posY);
         assertEquals(3, l.breedte);
         assertEquals(4, l.hoogte);
-
-        assertEquals(5, l.getBalieX());
-        assertEquals(6, l.getBalieY());
     }
 
     // =========================================================
@@ -259,6 +256,80 @@ public class LobbyTest {
 
         lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
         Gast g = (Gast) hotel.personen.get(0);
+
+        lobby.betreed(g);
+
+        assertTrue(hotel.personen.contains(g));
+    }
+    // ik doe dit: ik vraag een 1-ster kamer terwijl alleen een 2-ster kamer vrij is
+    // ik verwacht: dat de lobby de hogere kamer als fallback gebruikt
+    @Test
+    void testCheckInGebruiktHogereSterrenAlsFallback() {
+
+        kamer.sterren = 2;
+
+        lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+
+        Gast g = (Gast) hotel.personen.get(0);
+        assertSame(kamer, g.kamer);
+    }
+
+    // ik doe dit: ik zet het balievakje buiten de layout en check een gast uit
+    // ik verwacht: dat de fallback-route naar de lobby zelf gebruikt wordt
+    @Test
+    void testCheckOutZonderBalieVakjeGebruiktLobbyFallback() {
+
+        lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+        Gast g = (Gast) hotel.personen.get(0);
+
+        Lobby l = new Lobby(2, 4, 3, 1, 99, 99, hotel, null);
+        hotel.lobby = l;
+
+        assertDoesNotThrow(() -> l.onEvent(new HotelEvent(2, HotelEventType.CHECK_OUT, 1, -1)));
+        assertTrue(g.uitcheckend);
+        assertNotNull(g.doelVakje);
+    }
+
+    // ik doe dit: ik check een gast zonder kamer uit
+    // ik verwacht: dat de logger de algemene checkout-branch gebruikt
+    @Test
+    void testCheckOutGastZonderKamerLogtAlgemeen() {
+
+        StringBuilder log = new StringBuilder();
+        Lobby l = new Lobby(2, 4, 3, 1, 3, 4, hotel, log::append);
+        Gast g = new Gast(77, 1);
+        g.setPathfinder(hotel.pathfinder);
+        g.zetStartPositie(hotel.layout.krijgVakje(3, 4));
+        hotel.voegPersoonToe(g);
+
+        l.onEvent(new HotelEvent(2, HotelEventType.CHECK_OUT, 77, -1));
+
+        assertTrue(log.toString().contains("checkt uit"));
+        assertFalse(log.toString().contains("kamer"));
+    }
+
+    // ik doe dit: ik vervang de logger via setLogger
+    // ik verwacht: dat de nieuwe logger wordt gebruikt
+    @Test
+    void testSetLoggerWordtGebruikt() {
+
+        StringBuilder log = new StringBuilder();
+        lobby.setLogger(log::append);
+
+        lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+
+        assertTrue(log.length() > 0);
+    }
+
+    // ik doe dit: uitcheckende gast betreedt lobby maar staat niet op balievakje
+    // ik verwacht: dat hij nog niet verwijderd wordt
+    @Test
+    void testUitcheckGastNietOpBalieBlijftBestaan() {
+
+        lobby.onEvent(new HotelEvent(1, HotelEventType.CHECK_IN, 1, 1));
+        Gast g = (Gast) hotel.personen.get(0);
+        lobby.onEvent(new HotelEvent(2, HotelEventType.CHECK_OUT, 1, -1));
+        g.huidigVakje = hotel.layout.krijgVakje(2, 4);
 
         lobby.betreed(g);
 

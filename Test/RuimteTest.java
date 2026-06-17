@@ -1,18 +1,12 @@
-import Model.ruimte.Ruimte;
 import Model.persoon.Gast;
+import Model.ruimte.Ruimte;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Tests voor Ruimte basisklasse
 public class RuimteTest {
 
-    // Ik maak een lege ruimte aan; ik verwacht dat de standaardpositie op 0,0 staat.
-    @Test void testLegeConstrutor() {
-        Ruimte r = new Ruimte();
-        assertEquals(0, r.posX);
-        assertEquals(0, r.posY);
-    }
-
-    // Ik maak een ruimte met expliciete positie en afmetingen; ik verwacht dat die waarden correct bewaard worden.
+    // constructor met positie en afmetingen
     @Test void testConstructorMetPositie() {
         Ruimte r = new Ruimte(2, 3, 4, 5);
         assertEquals(2, r.posX);
@@ -21,37 +15,73 @@ public class RuimteTest {
         assertEquals(5, r.hoogte);
     }
 
-    // Ik laat een gast een ruimte betreden en verlaten; ik verwacht dat de aanwezigheidslijst mee verandert.
-    @Test void testBetreedEnVerlaat() {
-        Ruimte r = new Ruimte(1, 1, 2, 2);
-        // Gast gebruiken want Persoon is abstract
-        Gast p = new Gast(1, 1);
-        r.betreed(p);
-        assertTrue(r.getAanwezigen().contains(p));
-        r.verlaat(p);
-        assertFalse(r.getAanwezigen().contains(p));
+    // lege constructor
+    @Test void testLegeConstructor() {
+        Ruimte r = new Ruimte();
+        assertEquals(0, r.posX);
+        assertEquals(0, r.posY);
     }
 
-    // Ik stel een ingang in op een ruimte; ik verwacht dat ik dezelfde ingang terugkrijg.
-    @Test void testSetEnKrijgIngang() {
+    // betreed: persoon wordt toegevoegd aan aanwezigen
+    @Test void testBetreed() {
         Ruimte r = new Ruimte();
-        r.setIngang(3, 4);
-        assertArrayEquals(new int[]{3, 4}, r.krijgIngang());
+        Gast g = new Gast(1, 1);
+        r.betreed(g);
+        assertTrue(r.getAanwezigen().contains(g));
     }
 
-    // Ik stel een nieuwe positie in op een ruimte; ik verwacht dat de getters die positie teruggeven.
-    @Test void testSetPositie() {
+    // verlaat: persoon wordt verwijderd uit aanwezigen
+    @Test void testVerlaat() {
         Ruimte r = new Ruimte();
-        r.setPositie(5, 6);
-        assertEquals(5, r.getX());
-        assertEquals(6, r.getY());
+        Gast g = new Gast(1, 1);
+        r.betreed(g);
+        r.verlaat(g);
+        assertFalse(r.getAanwezigen().contains(g));
     }
 
-    // Ik stel nieuwe afmetingen in op een ruimte; ik verwacht dat de getters die afmetingen teruggeven.
-    @Test void testSetAfmetingen() {
+    // getAanwezigen: beginnen leeg
+    @Test void testAanwezigenLeeg() {
+        assertTrue(new Ruimte().getAanwezigen().isEmpty());
+    }
+
+    // getAanwezigen: geeft kopie terug
+    @Test void testGetAanwezigenGeeftKopie() {
         Ruimte r = new Ruimte();
-        r.setAfmetingen(3, 4);
-        assertEquals(3, r.getBreedte());
-        assertEquals(4, r.getHoogte());
+        assertNotSame(r.getAanwezigen(), r.getAanwezigen());
+    }
+
+    // getVrijeKamer: standaard null
+    @Test void testGetVrijeKamerNull() {
+        assertNull(new Ruimte().getVrijeKamer());
+    }
+
+    // isKamer: standaard false
+    @Test void testIsKamerFalse() {
+        assertFalse(new Ruimte().isKamer());
+    }
+
+    // isFaciliteit: standaard false
+    @Test void testIsFaciliteitFalse() {
+        assertFalse(new Ruimte().isFaciliteit());
+    }
+
+    // setFilmDuur: geen crash (no-op in basis Ruimte)
+    @Test void testSetFilmDuurGeenCrash() {
+        assertDoesNotThrow(() -> new Ruimte().setFilmDuur(50));
+    }
+
+    // setTijdPerVerdieping: geen crash (no-op in basis Ruimte)
+    @Test void testSetTijdPerVerdiepingGeenCrash() {
+        assertDoesNotThrow(() -> new Ruimte().setTijdPerVerdieping(3));
+    }
+
+    // getStatusTekst: standaard lege string
+    @Test void testGetStatusTekstLeeg() {
+        assertEquals("", new Ruimte().getStatusTekst());
+    }
+
+    // getNaam: geeft klassenaam in kleine letters
+    @Test void testGetNaam() {
+        assertEquals("ruimte", new Ruimte().getNaam());
     }
 }

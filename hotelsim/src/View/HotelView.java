@@ -4,6 +4,7 @@ import Controller.EventController;
 import Controller.HotelController;
 import Controller.LayoutController;
 import Controller.SimulatieController;
+import Model.BrandalarmService;
 import Model.Hotel;
 
 import javax.swing.*;
@@ -21,9 +22,6 @@ public class HotelView extends JFrame {
     //panel met stop en pauze knop
     private SimulatieView simulatieView;
     //beheert start pauze en stop
-    private SimulatieController simulatieController;
-    //beheert hotel model
-    private HotelController hotelController;
     //beheert laden van layouts
     private LayoutController layoutController;
     //dropdown om tussen geladen layouts te switchen
@@ -49,10 +47,8 @@ public class HotelView extends JFrame {
     //constructor
     public HotelView(HotelController hotelController, EventLogView eventLogView, EventController eventController, SimulatieController simulatieController) {
 
-        this.hotelController = hotelController;
         this.eventLogView = eventLogView;
         this.eventController = eventController;
-        this.simulatieController = simulatieController;
         //haal layoutcontroller op via hotelcontroller
         this.layoutController = hotelController.getLayoutController();
         this.hotel = hotelController.getHotel();
@@ -66,14 +62,25 @@ public class HotelView extends JFrame {
 
         // -> betekent dat als het stukje ervoor wordt aangeroepen dat het stuk erna gebeurt
         panel.setOnLobbyClick(() -> {
-            // pauzeert de simulatie en stopt de timer voordat het venster opent
-            simulatieController.pauzeer();
-            gebruikstijdTimer.stop();
-            // gebruik this.hotel zodat altijd het meest recente hotel gebruikt wordt
-            LobbyOverzichtView view = new LobbyOverzichtView(this.hotel, simulatieController);
+            // alleen pauzeren en timer stoppen als de simulatie al gestart is
+            boolean timerWasActief = gebruikstijdTimer.isRunning();
+            if (timerWasActief) {
+                simulatieController.pauzeer();
+                gebruikstijdTimer.stop();
+            }
+            LobbyOverzichtView view;
+            if (timerWasActief) {
+                //simulatiecontroller om te pauzeren en hervatten
+                view = new LobbyOverzichtView(this.hotel, simulatieController);
+            } else {
+                //geen simulatiecontroller dus kan niet perongeluk gestart worden zonder dat het gestart is
+                view = new LobbyOverzichtView(this.hotel, null);
+            }
             view.setVisible(true);
-            // hervat de timer nadat het venster gesloten is
-            gebruikstijdTimer.start();
+            // alleen hervatten als de timer al liep voor het openen
+            if (timerWasActief) {
+                gebruikstijdTimer.start();
+            }
         });
 
         // maak de timer aan die elke seconde de tijd bijwerkt
@@ -85,9 +92,7 @@ public class HotelView extends JFrame {
             tijdLabel.setText(String.format("Tijd: %02d:%02d:%02d", uren, minuten, sec));
         });
 
-        // =========================
         // IMPORT BUTTON
-        // =========================
         importButton.addActionListener((ActionEvent e) -> {
             //maak nieuwe filepicker
             JFileChooser chooser = new JFileChooser();
@@ -119,9 +124,7 @@ public class HotelView extends JFrame {
             }
         });
 
-        // =========================
         // DROPDOWN
-        // =========================
         layoutSelector.addActionListener((ActionEvent e) -> {
             //als er niks geselecteerd is stop dan
             if (layoutSelector.getSelectedItem() == null) return;
@@ -147,14 +150,34 @@ public class HotelView extends JFrame {
             simulatieView.pasSnelheidToe();
             //haal het gekozen scenario op uit de simulatieview en start daarmee
             int scenario = simulatieView.getGekozenScenario();
+
+
+            // stel de schoonmaaktijd in op alle schoonmakers voor het starten
+            int schoonmaakDuur = simulatieView.getSchoonmaakDuur();
+            for (Model.persoon.Persoon p : this.hotel.personen) {
+                if (p.isSchoonmaker()) {
+                    p.setSchoonmaakDuur(schoonmaakDuur);
+                }
+            }
+            // stel de filmduur in op alle bioscopen voor het starten
+            int filmDuur = simulatieView.getFilmDuur();
+            for (Model.ruimte.Ruimte r : this.hotel.ruimtes) {
+                r.setFilmDuur(filmDuur);
+            }
+            // stel de traptijd in op de trap voor het starten
+            int trapTijd = simulatieView.getTrapTijd();
+            for (Model.ruimte.Ruimte r : this.hotel.ruimtes) {
+                r.setTijdPerVerdieping(trapTijd);
+            }
+            // stel de maximale wachttijd in op de simulatiecontroller
+            simulatieController.setMaxWachtTicks(simulatieView.getMaxWachtTicks());
+
             simulatieController.start(scenario);
             // start de gebruikstijd timer mee met de simulatie
             gebruikstijdTimer.start();
         });
 
-        // =========================
         // UI
-        // =========================
         JPanel top = new JPanel();
         // voeg tijdlabel toe als eerste zodat het links naast import layout staat
         top.add(tijdLabel);
@@ -183,9 +206,22 @@ public class HotelView extends JFrame {
         simulatieView = new SimulatieView(simulatieController);
         top.add(simulatieView);
 
+        // pas instellingen direct toe als ze tijdens de simulatie worden aangepast
+        simulatieView.setOnInstellingenOpgeslagen(() -> {
+            if (this.hotel == null) return;
+            for (Model.persoon.Persoon p : this.hotel.personen) {
+                if (p.isSchoonmaker()) p.setSchoonmaakDuur(simulatieView.getSchoonmaakDuur());
+            }
+            for (Model.ruimte.Ruimte r : this.hotel.ruimtes) {
+                r.setFilmDuur(simulatieView.getFilmDuur());
+                r.setTijdPerVerdieping(simulatieView.getTrapTijd());
+            }
+            simulatieController.setMaxWachtTicks(simulatieView.getMaxWachtTicks());
+        });
+
 
         //krijgt boolean terug van simulatieview als pauze is ingedrukt (true)
-        //daarna ->
+        //daarna "->"
         // stel de pauze callback in zodat de timer ook pauzeert
         simulatieView.setOnPauze((gepauzeerd) -> {
             if (gepauzeerd) {
@@ -213,14 +249,11 @@ public class HotelView extends JFrame {
         });
 
         //toon de eventlog links zonder horizontale scrollbar
-        JScrollPane zijLog = new JScrollPane(eventLogView.getLogArea(),
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane zijLog = new JScrollPane(eventLogView.getLogArea(), JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         zijLog.setPreferredSize(new Dimension(360, 400));
         add(zijLog, BorderLayout.WEST);
 
-        //venster grootte
-        setSize(1200, 800);
+        setSize(1250, 800);
         //venster in het midden van het scherm
         setLocationRelativeTo(null);
         //maak venster zichtbaar

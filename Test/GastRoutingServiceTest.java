@@ -227,4 +227,80 @@ public class GastRoutingServiceTest {
         hotel.voegPersoonToe(gast);
         assertDoesNotThrow(() -> new GastRoutingService(hotel).stuurTerugNaarKamer(1));
     }
+
+    // stuurNaarRestaurant: negeert gast die terugkeert na alarm
+    @Test void testStuurNaarRestaurantNegeertTerugkerendeGast() {
+        Hotel hotel = maakHotel();
+        Gast gast = voegGastToe(hotel, 1, 2, 1);
+        gast.keertTerugNaAlarm = true;
+        voegRestaurantToe(hotel, 3, 1);
+        assertNull(new GastRoutingService(hotel).stuurNaarRestaurant(1));
+        assertNull(gast.doelVakje);
+    }
+
+    // stuurNaarFitness: negeert gast die terugkeert na alarm
+    @Test void testStuurNaarFitnessNegeertTerugkerendeGast() {
+        Hotel hotel = maakHotel();
+        Gast gast = voegGastToe(hotel, 1, 2, 1);
+        gast.keertTerugNaAlarm = true;
+        voegFitnessToe(hotel, 3, 1);
+        assertNull(new GastRoutingService(hotel).stuurNaarFitness(1));
+    }
+
+    // stuurNaarBioscoop: negeert gast die terugkeert na alarm
+    @Test void testStuurNaarBioscoopNegeertTerugkerendeGast() {
+        Hotel hotel = maakHotel();
+        Gast gast = voegGastToe(hotel, 1, 2, 1);
+        gast.keertTerugNaAlarm = true;
+        voegBioscoopToe(hotel, 3, 1);
+        assertNull(new GastRoutingService(hotel).stuurNaarBioscoop(1));
+    }
+
+    // stuurNaarRestaurant: als alle restaurants vol zijn wacht gast bij dichtstbijzijnde restaurant
+    @Test void testStuurNaarRestaurantAlleRestaurantsVolWacht() {
+        Hotel hotel = maakHotel();
+        Gast gast = voegGastToe(hotel, 1, 2, 1);
+        Restaurant vol = voegRestaurantToe(hotel, 3, 1);
+        vol.capaciteit = 1;
+        Gast bezetter = voegGastToe(hotel, 2, 3, 1);
+        vol.betreed(bezetter);
+
+        Restaurant gekozen = new GastRoutingService(hotel).stuurNaarRestaurant(1);
+
+        assertSame(vol, gekozen);
+        assertTrue(gast.wachtOpRestaurant);
+        assertSame(vol, gast.wachtRestaurant);
+        assertNotNull(gast.doelVakje);
+    }
+
+    // stuurNaarRestaurant: vol restaurant wordt overgeslagen als er een vrije is
+    @Test void testStuurNaarRestaurantSlaatVolRestaurantOver() {
+        Hotel hotel = maakHotel();
+        voegGastToe(hotel, 1, 2, 1);
+        Restaurant vol = voegRestaurantToe(hotel, 3, 1);
+        vol.capaciteit = 1;
+        Gast bezetter = voegGastToe(hotel, 2, 3, 1);
+        vol.betreed(bezetter);
+        Restaurant vrij = voegRestaurantToe(hotel, 5, 1);
+
+        Restaurant gekozen = new GastRoutingService(hotel).stuurNaarRestaurant(1);
+
+        assertSame(vrij, gekozen);
+    }
+
+    // stuurNaarFitness: gast zonder vakje geeft null
+    @Test void testStuurNaarFitnessGastZonderVakje() {
+        Hotel hotel = maakHotel();
+        hotel.voegPersoonToe(new Gast(1, 1));
+        voegFitnessToe(hotel, 3, 1);
+        assertNull(new GastRoutingService(hotel).stuurNaarFitness(1));
+    }
+
+    // stuurNaarBioscoop: gast zonder vakje geeft null
+    @Test void testStuurNaarBioscoopGastZonderVakje() {
+        Hotel hotel = maakHotel();
+        hotel.voegPersoonToe(new Gast(1, 1));
+        voegBioscoopToe(hotel, 3, 1);
+        assertNull(new GastRoutingService(hotel).stuurNaarBioscoop(1));
+    }
 }

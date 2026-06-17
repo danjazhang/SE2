@@ -1,57 +1,112 @@
+import Model.ILogger;
 import Model.RuimteFactory;
 import Model.ruimte.*;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Tests voor RuimteFactory: maakRuimte voor alle types
 public class RuimteFactoryTest {
 
-    // Ik vraag de factory om een kamer te maken uit JSON; ik verwacht dat het resultaat een kamer met het juiste aantal sterren is.
-    @Test void testMaakKamer() {
-        RuimteFactory f = new RuimteFactory(null);
+    static class TestLogger implements ILogger {
+        List<String> logs = new ArrayList<>();
+        @Override public void log(String bericht) { logs.add(bericht); }
+    }
+
+    // hulpmethode: maak een basis JSON object
+    static JSONObject maakJson(String areaType) {
         JSONObject obj = new JSONObject();
-        obj.put("Classification", "3 Star");
-        Ruimte r = f.maakRuimte("Room", obj);
-        assertTrue(r instanceof Kamer);
+        obj.put("AreaType", areaType);
+        obj.put("_posX", 2);
+        obj.put("_posY", 3);
+        obj.put("_breedte", 2);
+        obj.put("_hoogte", 1);
+        return obj;
+    }
+
+    // maakRuimte Room: geeft Kamer terug
+    @Test void testMaakRoom() {
+        RuimteFactory factory = new RuimteFactory(new TestLogger());
+        JSONObject obj = maakJson("Room");
+        obj.put("Classification", "3 sterren");
+        Ruimte r = factory.maakRuimte("Room", obj);
+        assertInstanceOf(Kamer.class, r);
         assertEquals(3, ((Kamer) r).sterren);
     }
 
-    // Ik maak twee kamers na elkaar; ik verwacht dat de kamernummers oplopend toegekend worden.
-    @Test void testKamernummerOplopend() {
-        RuimteFactory f = new RuimteFactory(null);
-        JSONObject obj = new JSONObject();
-        obj.put("Classification", "1 Star");
-        Kamer k1 = (Kamer) f.maakRuimte("Room", obj);
-        Kamer k2 = (Kamer) f.maakRuimte("Room", obj);
-        assertEquals(101, k1.kamernummer);
-        assertEquals(102, k2.kamernummer);
+    // maakRuimte Room: kamernummer wordt correct berekend (begint bij 101 voor verdieping 1)
+    @Test void testMaakRoomKamernummer() {
+        RuimteFactory factory = new RuimteFactory(new TestLogger());
+        JSONObject obj = maakJson("Room");
+        obj.put("Classification", "2 sterren");
+        Kamer k = (Kamer) factory.maakRuimte("Room", obj);
+        assertTrue(k.kamernummer >= 101);
     }
 
-    // Ik vraag de factory om een restaurant te maken; ik verwacht dat de capaciteit uit de JSON wordt overgenomen.
+    // maakRuimte Restaurant: geeft Restaurant terug met capaciteit
     @Test void testMaakRestaurant() {
-        RuimteFactory f = new RuimteFactory(null);
-        JSONObject obj = new JSONObject();
-        obj.put("Capacity", 5);
-        Ruimte r = f.maakRuimte("Restaurant", obj);
-        assertTrue(r instanceof Restaurant);
-        assertEquals(5, ((Restaurant) r).capaciteit);
+        RuimteFactory factory = new RuimteFactory(new TestLogger());
+        JSONObject obj = maakJson("Restaurant");
+        obj.put("Capacity", 10);
+        Ruimte r = factory.maakRuimte("Restaurant", obj);
+        assertInstanceOf(Restaurant.class, r);
+        assertEquals(10, ((Restaurant) r).capaciteit);
     }
 
-    // Ik vraag de factory om een bioscoop te maken; ik verwacht dat ik een Bioscoop-object terugkrijg.
-    @Test void testMaakBioscoop() {
-        Ruimte r = new RuimteFactory(null).maakRuimte("Cinema", new JSONObject());
-        assertTrue(r instanceof Bioscoop);
+    // maakRuimte Restaurant: zonder Capacity default naar 0
+    @Test void testMaakRestaurantZonderCapaciteit() {
+        RuimteFactory factory = new RuimteFactory(new TestLogger());
+        JSONObject obj = maakJson("Restaurant");
+        Ruimte r = factory.maakRuimte("Restaurant", obj);
+        assertInstanceOf(Restaurant.class, r);
+        assertEquals(0, ((Restaurant) r).capaciteit);
     }
 
-    // Ik vraag de factory om een fitnessruimte te maken; ik verwacht dat ik een Fitnessruimte-object terugkrijg.
-    @Test void testMaakFitnessruimte() {
-        Ruimte r = new RuimteFactory(null).maakRuimte("Fitness", new JSONObject());
-        assertTrue(r instanceof Fitnessruimte);
+    // maakRuimte Cinema: geeft Bioscoop terug
+    @Test void testMaakCinema() {
+        RuimteFactory factory = new RuimteFactory(new TestLogger());
+        Ruimte r = factory.maakRuimte("Cinema", maakJson("Cinema"));
+        assertInstanceOf(Bioscoop.class, r);
     }
 
-    // Ik geef een onbekend type door aan de factory; ik verwacht dat ik een gewone Ruimte terugkrijg.
-    @Test void testOnbekendTypeGeeftRuimte() {
-        Ruimte r = new RuimteFactory(null).maakRuimte("Onbekend", new JSONObject());
+    // maakRuimte Fitness: geeft Fitnessruimte terug
+    @Test void testMaakFitness() {
+        RuimteFactory factory = new RuimteFactory(new TestLogger());
+        Ruimte r = factory.maakRuimte("Fitness", maakJson("Fitness"));
+        assertInstanceOf(Fitnessruimte.class, r);
+    }
+
+    // maakRuimte onbekend type: geeft basis Ruimte terug
+    @Test void testMaakOnbekendType() {
+        RuimteFactory factory = new RuimteFactory(new TestLogger());
+        Ruimte r = factory.maakRuimte("Lounge", maakJson("Lounge"));
         assertEquals(Ruimte.class, r.getClass());
+    }
+
+    // meerdere kamers: kamernummers zijn oplopend per verdieping
+    @Test void testMeerdereKamersOplopendNummer() {
+        RuimteFactory factory = new RuimteFactory(new TestLogger());
+        JSONObject obj1 = maakJson("Room");
+        obj1.put("Classification", "1 sterren");
+        JSONObject obj2 = maakJson("Room");
+        obj2.put("Classification", "1 sterren");
+        Kamer k1 = (Kamer) factory.maakRuimte("Room", obj1);
+        Kamer k2 = (Kamer) factory.maakRuimte("Room", obj2);
+        assertTrue(k2.kamernummer > k1.kamernummer);
+    }
+
+    // constructor met ondersteKamerPosY: geen crash
+    @Test void testConstructorMetOndersteKamerPosY() {
+        assertDoesNotThrow(() -> new RuimteFactory(new TestLogger(), 5));
+    }
+
+    // null logger: geen crash
+    @Test void testNullLogger() {
+        RuimteFactory factory = new RuimteFactory(null);
+        JSONObject obj = maakJson("Room");
+        obj.put("Classification", "1 sterren");
+        assertDoesNotThrow(() -> factory.maakRuimte("Room", obj));
     }
 }

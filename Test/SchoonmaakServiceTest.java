@@ -264,4 +264,235 @@ public class SchoonmaakServiceTest {
 
         assertTrue(log.length() > 0);
     }
+
+    // =========================================================
+    // 11. verwerkWachtendeTaken: pathfinder null branch
+    // =========================================================
+    @Test
+    // ik doe dit: ik zet een vuile kamer in de wachtrij maar haal de pathfinder weg
+    // ik verwacht: dat er niets wordt toegewezen en de service veilig stopt
+    void testVerwerkWachtendeTakenZonderPathfinder() {
+
+        kamer.schoon = false;
+        hotel.voegWachtendeSchoonmaakToe(kamer);
+        hotel.pathfinder = null;
+
+        service.verwerkWachtendeTaken(10);
+
+        assertFalse(schoonmaker.bezig);
+        assertTrue(hotel.wachtendeSchoonmaakKamers.contains(kamer));
+    }
+
+    // =========================================================
+    // 12. verwerkWachtendeTaken: vuile kamer wordt toegewezen
+    // =========================================================
+    @Test
+    // ik doe dit: ik zet een vuile kamer in de wachtrij
+    // ik verwacht: dat de vrije schoonmaker deze kamer krijgt en de wachtrij leeg wordt
+    void testVerwerkWachtendeTakenWijstVuileKamerToe() {
+
+        kamer.schoon = false;
+        hotel.voegWachtendeSchoonmaakToe(kamer);
+
+        service.verwerkWachtendeTaken(12);
+
+        assertTrue(schoonmaker.bezig);
+        assertSame(kamer, schoonmaker.kamer);
+        assertFalse(hotel.wachtendeSchoonmaakKamers.contains(kamer));
+    }
+
+    // =========================================================
+    // 13. verwerkWachtendeTaken: logger branch
+    // =========================================================
+    @Test
+    // ik doe dit: ik verwerk een wachttaak met logger
+    // ik verwacht: dat de toewijzing gelogd wordt
+    void testVerwerkWachtendeTakenMetLogger() {
+
+        StringBuilder log = new StringBuilder();
+        service.setLogger(log::append);
+        kamer.schoon = false;
+        kamer.kamernummer = 401;
+        hotel.voegWachtendeSchoonmaakToe(kamer);
+
+        service.verwerkWachtendeTaken(12);
+
+        assertTrue(log.toString().contains("401"));
+    }
+
+    // =========================================================
+    // 14. verwerkWachtendeTaken: ruimt ongeldige wachttaken op
+    // =========================================================
+    @Test
+    // ik doe dit: ik stop null, schone kamers en al toegewezen kamers in de wachtrij
+    // ik verwacht: dat alleen de echte vuile wachttaak overblijft en wordt ingepland
+    void testVerwerkWachtendeTakenRuimtOngeldigeTakenOp() {
+
+        Kamer schoneKamer = new Kamer();
+        schoneKamer.schoon = true;
+
+        Kamer alToegewezen = new Kamer();
+        alToegewezen.schoon = false;
+        Schoonmaker bezetteSchoonmaker = new Schoonmaker();
+        bezetteSchoonmaker.kamer = alToegewezen;
+        hotel.voegPersoonToe(bezetteSchoonmaker);
+
+        Kamer vuileKamer = new Kamer();
+        vuileKamer.posX = 4;
+        vuileKamer.posY = 4;
+        vuileKamer.breedte = 1;
+        vuileKamer.hoogte = 1;
+        vuileKamer.schoon = false;
+        hotel.ruimtes.add(vuileKamer);
+        hotel.layout.plaatsRuimte(vuileKamer);
+
+        hotel.wachtendeSchoonmaakKamers.add(null);
+        hotel.voegWachtendeSchoonmaakToe(schoneKamer);
+        hotel.voegWachtendeSchoonmaakToe(alToegewezen);
+        hotel.voegWachtendeSchoonmaakToe(vuileKamer);
+
+        service.verwerkWachtendeTaken(20);
+
+        assertSame(vuileKamer, schoonmaker.kamer);
+        assertFalse(hotel.wachtendeSchoonmaakKamers.contains(null));
+        assertFalse(hotel.wachtendeSchoonmaakKamers.contains(schoneKamer));
+        assertFalse(hotel.wachtendeSchoonmaakKamers.contains(alToegewezen));
+        assertFalse(hotel.wachtendeSchoonmaakKamers.contains(vuileKamer));
+    }
+
+    // =========================================================
+    // 15. verwerkWachtendeTaken: kiest dichtstbijzijnde vrije schoonmaker
+    // =========================================================
+    @Test
+    // ik doe dit: ik voeg een tweede schoonmaker toe die dichter bij de kamer staat
+    // ik verwacht: dat de dichtstbijzijnde schoonmaker de taak krijgt
+    void testVerwerkWachtendeTakenKiestDichtstbijzijndeSchoonmaker() {
+
+        Schoonmaker dichtbij = new Schoonmaker();
+        dichtbij.setPathfinder(hotel.pathfinder);
+        dichtbij.zetStartPositie(hotel.layout.krijgVakje(3, 3));
+        dichtbij.setWachtVakje(hotel.layout.krijgVakje(3, 3));
+        hotel.voegPersoonToe(dichtbij);
+
+        kamer.schoon = false;
+        hotel.voegWachtendeSchoonmaakToe(kamer);
+
+        service.verwerkWachtendeTaken(30);
+
+        assertFalse(schoonmaker.bezig);
+        assertTrue(dichtbij.bezig);
+        assertSame(kamer, dichtbij.kamer);
+    }
+
+    // =========================================================
+    // 16. verwerkWachtendeTaken: geen vrije schoonmaker laat taak wachten
+    // =========================================================
+    @Test
+    // ik doe dit: ik zet alle schoonmakers op bezig en voeg een vuile kamer toe
+    // ik verwacht: dat de kamer in de wachtrij blijft
+    void testVerwerkWachtendeTakenGeenVrijeSchoonmaker() {
+
+        schoonmaker.bezig = true;
+        kamer.schoon = false;
+        hotel.voegWachtendeSchoonmaakToe(kamer);
+
+        service.verwerkWachtendeTaken(40);
+
+        assertTrue(hotel.wachtendeSchoonmaakKamers.contains(kamer));
+        assertNull(schoonmaker.kamer);
+    }
+
+    // =========================================================
+    // 17. verwerkWachtendeTaken: schoonmaker zonder positie wordt overgeslagen
+    // =========================================================
+    @Test
+    // ik doe dit: ik verwijder ook het wachtvakje van de enige schoonmaker
+    // ik verwacht: dat hij geen kandidaat is en de taak blijft wachten
+    void testVerwerkWachtendeTakenSchoonmakerZonderStartWordtOvergeslagen() {
+
+        schoonmaker.wachtVakje = null;
+        kamer.schoon = false;
+        hotel.voegWachtendeSchoonmaakToe(kamer);
+
+        service.verwerkWachtendeTaken(50);
+
+        assertFalse(schoonmaker.bezig);
+        assertTrue(hotel.wachtendeSchoonmaakKamers.contains(kamer));
+    }
+
+    // =========================================================
+    // 18. verwerkWachtendeTaken: meerdere taken worden in een loop uitgedeeld
+    // =========================================================
+    @Test
+    // ik doe dit: ik maak twee vuile kamers en twee vrije schoonmakers
+    // ik verwacht: dat beide kamers worden toegewezen
+    void testVerwerkWachtendeTakenDeeltMeerdereTakenUit() {
+
+        Kamer tweedeKamer = new Kamer();
+        tweedeKamer.posX = 4;
+        tweedeKamer.posY = 4;
+        tweedeKamer.breedte = 1;
+        tweedeKamer.hoogte = 1;
+        tweedeKamer.schoon = false;
+        hotel.ruimtes.add(tweedeKamer);
+        hotel.layout.plaatsRuimte(tweedeKamer);
+
+        Schoonmaker tweedeSchoonmaker = new Schoonmaker();
+        tweedeSchoonmaker.setPathfinder(hotel.pathfinder);
+        tweedeSchoonmaker.setWachtVakje(hotel.layout.krijgVakje(5, 1));
+        hotel.voegPersoonToe(tweedeSchoonmaker);
+
+        kamer.schoon = false;
+        hotel.voegWachtendeSchoonmaakToe(kamer);
+        hotel.voegWachtendeSchoonmaakToe(tweedeKamer);
+
+        service.verwerkWachtendeTaken(60);
+
+        assertTrue(schoonmaker.bezig);
+        assertTrue(tweedeSchoonmaker.bezig);
+        assertTrue(hotel.wachtendeSchoonmaakKamers.isEmpty());
+    }
+
+    // =========================================================
+    // 19. verwerkWachtendeTaken: vrije schoonmaker gaat terug naar wachtplek
+    // =========================================================
+    @Test
+    // ik doe dit: ik heb geen wachttaken en een vrije schoonmaker staat niet op zijn wachtplek
+    // ik verwacht: dat hij een route naar zijn wachtplek krijgt
+    void testVerwerkWachtendeTakenStuurtVrijeSchoonmakerTerug() {
+
+        schoonmaker.setPathfinder(hotel.pathfinder);
+        schoonmaker.zetStartPositie(hotel.layout.krijgVakje(3, 1));
+        Vakje wachtVakje = hotel.layout.krijgVakje(2, 1);
+        schoonmaker.setWachtVakje(wachtVakje);
+
+        service.verwerkWachtendeTaken(70);
+
+        assertSame(wachtVakje, schoonmaker.doelVakje);
+    }
+
+    // =========================================================
+    // 20. verwerkWachtendeTaken: terugsturen wordt overgeslagen als taken wachten
+    // =========================================================
+    @Test
+    // ik doe dit: ik laat een wachttaak staan zonder beschikbare schoonmaker
+    // ik verwacht: dat een andere vrije schoonmaker niet teruggestuurd wordt zolang er werk wacht
+    void testVerwerkWachtendeTakenStuurtNietTerugAlsTakenWachten() {
+
+        schoonmaker.bezig = true;
+        kamer.schoon = false;
+        hotel.voegWachtendeSchoonmaakToe(kamer);
+
+        Schoonmaker vrijeSchoonmaker = new Schoonmaker();
+        vrijeSchoonmaker.setPathfinder(hotel.pathfinder);
+        vrijeSchoonmaker.zetStartPositie(hotel.layout.krijgVakje(4, 1));
+        vrijeSchoonmaker.setWachtVakje(hotel.layout.krijgVakje(2, 1));
+        vrijeSchoonmaker.bezig = true; // voorkomt dat hij de taak oppakt
+        hotel.voegPersoonToe(vrijeSchoonmaker);
+
+        service.verwerkWachtendeTaken(80);
+
+        assertNull(vrijeSchoonmaker.doelVakje);
+        assertTrue(hotel.wachtendeSchoonmaakKamers.contains(kamer));
+    }
 }

@@ -1,52 +1,77 @@
 import Model.layout.Vakje;
 import Model.persoon.Gast;
-import Model.ruimte.Kamer;
+import Model.ruimte.Ruimte;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Tests voor Vakje: personen toevoegen/verwijderen, ruimte koppelen
 public class VakjeTest {
 
-    // Ik maak een nieuw vakje aan; ik verwacht dat er nog geen personen op staan.
-    @Test void testNieuwVakjeLeeg() { assertTrue(new Vakje().krijgPersonen().isEmpty()); }
+    // constructor: personen lijst is leeg
+    @Test void testConstructorPersonenLeeg() {
+        assertTrue(new Vakje().personen.isEmpty());
+    }
 
-    // Ik voeg een persoon toe aan een vakje; ik verwacht dat het vakje daarna één persoon bevat.
+    // voegPersoonToe: persoon zit in de lijst
     @Test void testVoegPersoonToe() {
         Vakje v = new Vakje();
-        Gast g = new Gast(1, 2);
+        Gast g = new Gast(1, 1);
         v.voegPersoonToe(g);
-        assertEquals(1, v.krijgPersonen().size());
+        assertTrue(v.personen.contains(g));
     }
 
-    // Ik voeg een persoon toe en verwijder hem weer; ik verwacht dat het vakje daarna leeg is.
+    // verwijderPersoon: persoon is niet meer in de lijst
     @Test void testVerwijderPersoon() {
         Vakje v = new Vakje();
-        Gast g = new Gast(1, 2);
+        Gast g = new Gast(1, 1);
         v.voegPersoonToe(g);
         v.verwijderPersoon(g);
-        assertEquals(0, v.krijgPersonen().size());
+        assertFalse(v.personen.contains(g));
     }
 
-    // Ik koppel een ruimte aan een vakje; ik verwacht dat het vakje die ruimte teruggeeft.
-    @Test void testSetRuimte() {
+    // verwijderPersoon: niet-aanwezige persoon geeft geen crash
+    @Test void testVerwijderNietAanwezig() {
         Vakje v = new Vakje();
-        Kamer k = new Kamer();
-        v.setRuimte(k);
-        assertEquals(k, v.getRuimte());
+        assertDoesNotThrow(() -> v.verwijderPersoon(new Gast(1, 1)));
     }
 
-    // Ik stel handmatig coördinaten op een vakje in; ik verwacht dat de getters die waarden teruggeven.
-    @Test void testCoordinaten() {
+    // krijgPersonen: geeft kopie terug
+    @Test void testKrijgPersonenGeeftKopie() {
         Vakje v = new Vakje();
-        v.x = 3; v.y = 4;
+        v.voegPersoonToe(new Gast(1, 1));
+        assertNotSame(v.krijgPersonen(), v.krijgPersonen());
+    }
+
+    // krijgPersonen: bevat de toegevoegde personen
+    @Test void testKrijgPersonenBevat() {
+        Vakje v = new Vakje();
+        Gast g = new Gast(1, 1);
+        v.voegPersoonToe(g);
+        assertTrue(v.krijgPersonen().contains(g));
+    }
+
+    // setRuimte en getRuimte
+    @Test void testSetEnGetRuimte() {
+        Vakje v = new Vakje();
+        Ruimte r = new Ruimte();
+        v.setRuimte(r);
+        assertEquals(r, v.getRuimte());
+    }
+
+    // getX en getY: geven de ingestelde coördinaten terug
+    @Test void testGetXEnY() {
+        Vakje v = new Vakje();
+        v.x = 3;
+        v.y = 7;
         assertEquals(3, v.getX());
-        assertEquals(4, v.getY());
+        assertEquals(7, v.getY());
     }
 
-    // Ik zet twee personen op hetzelfde vakje; ik verwacht dat beide in de lijst staan.
-    @Test void testMeerderePersoonOpVakje() {
+    // meerdere personen op hetzelfde vakje
+    @Test void testMeerderePersonenOpVakje() {
         Vakje v = new Vakje();
-        v.voegPersoonToe(new Gast(1, 2));
-        v.voegPersoonToe(new Gast(2, 3));
-        assertEquals(2, v.krijgPersonen().size());
+        v.voegPersoonToe(new Gast(1, 1));
+        v.voegPersoonToe(new Gast(2, 2));
+        assertEquals(2, v.personen.size());
     }
 }

@@ -1,415 +1,263 @@
-package tests;
-
 import Model.Hotel;
+import Model.Pathfinder;
 import Model.layout.Layout;
-import Model.layout.Vakje;
-
 import Model.persoon.Gast;
-import Model.persoon.Persoon;
-
 import Model.ruimte.Lift;
-
+import Model.ruimte.Trap;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
+// Tests voor Lift: constructor, roep, tik, wachtrijen, instappen, uitstappen, brandalarm
 public class LiftTest {
 
-    // -------------------------------------------------
-    // Hulpmethode:
-    // Maak een testhotel met layout
-    // -------------------------------------------------
+    private Hotel hotel;
+    private Lift lift;
 
-    private Hotel maakHotel() {
+    @BeforeEach
+    void setUp() {
+        hotel = new Hotel();
+        hotel.layout = new Layout(6, 5);
+        hotel.breedte = 6;
+        hotel.hoogte = 5;
 
-        Hotel hotel = new Hotel();
+        Trap trap = new Trap(2);
+        trap.posX = 6; trap.posY = 1; trap.breedte = 1; trap.hoogte = 5;
+        hotel.trap = trap;
+        hotel.ruimtes.add(trap);
+        hotel.layout.plaatsRuimte(trap);
 
-        hotel.layout = new Layout(10, 10);
+        lift = new Lift(hotel);
+        lift.posX = 1; lift.posY = 1; lift.breedte = 1; lift.hoogte = 5;
+        hotel.lift = lift;
+        hotel.ruimtes.add(lift);
+        hotel.layout.plaatsRuimte(lift);
 
-        hotel.breedte = 10;
-        hotel.hoogte = 10;
-
-        return hotel;
+        hotel.pathfinder = new Pathfinder(hotel);
+        lift.initWachtrijen(5);
+        lift.setLobbyVerdieping(1);
     }
 
-    // -------------------------------------------------
-    // Constructor tests
-    // -------------------------------------------------
-
-    // ik maak een nieuwe Lift aan met een geldig hotel; ik verwacht dat de lift correct wordt aangemaakt (niet null)
-    @Test
-    void testConstructor() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        assertNotNull(lift);
-    }
-
-    // ik maak een lift aan en controleer de beginstatus; ik verwacht dat de lift start op verdieping 1
-    @Test
-    void testStartVerdieping() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
+    // constructor: lift begint op lobby-verdieping
+    @Test void testConstructorStartPositie() {
         assertEquals(1, lift.getHuidigeVerdieping());
     }
 
-    // -------------------------------------------------
-    // Wachtrij tests
-    // -------------------------------------------------
-
-    // ik initialiseer wachtrijen voor meerdere verdiepingen; ik verwacht dat alle wachtrijen leeg zijn
-    @Test
-    void testInitWachtrijen() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        lift.initWachtrijen(5);
-
-        assertEquals(0, lift.aantalWachtend(1));
-
-        assertEquals(0, lift.aantalWachtend(5));
+    // constructor: passagierslijst is leeg
+    @Test void testConstructorGeenPassagiers() {
+        assertTrue(lift.getPassagiers().isEmpty());
     }
 
-    // ik roep een gast naar een verdieping; ik verwacht dat deze gast in de wachtrij komt
-    @Test
-    void testRoepLift() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        lift.initWachtrijen(5);
-
-        Gast gast = new Gast(1, 2);
-
-        lift.roep(gast, 3);
-
-        assertEquals(1, lift.aantalWachtend(3));
+    // erft van Ruimte: posX/posY/breedte/hoogte correct
+    @Test void testErftVanRuimte() {
+        assertEquals(1, lift.posX);
+        assertEquals(1, lift.posY);
+        assertEquals(1, lift.breedte);
+        assertEquals(5, lift.hoogte);
     }
 
-    // ik roep dezelfde gast meerdere keren op dezelfde verdieping; ik verwacht dat de gast maar één keer wordt toegevoegd
-    @Test
-    void testGeenDubbeleOproep() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        lift.initWachtrijen(5);
-
-        Gast gast = new Gast(1, 2);
-
-        lift.roep(gast, 2);
-
-        lift.roep(gast, 2);
-
-        assertEquals(1, lift.aantalWachtend(2));
-    }
-
-    // ik roep een gast naar een niet-bestaande verdieping; ik verwacht dat de wachtrij automatisch wordt aangemaakt
-    @Test
-    void testOnbekendeVerdieping() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        Gast gast = new Gast(1, 2);
-
-        lift.roep(gast, 99);
-
-        assertEquals(1, lift.aantalWachtend(99));
-    }
-
-    // -------------------------------------------------
-    // Tik (simulatie van lift beweging)
-    // -------------------------------------------------
-
-    // ik voer een tik uit zonder wachtende gasten; ik verwacht dat er geen crash optreedt
-    @Test
-    void testTikGeenWachtenden() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        assertDoesNotThrow(() -> lift.tik());
-    }
-
-    // ik roep een gast op een hogere verdieping en laat de lift tikken; ik verwacht dat de lift omhoog beweegt
-    @Test
-    void testLiftBeweegtOmhoog() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        lift.initWachtrijen(10);
-
-        Gast gast = new Gast(1, 1);
-
-        lift.roep(gast, 4);
-
-        lift.tik();
-
+    // setLobbyVerdieping: lift start op de ingestelde lobby
+    @Test void testSetLobbyVerdieping() {
+        lift.setLobbyVerdieping(2);
         assertEquals(2, lift.getHuidigeVerdieping());
     }
 
-    // ik laat de lift meerdere ticks uitvoeren; ik verwacht dat de lift meerdere verdiepingen stijgt
-    @Test
-    void testLiftBeweegtMeerdereVerdiepingen() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        lift.initWachtrijen(10);
-
-        Gast gast = new Gast(1, 1);
-
-        lift.roep(gast, 5);
-
-        lift.tik();
-        lift.tik();
-        lift.tik();
-
-        assertEquals(4, lift.getHuidigeVerdieping());
+    // roep: gast wordt toegevoegd aan wachtrij
+    @Test void testRoepVoegtToeAanWachtrij() {
+        Gast g = maakGast(1, 2, 1);
+        lift.roep(g, 1);
+        assertEquals(1, lift.aantalWachtend(1));
     }
 
-    // -------------------------------------------------
-    // Passagiers in de lift
-    // -------------------------------------------------
-
-    // ik controleer de passagierslijst bij start; ik verwacht dat deze leeg is
-    @Test
-    void testPassagiersLeeg() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        assertEquals(0, lift.getPassagiers().size());
+    // roep: dubbele oproep wordt genegeerd
+    @Test void testRoepDubbelWordtGenegeerd() {
+        Gast g = maakGast(1, 2, 1);
+        lift.roep(g, 1);
+        lift.roep(g, 1);
+        assertEquals(1, lift.aantalWachtend(1));
     }
 
-    // ik laat een gast instappen via een liftoproep; ik verwacht dat de gast in de lift komt en in de passagierslijst staat
-    @Test
-    void testGastStaptIn() {
+    // roep: lift buiten gebruik accepteert geen oproepen
+    @Test void testRoepGeweigerdAlsUitBedrijf() {
+        lift.zetUitBedrijf(true);
+        lift.roep(maakGast(1, 2, 1), 1);
+        assertEquals(0, lift.aantalWachtend(1));
+    }
 
-        Hotel hotel = maakHotel();
+    // aantalWachtend: geeft 0 voor onbekende verdieping
+    @Test void testAantalWachtendOnbekend() {
+        assertEquals(0, lift.aantalWachtend(99));
+    }
 
-        Lift lift = new Lift(hotel);
+    // aantalWachtend: geeft 0 voor lege wachtrij
+    @Test void testAantalWachtendLeeg() {
+        assertEquals(0, lift.aantalWachtend(2));
+    }
 
-        hotel.lift = lift;
+    // tik: lift beweegt omhoog naar wachtende gast
+    @Test void testTikBeweegNaarWachtende() {
+        Gast g = maakGast(1, 2, 3);
+        lift.roep(g, 3);
+        lift.tik(); // 1 → 2
+        assertEquals(2, lift.getHuidigeVerdieping());
+    }
 
-        lift.posX = 1;
-
-        lift.initWachtrijen(5);
-
-        Gast gast = new Gast(1, 1);
-
-        Vakje vakje = hotel.layout.krijgVakje(2, 1);
-
-        gast.huidigVakje = vakje;
-
-        lift.roep(gast, 1);
-
+    // tik: lift staat stil als niemand wacht
+    @Test void testTikStilZonderVraag() {
         lift.tik();
+        assertEquals(1, lift.getHuidigeVerdieping());
+    }
 
-        assertTrue(gast.inLift);
-
+    // tik: gast op verdieping 1 stapt in als lift er al staat
+    @Test void testTikGastStaptIn() {
+        Gast g = maakGast(1, 2, 1);
+        g.gewensteVerdieping = 3;
+        lift.roep(g, 1);
+        lift.tik(); // INSTAPPEN
+        assertTrue(g.inLift);
         assertEquals(1, lift.getPassagiers().size());
     }
 
-    // ik laat een gast wachten op de lift; ik verwacht dat de wachtstatus wordt gereset na instappen
-    @Test
-    void testWachtFlagReset() {
+    // tik: gast staat op lift-vakje na inladen
+    @Test void testTikZetGastOpLiftVakje() {
+        Gast g = maakGast(1, 2, 1);
+        g.gewensteVerdieping = 3;
+        lift.roep(g, 1);
+        lift.tik();
+        assertNotNull(g.huidigVakje);
+        assertEquals(1, g.huidigVakje.x);
+    }
 
-        Hotel hotel = maakHotel();
+    // tik: gast stapt uit op doelverdieping
+    @Test void testTikLaatGastUitstappen() {
+        Gast g = maakGast(1, 2, 1);
+        g.gewensteVerdieping = 1;
+        lift.roep(g, 1);
+        lift.tik(); // inladen
+        lift.tik(); // uitladen (gewenste == huidige)
+        assertFalse(g.inLift);
+        assertTrue(g.moetUitstappen);
+    }
 
-        Lift lift = new Lift(hotel);
+    // tik uitBedrijf: lift zonder passagiers beweegt niet
+    @Test void testTikUitBedrijfZonderPassagiers() {
+        lift.zetUitBedrijf(true);
+        lift.tik();
+        assertEquals(1, lift.getHuidigeVerdieping());
+    }
 
-        hotel.lift = lift;
+    // meerdere gasten op dezelfde verdieping worden allemaal ingeladen
+    @Test void testMeerdereGastenIngeladen() {
+        Gast g1 = maakGast(1, 2, 1);
+        Gast g2 = maakGast(2, 2, 1);
+        g1.gewensteVerdieping = 3;
+        g2.gewensteVerdieping = 4;
+        lift.roep(g1, 1);
+        lift.roep(g2, 1);
+        lift.tik();
+        assertEquals(2, lift.getPassagiers().size());
+    }
 
-        lift.posX = 1;
+    // resetWachtrijen: alle wachtrijen worden leeggemaakt
+    @Test void testResetWachtrijen() {
+        lift.roep(maakGast(1, 2, 2), 2);
+        lift.resetWachtrijen();
+        assertEquals(0, lift.aantalWachtend(2));
+    }
 
+    // verwijderUitWachtrij: gast wordt verwijderd
+    @Test void testVerwijderUitWachtrij() {
+        Gast g = maakGast(1, 2, 1);
+        lift.roep(g, 1);
+        lift.verwijderUitWachtrij(g);
+        assertEquals(0, lift.aantalWachtend(1));
+    }
+
+    // getPassagiers: geeft kopie terug
+    @Test void testGetPassagiersGeeftKopie() {
+        assertNotSame(lift.getPassagiers(), lift.getPassagiers());
+    }
+
+    // zetUitBedrijf: kan aan- en uitgezet worden
+    @Test void testZetUitBedrijfAanEnUit() {
+        lift.zetUitBedrijf(true);
+        lift.zetUitBedrijf(false);
+        Gast g = maakGast(1, 2, 1);
+        lift.roep(g, 1);
+        assertEquals(1, lift.aantalWachtend(1));
+    }
+
+    // initWachtrijen: wachtrijen worden aangemaakt voor alle verdiepingen
+    @Test void testInitWachtrijen() {
         lift.initWachtrijen(5);
+        assertEquals(0, lift.aantalWachtend(1));
+        assertEquals(0, lift.aantalWachtend(5));
+    }
 
-        Gast gast = new Gast(1, 1);
+    // tik: lift beweegt naar wachtende gast op hogere verdieping
+    @Test void testTikBeweegNaarHogeVerdieping() {
+        Gast g = maakGast(1, 2, 4);
+        lift.roep(g, 4);
+        lift.tik(); // 1 → 2
+        assertEquals(2, lift.getHuidigeVerdieping());
+    }
 
-        gast.wachtOpLift = true;
-
-        lift.roep(gast, 1);
-
+    // tik: wachtende gast met null positie wordt uit wachtrij verwijderd
+    @Test void testTikVerwijdertWachterZonderPositie() {
+        Gast g = new Gast(10, 1);
+        lift.roep(g, 1);
         lift.tik();
-
-        assertFalse(gast.wachtOpLift);
+        assertEquals(0, lift.aantalWachtend(1));
     }
 
-    // -------------------------------------------------
-    // Uitstappen
-    // -------------------------------------------------
-
-    // ik laat een gast in de lift naar zijn bestemming gaan; ik verwacht dat hij uitstapt en uit de liftstatus gaat
-    @Test
-    void testUitstappen() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        hotel.lift = lift;
-
-        lift.posX = 1;
-
-        lift.initWachtrijen(10);
-
-        Gast gast = new Gast(1, 1);
-
-        gast.gewensteVerdieping = 2;
-
-        gast.inLift = true;
-
-        lift.getPassagiers().add(gast);
-
+    // tik: gast op verkeerde x stapt niet in
+    @Test void testTikGastOpVerkeerdeXStaptNietIn() {
+        Gast g = maakGast(11, 3, 1);
+        g.gewensteVerdieping = 3;
+        lift.roep(g, 1);
         lift.tik();
-
-        assertFalse(gast.inLift);
-
-        assertTrue(gast.moetUitstappen);
+        assertFalse(g.inLift);
+        assertEquals(1, lift.aantalWachtend(1));
     }
 
-    // ik controleer of de liftstatus van een gast wordt gereset na gebruik; ik verwacht dat gebruiktLift false wordt
-    @Test
-    void testGebruiktLiftReset() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        hotel.lift = lift;
-
-        lift.initWachtrijen(10);
-
-        Gast gast = new Gast(1, 1);
-
-        gast.gewensteVerdieping = 2;
-
-        gast.gebruiktLift = true;
-
-        gast.inLift = true;
-
-        lift.getPassagiers().add(gast);
-
+    // tik: gast op verkeerde y stapt niet in
+    @Test void testTikGastOpVerkeerdeYStaptNietIn() {
+        Gast g = maakGast(12, 2, 2);
+        g.gewensteVerdieping = 3;
+        lift.roep(g, 1);
         lift.tik();
-
-        assertFalse(gast.gebruiktLift);
+        assertFalse(g.inLift);
+        assertEquals(1, lift.aantalWachtend(1));
     }
 
-    // -------------------------------------------------
-    // Positie updates
-    // -------------------------------------------------
-
-    // ik laat een gast in de lift bewegen; ik verwacht dat zijn positie wordt bijgewerkt naar de liftpositie
-    @Test
-    void testPassagierPositieUpdate() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        hotel.lift = lift;
-
-        lift.posX = 1;
-
-        lift.initWachtrijen(10);
-
-        Gast gast = new Gast(1, 1);
-
-        gast.gewensteVerdieping = 5;
-
-        gast.inLift = true;
-
-        lift.getPassagiers().add(gast);
-
+    // tik: lobby-wachter heeft prioriteit boven een andere wachtrij
+    @Test void testLobbyWachterHeeftPrioriteit() {
+        lift.setLobbyVerdieping(1);
+        lift.roep(maakGast(13, 2, 1), 1);
+        lift.roep(maakGast(14, 2, 2), 2);
         lift.tik();
-
-        assertNotNull(gast.huidigVakje);
-
-        assertEquals(lift.posX, gast.huidigVakje.x);
+        assertEquals(1, lift.getHuidigeVerdieping());
     }
 
-    // -------------------------------------------------
-    // Branch coverage tests
-    // -------------------------------------------------
-
-    // ik roep een algemene persoon op de lift; ik verwacht dat dit geen crash veroorzaakt
-    @Test
-    void testNormalePersoon() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        hotel.lift = lift;
-
-        lift.initWachtrijen(5);
-
-        Persoon p = new Persoon() {};
-
-        lift.roep(p, 1);
-
-        assertDoesNotThrow(() -> lift.tik());
+    // tik uitBedrijf: passagier wordt nog afgeleverd
+    @Test void testTikUitBedrijfLevertPassagierAf() {
+        Gast g = maakGast(15, 2, 1);
+        g.gewensteVerdieping = 3;
+        lift.roep(g, 1);
+        lift.tik(); // instappen
+        lift.zetUitBedrijf(true);
+        lift.tik();
+        lift.tik();
+        assertEquals(3, lift.getHuidigeVerdieping());
+        assertTrue(g.moetUitstappen);
     }
 
-    // ik vraag wachtrij op van een niet-bestaande verdieping; ik verwacht dat dit 0 teruggeeft
-    @Test
-    void testAantalWachtendenNull() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        assertEquals(0, lift.aantalWachtend(999));
-    }
-
-    // ik laat de lift draaien op een ongeldige positie; ik verwacht dat dit geen crash geeft
-    @Test
-    void testLiftZonderVakje() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        hotel.lift = lift;
-
-        lift.posX = 999;
-
-        lift.initWachtrijen(5);
-
-        Gast gast = new Gast(1, 1);
-
-        gast.inLift = true;
-
-        lift.getPassagiers().add(gast);
-
-        assertDoesNotThrow(() -> lift.tik());
-    }
-
-    // ik controleer een lege passagierslijst; ik verwacht dat deze leeg is
-    @Test
-    void testLegePassagierslijst() {
-
-        Hotel hotel = maakHotel();
-
-        Lift lift = new Lift(hotel);
-
-        assertTrue(lift.getPassagiers().isEmpty());
+    // hulpmethode
+    private Gast maakGast(int id, int x, int y) {
+        Gast g = new Gast(id, 1);
+        g.setPathfinder(hotel.pathfinder);
+        g.zetStartPositie(hotel.layout.krijgVakje(x, y));
+        hotel.voegPersoonToe(g);
+        return g;
     }
 }

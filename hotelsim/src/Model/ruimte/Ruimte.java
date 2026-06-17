@@ -38,13 +38,6 @@ public class Ruimte {
         this.aanwezigen = new ArrayList<>();
     }
 
-    public void setPositie(int x, int y) { this.posX = x; this.posY = y; }
-    public void setAfmetingen(int b, int h) { this.breedte = b; this.hoogte = h; }
-    public int getX() { return posX; }
-    public int getY() { return posY; }
-    public int getBreedte() { return breedte; }
-    public int getHoogte() { return hoogte; }
-
     // voeg een persoon toe aan de ruimte
     public void betreed(Persoon p) { aanwezigen.add(p); }
 
@@ -56,13 +49,37 @@ public class Ruimte {
         return new ArrayList<>(aanwezigen);
     }
 
-    // sla de ingang positie op
-    public void setIngang(int x, int y) { this.ingangX = x; this.ingangY = y; }
+    // geef deze ruimte terug als vrije kamer, standaard null
+    // Kamer overschrijft dit als die vrij en schoon is
+    public Kamer getVrijeKamer() { return null; }
 
     // geef de ingang positie terug als array [x, y]
     public int[] krijgIngang() { return new int[]{ingangX, ingangY}; }
 
-    // geef deze ruimte terug als vrije kamer, standaard null
-    // Kamer overschrijft dit als die vrij en schoon is
-    public Kamer getVrijeKamer() { return null; }
+    // geef een statustekst terug voor het lobbyscherm
+    // subklassen overschrijven dit om hun eigen status te tonen
+    public String getStatusTekst() {
+        return "";
+    }
+
+    // geeft true als deze ruimte een kamer is — Kamer overschrijft dit
+    public boolean isKamer() {
+        return false;
+    }
+
+    // geeft true als deze ruimte een faciliteit is — Restaurant/Fitness/Bioscoop overschrijven dit
+    public boolean isFaciliteit() {
+        return false;
+    }
+
+    // stel de filmduur in — Bioscoop overschrijft dit
+    public void setFilmDuur(int duur) {}
+
+    // stel de traptijd in — Trap overschrijft dit
+    public void setTijdPerVerdieping(int duur) {}
+
+    // geef een leesbare naam terug — subklassen overschrijven dit voor specifieke namen
+    public String getNaam() {
+        return getClass().getSimpleName().toLowerCase();
+    }
 }

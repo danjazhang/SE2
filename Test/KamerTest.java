@@ -1,200 +1,288 @@
 import Model.ruimte.Kamer;
 import Model.persoon.Gast;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
+// Tests voor Kamer: constructor, gast koppelen/ontkoppelen, aanwezigheid, sterren-label, status
 public class KamerTest {
 
-    // Ik maak een nieuwe kamer aan; ik verwacht dat die schoon begint.
-    @Test
-    void testNieuweKamerIsSchoon() {
+    // nieuwe kamer is schoon
+    @Test void testNieuweKamerIsSchoon() {
         assertTrue(new Kamer().isSchoon());
     }
 
-    // Ik maak een nieuwe kamer aan; ik verwacht dat die nog niet bezet is.
-    @Test
-    void testNieuweKamerNietBezet() {
+    // nieuwe kamer is niet bezet
+    @Test void testNieuweKamerNietBezet() {
         assertFalse(new Kamer().isBezet());
     }
 
-    // Ik maak een nieuwe kamer aan; ik verwacht dat het aantal sterren standaard 0 is.
-    @Test
-    void testSterrenStandaard() {
+    // sterren standaard 0
+    @Test void testSterrenStandaard() {
         assertEquals(0, new Kamer().sterren);
     }
 
-    // Ik maak een nieuwe kamer aan; ik verwacht dat het kamernummer standaard 0 is.
-    @Test
-    void testKamernummerStandaard() {
+    // kamernummer standaard 0
+    @Test void testKamernummerStandaard() {
         assertEquals(0, new Kamer().kamernummer);
     }
 
-    // Ik koppel een gast aan een kamer; ik verwacht dat de kamer daarna bezet is.
-    @Test
-    void testKoppelGastMaaktBezet() {
+    // getKamernummer geeft het ingestelde nummer terug
+    @Test void testGetKamernummer() {
+        Kamer k = new Kamer();
+        k.kamernummer = 205;
+        assertEquals(205, k.getKamernummer());
+    }
+
+    // sterrenLabel voor 0 sterren is leeg
+    @Test void testSterrenLabel0() {
+        Kamer k = new Kamer();
+        k.sterren = 0;
+        assertEquals("", k.getSterrenLabel());
+    }
+
+    // sterrenLabel voor 1 ster
+    @Test void testSterrenLabel1() {
+        Kamer k = new Kamer();
+        k.sterren = 1;
+        assertEquals("★", k.getSterrenLabel());
+    }
+
+    // sterrenLabel voor 3 sterren
+    @Test void testSterrenLabel3() {
+        Kamer k = new Kamer();
+        k.sterren = 3;
+        assertEquals("★★★", k.getSterrenLabel());
+    }
+
+    // koppelGast: kamer wordt bezet
+    @Test void testKoppelGastMaaktBezet() {
         Kamer k = new Kamer();
         k.koppelGast(new Gast(1, 2));
         assertTrue(k.isBezet());
     }
 
-    // Ik koppel een gast aan een kamer; ik verwacht dat de gast een verwijzing naar die kamer krijgt.
-    @Test
-    void testKoppelGastKoppeltKamerAanGast() {
+    // koppelGast: gast krijgt verwijzing naar kamer
+    @Test void testKoppelGastKoppeltKamerAanGast() {
         Kamer k = new Kamer();
         Gast g = new Gast(1, 2);
-
         k.koppelGast(g);
-
         assertEquals(k, g.kamer);
     }
 
-    // Ik koppel meerdere gasten aan een kamer; ik verwacht dat de lijst beide bevat.
-    @Test
-    void testMeerdereGastenKunnenKoppelen() {
+    // meerdere gasten kunnen aan één kamer gekoppeld worden
+    @Test void testMeerdereGastenKunnenKoppelen() {
         Kamer k = new Kamer();
-
         k.koppelGast(new Gast(1, 2));
         k.koppelGast(new Gast(2, 3));
-
         assertEquals(2, k.getIngecheckteGasten().size());
     }
 
-    // Ik ontkoppel een eerder ingecheckte gast; ik verwacht dat de kamer daarna weer vrij is.
-    @Test
-    void testOntkoppelGastMaaktLeeg() {
+    // ingecheckte gasten lijst bevat de juiste gasten
+    @Test void testGetIngecheckteGasten() {
+        Kamer k = new Kamer();
+        Gast g1 = new Gast(1, 1);
+        Gast g2 = new Gast(2, 2);
+        k.koppelGast(g1);
+        k.koppelGast(g2);
+        assertTrue(k.getIngecheckteGasten().contains(g1));
+        assertTrue(k.getIngecheckteGasten().contains(g2));
+    }
+
+    // ontkoppelGast: kamer wordt vrij als laatste gast vertrekt
+    @Test void testOntkoppelGastMaaktLeeg() {
         Kamer k = new Kamer();
         Gast g = new Gast(1, 2);
-
         k.koppelGast(g);
         k.ontkoppelGast(g);
-
         assertFalse(k.isBezet());
     }
 
-    // Ik laat een gast uitchecken; ik verwacht dat de kamer daarna vies wordt.
-    @Test
-    void testOntkoppelGastMaaktVies() {
+    // ontkoppelGast: kamer wordt vies
+    @Test void testOntkoppelGastMaaktVies() {
         Kamer k = new Kamer();
         Gast g = new Gast(1, 2);
-
         k.koppelGast(g);
         k.ontkoppelGast(g);
-
         assertFalse(k.isSchoon());
     }
 
-    // Ik ontkoppel een gast van een kamer; ik verwacht dat de gast daarna geen kamer meer heeft.
-    @Test
-    void testOntkoppelGastZetKamerGastOpNull() {
+    // ontkoppelGast: gast verliest kamer-verwijzing
+    @Test void testOntkoppelGastZetKamerGastOpNull() {
         Kamer k = new Kamer();
         Gast g = new Gast(1, 2);
-
         k.koppelGast(g);
         k.ontkoppelGast(g);
-
         assertNull(g.kamer);
     }
 
-    // Ik ontkoppel een gast die nooit gekoppeld was; ik verwacht dat dit geen crash geeft.
-    @Test
-    void testOntkoppelNietGekoppeldeGastCrashetNiet() {
-        Kamer k = new Kamer();
-
-        assertDoesNotThrow(() -> k.ontkoppelGast(new Gast(1, 2)));
+    // ontkoppelGast: niet-gekoppelde gast geeft geen crash
+    @Test void testOntkoppelNietGekoppeldeGastCrashetNiet() {
+        assertDoesNotThrow(() -> new Kamer().ontkoppelGast(new Gast(1, 2)));
     }
 
-    // Ik laat een gekoppelde gast de kamer binnenkomen; ik verwacht dat hij als aanwezig wordt gemarkeerd.
-    @Test
-    void testGastAanwezigNaKomtBinnen() {
+    // na ontkoppelen van alle gasten is kamer vrij en vies
+    @Test void testOntkoppelAlleGastenMaaktVrijEnVies() {
+        Kamer k = new Kamer();
+        Gast g1 = new Gast(1, 1);
+        Gast g2 = new Gast(2, 1);
+        k.koppelGast(g1);
+        k.koppelGast(g2);
+        k.ontkoppelGast(g1);
+        assertTrue(k.isBezet()); // g2 nog aanwezig
+        k.ontkoppelGast(g2);
+        assertFalse(k.isBezet());
+        assertFalse(k.isSchoon());
+    }
+
+    // gastKomtBinnen: gast wordt aanwezig gemarkeerd
+    @Test void testGastAanwezigNaKomtBinnen() {
         Kamer k = new Kamer();
         Gast g = new Gast(1, 2);
-
         k.koppelGast(g);
         k.gastKomtBinnen(g);
-
         assertTrue(k.isGastAanwezig(g));
     }
 
-    // Ik laat een aanwezige gast de kamer verlaten; ik verwacht dat hij niet meer aanwezig is.
-    @Test
-    void testGastNietAanwezigNaVerlaten() {
+    // gastKomtBinnen voor niet-ingecheckte gast doet niets
+    @Test void testGastKomtBinnenZonderKoppeling() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 1);
+        k.gastKomtBinnen(g);
+        assertFalse(k.isGastAanwezig(g));
+    }
+
+    // aanwezigen bevat gast na gastKomtBinnen
+    @Test void testAanwezigenNaKomtBinnen() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 1);
+        k.koppelGast(g);
+        k.gastKomtBinnen(g);
+        assertTrue(k.getAanwezigen().contains(g));
+    }
+
+    // gastVerlaatKamer: gast is niet meer aanwezig
+    @Test void testGastNietAanwezigNaVerlaten() {
         Kamer k = new Kamer();
         Gast g = new Gast(1, 2);
-
         k.koppelGast(g);
         k.gastKomtBinnen(g);
         k.gastVerlaatKamer(g);
-
         assertFalse(k.isGastAanwezig(g));
     }
 
-    // Ik vraag of een niet-gekoppelde gast aanwezig is; ik verwacht false.
-    @Test
-    void testGastNietAanwezigZonderKoppelen() {
-        Kamer k = new Kamer();
-        Gast g = new Gast(1, 2);
-
-        assertFalse(k.isGastAanwezig(g));
+    // gastVerlaatKamer voor niet-ingecheckte gast geeft geen crash
+    @Test void testGastVerlaatKamerZonderKoppeling() {
+        assertDoesNotThrow(() -> new Kamer().gastVerlaatKamer(new Gast(1, 1)));
     }
 
-    // Ik zet de bezet-status handmatig op true; ik verwacht dat de kamer bezet is.
-    @Test
-    void testZetBezetTrue() {
+    // aanwezigen zijn leeg na verlaten
+    @Test void testAanwezigenNaVerlaten() {
         Kamer k = new Kamer();
+        Gast g = new Gast(1, 1);
+        k.koppelGast(g);
+        k.gastKomtBinnen(g);
+        k.gastVerlaatKamer(g);
+        assertFalse(k.getAanwezigen().contains(g));
+    }
 
+    // gast is niet aanwezig zonder koppeling
+    @Test void testGastNietAanwezigZonderKoppelen() {
+        assertFalse(new Kamer().isGastAanwezig(new Gast(1, 2)));
+    }
+
+    // getAanwezigen is leeg bij nieuwe kamer
+    @Test void testAanwezigenLeegBijNieuweKamer() {
+        assertTrue(new Kamer().getAanwezigen().isEmpty());
+    }
+
+    // zetBezet true
+    @Test void testZetBezetTrue() {
+        Kamer k = new Kamer();
         k.zetBezet(true);
-
         assertTrue(k.isBezet());
     }
 
-    // Ik zet de bezet-status op true en daarna op false; ik verwacht dat de kamer vrij is.
-    @Test
-    void testZetBezetFalse() {
+    // zetBezet false
+    @Test void testZetBezetFalse() {
         Kamer k = new Kamer();
-
         k.zetBezet(true);
         k.zetBezet(false);
-
         assertFalse(k.isBezet());
     }
 
-    // Ik maak een vuile kamer schoon; ik verwacht dat de kamer weer schoon is.
-    @Test
-    void testSchoonmakenZetSchoonOpTrue() {
+    // schoonmaken: kamer wordt schoon
+    @Test void testSchoonmakenZetSchoonOpTrue() {
         Kamer k = new Kamer();
-
         k.schoon = false;
         k.schoonmaken();
-
         assertTrue(k.isSchoon());
     }
 
-    // Ik vraag een vrije en schone kamer op; ik verwacht dat de kamer zichzelf teruggeeft.
-    @Test
-    void testGetVrijeKamerVrijEnSchoon() {
+    // getVrijeKamer: geeft zichzelf terug als vrij en schoon
+    @Test void testGetVrijeKamerVrijEnSchoon() {
         Kamer k = new Kamer();
-
-        assertEquals(k, k.getVrijeKamer());
+        assertSame(k, k.getVrijeKamer());
     }
 
-    // Ik vraag een kamer op die bezet is; ik verwacht null.
-    @Test
-    void testGetVrijeKamerBezet() {
+    // getVrijeKamer: null als kamer bezet is
+    @Test void testGetVrijeKamerBezet() {
         Kamer k = new Kamer();
-
         k.koppelGast(new Gast(1, 2));
-
         assertNull(k.getVrijeKamer());
     }
 
-    // Ik vraag een kamer op die vies is; ik verwacht null.
-    @Test
-    void testGetVrijeKamerVies() {
+    // getVrijeKamer: null als kamer vies is
+    @Test void testGetVrijeKamerVies() {
         Kamer k = new Kamer();
-
         k.schoon = false;
-
         assertNull(k.getVrijeKamer());
+    }
+
+    // isKamer: true
+    @Test void testIsKamer() {
+        assertTrue(new Kamer().isKamer());
+    }
+    // ontkoppelGast: aanwezige gast wordt ook uit aanwezigen verwijderd
+    @Test void testOntkoppelAanwezigeGastVerwijdertUitAanwezigen() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 1);
+        k.koppelGast(g);
+        k.gastKomtBinnen(g);
+        k.ontkoppelGast(g);
+        assertFalse(k.getAanwezigen().contains(g));
+    }
+
+    // ontkoppelGast: niet-gekoppelde gast verandert bestaande bezetting niet
+    @Test void testOntkoppelNietGekoppeldeGastLaatBezettingStaan() {
+        Kamer k = new Kamer();
+        Gast gekoppeld = new Gast(1, 1);
+        k.koppelGast(gekoppeld);
+        k.ontkoppelGast(new Gast(2, 1));
+        assertTrue(k.isBezet());
+        assertSame(k, gekoppeld.kamer);
+    }
+
+    // getStatusTekst: bezette kamer noemt gast
+    @Test void testStatusTekstBezetMetGastInfo() {
+        Kamer k = new Kamer();
+        k.kamernummer = 101;
+        k.sterren = 2;
+        k.koppelGast(new Gast(5, 1));
+        assertTrue(k.getStatusTekst().contains("gast 5"));
+    }
+
+    // getStatusTekst: vieze vrije kamer toont schoonmaakstatus
+    @Test void testStatusTekstViesVrij() {
+        Kamer k = new Kamer();
+        k.kamernummer = 102;
+        k.schoon = false;
+        assertTrue(k.getStatusTekst().contains("WORDT SCHOONGEMAAKT"));
+    }
+
+    // getStatusTekst: schone vrije kamer toont vrij
+    @Test void testStatusTekstVrij() {
+        Kamer k = new Kamer();
+        k.kamernummer = 103;
+        assertTrue(k.getStatusTekst().contains("vrij"));
     }
 }
