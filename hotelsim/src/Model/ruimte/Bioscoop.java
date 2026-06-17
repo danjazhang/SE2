@@ -66,28 +66,35 @@ public class Bioscoop extends Ruimte implements IEventListener {
     // wordt aangeroepen door EventController als er een library event binnenkomt
     @Override
     public void onEvent(HotelEvent event) {
-        // GOTO_CINEMA: gast komt binnen, registreer hem en log
+        //als het eventtype gelijk is aan gotocinema
         if (event.getEventType() == HotelEventType.GOTO_CINEMA) {
+            //voeg het gastid toe aan de set aanwezigegastids
             aanwezigeGastIds.add(event.getGuestId());
             if (logger != null) logger.log("[" + event.getTime() + "] Bioscoop: gast " + event.getGuestId() + " komt binnen");
         }
-        // START_CINEMA: film start, sla eindtijd op en log
+        // anders als eventtype gelijk is aan startcinema
         else if (event.getEventType() == HotelEventType.START_CINEMA) {
+            // zet filmbezig op true
             filmBezig = true;
+            //bereken de eindtijd, huidige tick plus de filmduur
             filmEindTijd = event.getTime() + filmDuurTicks;
             if (logger != null) logger.log("[" + event.getTime() + "] Bioscoop: film start");
         }
-        // NONE: elke tick checkt de bioscoop of de film klaar is
+        // anders als eventtype gelijk is aan non
         else if (event.getEventType() == HotelEventType.NONE) {
             int tijd = event.getTime();
+            //als filmbezig is en tijd groter of gelijk is aan filmeindtijd
             if (filmBezig && tijd >= filmEindTijd) {
                 filmBezig = false;
+                // Maak een intern FilmEindEvent object aan alleen voor het logbericht. Log
                 FilmEindEvent eindEvent = new FilmEindEvent(tijd, -1);
                 if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Bioscoop: film eindigt");
 
-                // stuur alle aanwezige gasten terug naar hun kamer
+                // Als de gastTerugService bestaat
                 if (gastTerugService != null) {
+                    // loop  door alle gastIds in de set
                     for (int gastId : aanwezigeGastIds) {
+                        //stuur elke gast terug naar zijn kamer
                         gastTerugService.stuurTerugNaarKamer(gastId);
                     }
                 }
@@ -95,15 +102,6 @@ public class Bioscoop extends Ruimte implements IEventListener {
             }
         }
     }
-
-    // start een film
-    public void startFilm() {}
-
-    // stop een film
-    public void stopFilm() {}
-
-    // laat een gast de bioscoop betreden
-    public void betreedBioscoop() {}
 
     // stel de filmduur in — standaard 40 ticks
     public void setFilmDuur(int duur) { this.filmDuurTicks = duur; }

@@ -85,44 +85,57 @@ public class SimulatieController {
         verwerkWachttijden(hotel);
         verwerkRestaurantWachtrij(hotel);
 
-        // Godzilla: breidt vuur uit en markeert doden
+        // Godzilla: tick volgorde
+        // Stap 1: breidt vuur uit naar de volgende kolom en markeer doden op die kolom.
+        //
         GodzillaService godzilla = eventController.getGodzillaService();
+        //als gz niet leeg is en gza is, behandel
         if (godzilla != null && hotel.godzillaActief) {
             godzilla.behandel(tikTeller);
         }
-
+        // Stap 2: alleen levende personen bewegen (gestorven personen worden overgeslagen).
+        //kopie lijst,
         List<Persoon> copy = new ArrayList<>(hotel.personen);
+        //loop door alle personen in de kopie
         for (Persoon p : copy) {
+            // Als de persoon gestorven is, overslaan
             if (p.gestorven) continue;
             p.beweeg();
         }
 
-        // na beweging: controleer brandende kolommen opnieuw
+        // Stap 3: controleer na de beweging of personen op een brandende kolom terecht zijn gekomen.
+        // als gz actief is en de event bestaat
         if (hotel.godzillaActief && godzilla != null) {
+            //loop door elke k in de set bk
             for (int kolom : hotel.brandendeKolommen) {
+                //voor elke kolom wordt op het gzobject methode aanegroepen
                 godzilla.markeerDodenOpKolom(kolom, tikTeller);
             }
         }
 
-        // verwijder gestorven personen aan het einde van de tick
+        // Stap 4 (einde tick): verwijder alle gestorven personen uit hotel.personen
+        //als godzilla actief is
         if (hotel.godzillaActief) {
+            //loop door plist, vw elke p als hij gestorven is
             hotel.personen.removeIf(p -> {
                 if (p.gestorven) {
                     if (p.huidigVakje != null) {
                         p.huidigVakje.verwijderPersoon(p);
                         p.huidigVakje = null;
                     }
+                    //p toegvoegd lijst
                     hotel.slachtoffers.add(p);
                     return true;
                 }
+                //als persoon niet gestorven is, false, blijft in lijst
                 return false;
             });
-
+            // als godzilla bestaat, en de methode isklaar is true, methode stop opegroepen
             if (godzilla != null && godzilla.isKlaar()) {
                 eventManager.stop();
             }
         }
-
+        //op hc object nl opegroepen
         hotelController.notifyListeners();
     }
 

@@ -24,8 +24,6 @@ public class GastRoutingService {
     public Restaurant stuurNaarRestaurant(int gastId) {
         Gast gast = vindGast(gastId);
         if (gast == null || gast.huidigVakje == null) return null;
-        // Tijdens de terugkeerfase na een brandalarm negeren we nieuwe activiteiten tijdelijk.
-        // Eerst moet de gast weer ordelijk het hotel in en terug naar zijn normale toestand.
         if (gast.keertTerugNaAlarm) return null;
 
         // zoek dichtstbijzijnd niet-vol restaurant

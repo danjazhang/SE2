@@ -54,7 +54,7 @@ public class Hotel {
     public List<Persoon> slachtoffers = new ArrayList<>();
 
     // Sla op of Godzilla momenteel actief is: true = aanval bezig, false = geen aanval.
-    // Als dit true is, worden routing-events genegeerd.
+    // Publiek boolean attribuut, begint op false. Wordt op true gezet door GodzillaService
     public boolean godzillaActief = false;
 
     // constructor: maak lege lijsten aan

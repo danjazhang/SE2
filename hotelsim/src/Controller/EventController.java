@@ -124,22 +124,24 @@ public class EventController implements HotelEventListener {
 
         switch (evt.getEventType()) {
             case EVACUATE:
-                // activeer het brandalarm via de service
+                // maak niewe bs obj en roept activeren aan
                 new BrandalarmService(hotel, logger).activeer(evt.getTime());
+                //als de l niet leeg is, log..
                 if (logger != null) logger.log("[" + evt.getTime() + "] HOTEL: evacuatie gestart!");
                 break;
             case GODZILLA:
-                // Maak de GodzillaService precies op het moment van het event aan.
-                // Vanaf hier neemt de tick-logica in SimulatieController de verdere afhandeling over.
+                // Maak niewe object en opgeslagen als atribuut
+                // Daarna roept SimulatieController elke tick godzillaService.behandel() aan via getGodzillaService().
                 godzillaService = new GodzillaService(hotel, logger);
                 godzillaService.start(evt.getTime());
                 break;
             case NONE:
+                //als sc bestaat, meth tik
                 if (simulatieController != null) simulatieController.tik();
                 break;
             default: break;
         }
-
+        // als ss niet leeg is, roep vt aan met huidige tijd
         if (schoonmaakService != null) {
             schoonmaakService.verwerkWachtendeTaken(evt.getTime());
         }

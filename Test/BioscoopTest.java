@@ -121,26 +121,6 @@ public class BioscoopTest  {
         assertDoesNotThrow(() -> b.onEvent(maakEvent(HotelEventType.NONE, 140, 0)));
     }
 
-    // Ik roep startFilm aan; ik verwacht geen crash
-    @Test
-    void testStartFilmCrashetNiet() {
-        Bioscoop b = new Bioscoop();
-        assertDoesNotThrow(() -> b.startFilm());
-    }
-
-    // Ik roep stopFilm aan; ik verwacht geen crash
-    @Test
-    void testStopFilmCrashetNiet() {
-        Bioscoop b = new Bioscoop();
-        assertDoesNotThrow(() -> b.stopFilm());
-    }
-
-    // Ik roep betreedBioscoop aan; ik verwacht geen crash
-    @Test
-    void testBetreedBioscoopCrashetNiet() {
-        Bioscoop b = new Bioscoop();
-        assertDoesNotThrow(() -> b.betreedBioscoop());
-    }
 
     // Ik stuur GOTO_CINEMA op tijdstip 55; ik verwacht dat het tijdstip in de log staat
     @Test

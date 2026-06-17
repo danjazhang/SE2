@@ -59,14 +59,14 @@ public class Restaurant extends Ruimte implements IEventListener {
 
     // wordt aangeroepen door EventController als er een library event binnenkomt
     @Override
+//
     public void onEvent(HotelEvent event) {
-        // NONE: elke tick checkt het restaurant of gasten klaar zijn met eten
+        // als eventype van het event obj gelijk is aan non voer de erin code uit
         if (event.getEventType() == HotelEventType.NONE) {
-
-            //haal het huidige tijdstip op uit het event en sla op als tijd
+            //meth gettime oproepen en sla teruggegven getal terug 
             int tijd = event.getTime();
 
-            // maak lege lijst om gastIds op te slaan als ze klaar zijn met eten
+            // maak lege lijst voor de gasten die klaar zijn 
             List<Integer> klaar = new ArrayList<>();
             //loop door elke sleutel waarde paren in de map
             for (Map.Entry<Integer, Integer> entry : eetEindTijden.entrySet()) {
@@ -75,16 +75,21 @@ public class Restaurant extends Ruimte implements IEventListener {
                 int gastId = entry.getKey();
                 //eindtijd is de waarde 
                 int eindTijd = entry.getValue();
+                // als de huidige tijd groter/gelijk aan de eindtijd dan klaar en gast toevoegen aan klaar lijst
                 if (tijd >= eindTijd) {
                     klaar.add(gastId);
                 }
             }
 
-            // verwerk elke klare gast: verwijder uit lijst, log en stuur terug
+            // loop door alle gastids in de klaarlijst
             for (int gastId : klaar) {
+                // vw gast uit de map via gastid, zodat hij niet meer onthouden wordt
                 eetEindTijden.remove(gastId);
+                // nieuw obj, geeft tijd en gstid mee aan cons alleen gebruikt voor log bericht;
                 RestaurantEindEvent eindEvent = new RestaurantEindEvent(tijd, gastId);
+                //als de logger niet nu is log;
                 if (logger != null) logger.log("[" + eindEvent.getTijd() + "] Restaurant: gast " + eindEvent.getGastId() + " klaar");
+                // als gts niet leeg is, gast loopt terug naar kamer 
                 if (gastTerugService != null) gastTerugService.stuurTerugNaarKamer(gastId);
             }
         }

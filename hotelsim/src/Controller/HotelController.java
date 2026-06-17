@@ -9,14 +9,9 @@ import java.util.List;
 // Verantwoordelijkheid: hotel data beheren en observers notificeren
 public class HotelController {
 
-    //huidige hotel
     private Hotel hotel;
-
-    //beheert het laden van layouts
     private LayoutController layoutController;
-
     private EventController eventController;
-
     private ILogger logger;
 
     // lijst van observers (View) die genotificeerd worden bij wijzigingen
