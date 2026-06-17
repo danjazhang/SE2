@@ -9,34 +9,45 @@ import Model.ruimte.*;
 
 public class Pathfinder {
 
+    //atributen opgeslagen als variabelen
     private Layout layout;
     private Hotel hotel;
 
+    //constructor
     public Pathfinder(Hotel hotel) {
+        //haal hotel en layout uit hotel op en sla op in deze objecten
         this.hotel = hotel;
         this.layout = hotel.layout;
     }
 
     // bepaal volgende stap richting doel
     public Vakje volgendeStap(Vakje huidig, Vakje doel) {
+        // als h en d niet bestaan, geef null terug
         if (huidig == null || doel == null) return null;
+        // sla x en y van huidige vakje op
         int x = huidig.x;
         int y = huidig.y;
 
-        // op de trap: beweeg verticaal richting doel-y, of horizontaal als y al gelijk is
+        // als huidige ruimte onderdeel is van een trap
         if (huidig.ruimte instanceof Trap) {
+            //als huidige y lager is dan, ga 1 vakje omhoog
             if (y < doel.y) return layout.krijgVakje(x, y + 1);
+            //als huidige y hoger is dan doel y, 1 vakje omlaag
             if (y > doel.y) return layout.krijgVakje(x, y - 1);
-            // zelfde y: verlaat de trap horizontaal richting doel
+            //als x kleiner is dan doel x, 1 vakje naar recht
             if (x < doel.x) return layout.krijgVakje(x + 1, y);
+            //als x groter is dan doel x, 1 vakje naar links
             if (x > doel.x) return layout.krijgVakje(x - 1, y);
             return null;
         }
 
-        // zelfde y als doel: beweeg horizontaal
+        // als huidige y gelijk is aan doel y
         if (y == doel.y) {
+            //als x kleiner is dan doel x, verhoog met 1
             if (x < doel.x) x++;
+            // anders als x groter is dan doel x, verlaag met 1
             else if (x > doel.x) x--;
+            //geef vakje op nieuwe positie terug
             return layout.krijgVakje(x, y);
         }
 
@@ -46,8 +57,9 @@ public class Pathfinder {
             if (y > doel.y) return layout.krijgVakje(x, y - 1);
         }
 
-        // op leeg vakje/lobby: beweeg horizontaal richting doel-x
+        // als x niet gelijk is aan doel x
         if (x != doel.x) {
+            // als x kleiner is dan doel x, ga stap naar links
             if (x < doel.x) return layout.krijgVakje(x + 1, y);
             return layout.krijgVakje(x - 1, y);
         }
