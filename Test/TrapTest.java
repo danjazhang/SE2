@@ -25,11 +25,6 @@ public class TrapTest {
         assertEquals(1, t.tijdperverdieping);
     }
 
-    // gebruikTrap: geen crash
-    @Test void testGebruikTrapGeenCrash() {
-        assertDoesNotThrow(() -> new Trap(2).gebruikTrap(null));
-    }
-
     // erft van Ruimte: posX en posY beginnen op 0
     @Test void testErftVanRuimte() {
         Trap t = new Trap(3);

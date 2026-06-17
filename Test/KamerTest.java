@@ -242,4 +242,47 @@ public class KamerTest {
     @Test void testIsKamer() {
         assertTrue(new Kamer().isKamer());
     }
+    // ontkoppelGast: aanwezige gast wordt ook uit aanwezigen verwijderd
+    @Test void testOntkoppelAanwezigeGastVerwijdertUitAanwezigen() {
+        Kamer k = new Kamer();
+        Gast g = new Gast(1, 1);
+        k.koppelGast(g);
+        k.gastKomtBinnen(g);
+        k.ontkoppelGast(g);
+        assertFalse(k.getAanwezigen().contains(g));
+    }
+
+    // ontkoppelGast: niet-gekoppelde gast verandert bestaande bezetting niet
+    @Test void testOntkoppelNietGekoppeldeGastLaatBezettingStaan() {
+        Kamer k = new Kamer();
+        Gast gekoppeld = new Gast(1, 1);
+        k.koppelGast(gekoppeld);
+        k.ontkoppelGast(new Gast(2, 1));
+        assertTrue(k.isBezet());
+        assertSame(k, gekoppeld.kamer);
+    }
+
+    // getStatusTekst: bezette kamer noemt gast
+    @Test void testStatusTekstBezetMetGastInfo() {
+        Kamer k = new Kamer();
+        k.kamernummer = 101;
+        k.sterren = 2;
+        k.koppelGast(new Gast(5, 1));
+        assertTrue(k.getStatusTekst().contains("gast 5"));
+    }
+
+    // getStatusTekst: vieze vrije kamer toont schoonmaakstatus
+    @Test void testStatusTekstViesVrij() {
+        Kamer k = new Kamer();
+        k.kamernummer = 102;
+        k.schoon = false;
+        assertTrue(k.getStatusTekst().contains("WORDT SCHOONGEMAAKT"));
+    }
+
+    // getStatusTekst: schone vrije kamer toont vrij
+    @Test void testStatusTekstVrij() {
+        Kamer k = new Kamer();
+        k.kamernummer = 103;
+        assertTrue(k.getStatusTekst().contains("vrij"));
+    }
 }

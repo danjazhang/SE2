@@ -208,4 +208,62 @@ public class PathfinderTest {
         g.zetStartPositie(hotel.layout.krijgVakje(2, 1));
         assertDoesNotThrow(() -> pf.zetRouteTrap(g, null));
     }
+
+    // volgendeStap: op trap zelfde y verlaat trap naar rechts
+    @Test void testVolgendeStapTrapZelfdeYRechts() {
+        Vakje stap = pf.volgendeStap(hotel.layout.krijgVakje(7, 2), hotel.layout.krijgVakje(8, 2));
+        assertEquals(8, stap.x);
+        assertEquals(2, stap.y);
+    }
+
+    // volgendeStap: op trap zelfde y verlaat trap naar links
+    @Test void testVolgendeStapTrapZelfdeYLinks() {
+        Vakje stap = pf.volgendeStap(hotel.layout.krijgVakje(7, 2), hotel.layout.krijgVakje(6, 2));
+        assertEquals(6, stap.x);
+        assertEquals(2, stap.y);
+    }
+
+    // volgendeStap: zelfde x andere y beweegt verticaal
+    @Test void testVolgendeStapZelfdeXVerticaal() {
+        Vakje stap = pf.volgendeStap(hotel.layout.krijgVakje(3, 1), hotel.layout.krijgVakje(3, 2));
+        assertEquals(3, stap.x);
+        assertEquals(2, stap.y);
+    }
+
+    // zetRoute: route reset oude liftstatus en verwijdert uit wachtrij
+    @Test void testZetRouteResetLiftStatusAlsGastWacht() {
+        Kamer kamer = new Kamer();
+        kamer.posX = 4; kamer.posY = 1; kamer.breedte = 1; kamer.hoogte = 1;
+        hotel.ruimtes.add(kamer);
+        hotel.layout.plaatsRuimte(kamer);
+
+        Gast g = new Gast(2, 1);
+        g.setPathfinder(pf);
+        g.zetStartPositie(hotel.layout.krijgVakje(2, 1));
+        g.gebruiktLift = true;
+        g.wachtOpLift = true;
+        hotel.lift.roep(g, 1);
+
+        pf.zetRoute(g, kamer);
+
+        assertFalse(g.gebruiktLift);
+        assertFalse(g.wachtOpLift);
+        assertEquals(0, hotel.lift.aantalWachtend(1));
+    }
+
+    // zetRouteTrap: reset ook liftstatus bij verplichte traproute
+    @Test void testZetRouteTrapResetLiftStatusAlsGastWacht() {
+        Gast g = new Gast(3, 1);
+        g.setPathfinder(pf);
+        g.zetStartPositie(hotel.layout.krijgVakje(2, 1));
+        g.gebruiktLift = true;
+        g.wachtOpLift = true;
+        hotel.lift.roep(g, 1);
+
+        pf.zetRouteTrap(g, hotel.layout.krijgVakje(3, 4));
+
+        assertFalse(g.gebruiktLift);
+        assertFalse(g.wachtOpLift);
+        assertEquals(0, hotel.lift.aantalWachtend(1));
+    }
 }

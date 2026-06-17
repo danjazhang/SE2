@@ -192,4 +192,36 @@ public class GodzillaServiceTest {
         assertTrue(hotel.brandendeKolommen.contains(2));
         assertTrue(hotel.brandendeKolommen.contains(3));
     }
+
+    // start: zonder lift crasht niet en brandt nog steeds kolom 1
+    @Test void testStartZonderLift() {
+        hotel.lift = null;
+        GodzillaService gs = new GodzillaService(hotel, logger);
+        assertDoesNotThrow(() -> gs.start(1));
+        assertTrue(hotel.brandendeKolommen.contains(1));
+    }
+
+    // markeerDodenOpKolom: persoon op andere kolom blijft leven
+    @Test void testMarkeerDodenAndereKolomBlijftLeven() {
+        GodzillaService gs = new GodzillaService(hotel, logger);
+        Gast gast = new Gast(7, 1);
+        gast.zetStartPositie(hotel.layout.krijgVakje(3, 1));
+        hotel.voegPersoonToe(gast);
+        gs.markeerDodenOpKolom(2, 1);
+        assertFalse(gast.gestorven);
+    }
+
+    // liftpassagier die al gestorven is wordt niet opnieuw gelogd
+    @Test void testLiftPassagierAlGestorvenWordtOvergeslagen() {
+        GodzillaService gs = new GodzillaService(hotel, logger);
+        Gast gast = new Gast(8, 1);
+        gast.zetStartPositie(hotel.layout.krijgVakje(1, 1));
+        gast.inLift = true;
+        gast.gestorven = true;
+        hotel.lift.roep(gast, 1);
+        hotel.voegPersoonToe(gast);
+        int logsVoor = logger.logs.size();
+        gs.start(1);
+        assertEquals(logsVoor + 2, logger.logs.size()); // kolom + startbericht, geen passagierslog
+    }
 }

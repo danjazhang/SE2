@@ -202,6 +202,56 @@ public class LiftTest {
         assertEquals(2, lift.getHuidigeVerdieping());
     }
 
+    // tik: wachtende gast met null positie wordt uit wachtrij verwijderd
+    @Test void testTikVerwijdertWachterZonderPositie() {
+        Gast g = new Gast(10, 1);
+        lift.roep(g, 1);
+        lift.tik();
+        assertEquals(0, lift.aantalWachtend(1));
+    }
+
+    // tik: gast op verkeerde x stapt niet in
+    @Test void testTikGastOpVerkeerdeXStaptNietIn() {
+        Gast g = maakGast(11, 3, 1);
+        g.gewensteVerdieping = 3;
+        lift.roep(g, 1);
+        lift.tik();
+        assertFalse(g.inLift);
+        assertEquals(1, lift.aantalWachtend(1));
+    }
+
+    // tik: gast op verkeerde y stapt niet in
+    @Test void testTikGastOpVerkeerdeYStaptNietIn() {
+        Gast g = maakGast(12, 2, 2);
+        g.gewensteVerdieping = 3;
+        lift.roep(g, 1);
+        lift.tik();
+        assertFalse(g.inLift);
+        assertEquals(1, lift.aantalWachtend(1));
+    }
+
+    // tik: lobby-wachter heeft prioriteit boven een andere wachtrij
+    @Test void testLobbyWachterHeeftPrioriteit() {
+        lift.setLobbyVerdieping(1);
+        lift.roep(maakGast(13, 2, 1), 1);
+        lift.roep(maakGast(14, 2, 2), 2);
+        lift.tik();
+        assertEquals(1, lift.getHuidigeVerdieping());
+    }
+
+    // tik uitBedrijf: passagier wordt nog afgeleverd
+    @Test void testTikUitBedrijfLevertPassagierAf() {
+        Gast g = maakGast(15, 2, 1);
+        g.gewensteVerdieping = 3;
+        lift.roep(g, 1);
+        lift.tik(); // instappen
+        lift.zetUitBedrijf(true);
+        lift.tik();
+        lift.tik();
+        assertEquals(3, lift.getHuidigeVerdieping());
+        assertTrue(g.moetUitstappen);
+    }
+
     // hulpmethode
     private Gast maakGast(int id, int x, int y) {
         Gast g = new Gast(id, 1);

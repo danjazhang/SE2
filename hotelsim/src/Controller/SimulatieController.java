@@ -19,6 +19,7 @@ public class SimulatieController {
     private HotelEventManager eventManager;
     private EventController eventController;
     private HotelController hotelController;
+    private boolean eventManagerGestart = false;
     private int tikTeller = 0;
     private long startTijdMs = 0;
 
@@ -37,10 +38,15 @@ public class SimulatieController {
         startTijdMs = System.currentTimeMillis();
         tikTeller = 0;
         eventManager.start(scenario);
+        eventManagerGestart = true;
     }
 
     public void pauzeer() { eventManager.pauze(); }
-    public void stop()    { eventManager.stop(); }
+    public void stop() {
+        if (!eventManagerGestart) return;
+        eventManager.stop();
+        eventManagerGestart = false;
+    }
 
     // stel de maximale wachttijd in voordat een gast gesummoned wordt
     public void setMaxWachtTicks(int ticks) { this.maxWachtTicks = ticks; }

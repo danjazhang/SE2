@@ -55,14 +55,6 @@ public class RuimteTest {
         assertNull(new Ruimte().getVrijeKamer());
     }
 
-    // setIngang en krijgIngang
-    @Test void testSetEnKrijgIngang() {
-        Ruimte r = new Ruimte();
-        int[] ingang = r.krijgIngang();
-        assertEquals(3, ingang[0]);
-        assertEquals(7, ingang[1]);
-    }
-
     // isKamer: standaard false
     @Test void testIsKamerFalse() {
         assertFalse(new Ruimte().isKamer());

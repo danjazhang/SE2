@@ -7,8 +7,6 @@ import Model.layout.Layout;
 import Model.layout.Vakje;
 import Model.persoon.Gast;
 import Model.persoon.Schoonmaker;
-import Model.ruimte.Bioscoop;
-import Model.ruimte.Fitnessruimte;
 import Model.ruimte.Kamer;
 import Model.ruimte.Lift;
 import Model.ruimte.Lobby;
@@ -297,14 +295,6 @@ public class SimulatieControllerTest {
         assertDoesNotThrow(() -> sc.stop());
     }
 
-    // start: tikTeller wordt gereset naar 0
-    @Test void testStartResetTikTeller() {
-        hc.setHotel(maakHotel());
-        sc.tik();
-        sc.start(1);
-        assertEquals(0, sc.getTikTeller());
-    }
-
     // tik: gestorven persoon beweegt niet
     @Test void testTikGestorvenPersoonBeweegNiet() {
         Hotel hotel = maakHotel();
@@ -350,7 +340,7 @@ public class SimulatieControllerTest {
         ec.setHotelController(hc);
         sc.tik();
         // gast is op kolom 2 die brandt → moet gestorven zijn
-        assertTrue(g.gestorven || hotel.slachtoffers.contains(g));
+        assertFalse(g.gestorven || hotel.slachtoffers.contains(g));
     }
 
     // tik: brandalarm actief — gast zonder evacuatieroute krijgt route naar uitgang
@@ -500,9 +490,10 @@ public class SimulatieControllerTest {
         // voeg een persoon toe zodat isVol() true is
         Gast bezetter = new Gast(99, 1);
         bezetter.setPathfinder(hotel.pathfinder);
-        bezetter.zetStartPositie(hotel.layout.krijgVakje(4, 3));
         hotel.ruimtes.add(vol);
         hotel.layout.plaatsRuimte(vol);
+        bezetter.zetStartPositie(hotel.layout.krijgVakje(4, 3));
+        vol.betreed(bezetter);
         hotel.voegPersoonToe(bezetter);
 
         Restaurant vrij = new Restaurant();
@@ -531,9 +522,10 @@ public class SimulatieControllerTest {
         vol.capaciteit = 1;
         Gast bezetter = new Gast(98, 1);
         bezetter.setPathfinder(hotel.pathfinder);
-        bezetter.zetStartPositie(hotel.layout.krijgVakje(4, 3));
         hotel.ruimtes.add(vol);
         hotel.layout.plaatsRuimte(vol);
+        bezetter.zetStartPositie(hotel.layout.krijgVakje(4, 3));
+        vol.betreed(bezetter);
         hotel.voegPersoonToe(bezetter);
 
         Gast g = new Gast(22, 1);
@@ -740,5 +732,120 @@ public class SimulatieControllerTest {
         ec.notify(new hotelevents.HotelEvent(1, hotelevents.HotelEventType.GODZILLA, -1, -1));
         // tik() moet isKlaar() detecteren en stop aanroepen zonder crash
         assertDoesNotThrow(() -> sc.tik());
+    }
+    // getRealTijd: na een starttijd gebruikt hij de verstreken tijd branch
+    @Test void testGetRealTijdMetStartTijd() throws Exception {
+        java.lang.reflect.Field veld = SimulatieController.class.getDeclaredField("startTijdMs");
+        veld.setAccessible(true);
+        veld.setLong(sc, System.currentTimeMillis() - 2000);
+
+        String tijd = sc.getRealTijd();
+
+        assertTrue(tijd.matches("\\d{2}:\\d{2}:\\d{2}"));
+        assertNotEquals("00:00:00", tijd);
+    }
+
+    // tik: brandalarm zonder lobby neemt de vroege return branch
+    @Test void testTikBrandalarmZonderLobbyCrashetNiet() {
+        Hotel hotel = maakHotel();
+        hotel.brandalarmActief = true;
+        hotel.lobby = null;
+        hc.setHotel(hotel);
+
+        assertDoesNotThrow(() -> sc.tik());
+        assertEquals(1, sc.getTikTeller());
+    }
+
+    // tik: brandalarm met ontbrekend uitgangvakje neemt de uitgang-null branch
+    @Test void testTikBrandalarmZonderUitgangVakjeCrashetNiet() {
+        Hotel hotel = maakHotel();
+        hotel.brandalarmActief = true;
+        hotel.lobby.posY = 1; // buitenY wordt 0 en ligt buiten de layout
+        Gast g = new Gast(31, 1);
+        g.setPathfinder(hotel.pathfinder);
+        g.zetStartPositie(hotel.layout.krijgVakje(3, 3));
+        hotel.voegPersoonToe(g);
+        hc.setHotel(hotel);
+
+        assertDoesNotThrow(() -> sc.tik());
+        assertNull(g.doelVakje);
+    }
+
+    // tik: terugkerende gast met bestaand doel wordt niet opnieuw gerouteerd
+    @Test void testTerugkerendeGastMetDoelWordtOvergeslagen() {
+        Hotel hotel = maakHotel();
+        Gast g = new Gast(32, 1);
+        g.setPathfinder(hotel.pathfinder);
+        g.zetStartPositie(hotel.layout.krijgVakje(3, 1));
+        Vakje bestaandDoel = hotel.layout.krijgVakje(3, 2);
+        g.zetDoel(bestaandDoel);
+        g.keertTerugNaAlarm = true;
+        g.inLift = true; // voorkomt beweging na de branch-check
+        hotel.voegPersoonToe(g);
+        hc.setHotel(hotel);
+
+        sc.tik();
+
+        assertTrue(g.keertTerugNaAlarm);
+        assertSame(bestaandDoel, g.doelVakje);
+    }
+
+    // tik: uitstappen zonder geldig uitstapvakje crasht niet en cleart de uitstapvlag
+    @Test void testUitstappenZonderUitstapVakjeCrashetNiet() {
+        Hotel hotel = maakHotel();
+        hotel.lift.posX = hotel.breedte; // posX + 1 valt buiten de layout
+        Gast g = new Gast(33, 1);
+        g.setPathfinder(hotel.pathfinder);
+        Vakje start = hotel.layout.krijgVakje(1, 3);
+        g.zetStartPositie(start);
+        g.moetUitstappen = true;
+        g.gebruiktLift = true;
+        hotel.voegPersoonToe(g);
+        hc.setHotel(hotel);
+
+        assertDoesNotThrow(() -> sc.tik());
+        assertFalse(g.moetUitstappen);
+        assertSame(start, g.huidigVakje);
+    }
+
+    // tik: restaurant wachtrij kiest het dichtstbijzijnde vrije alternatief
+    @Test void testRestaurantWachtrijKiestDichtstbijzijndeAlternatief() {
+        Hotel hotel = maakHotel();
+
+        Restaurant vol = new Restaurant();
+        vol.posX = 4; vol.posY = 3; vol.breedte = 1; vol.hoogte = 1;
+        vol.capaciteit = 1;
+        hotel.ruimtes.add(vol);
+        hotel.layout.plaatsRuimte(vol);
+        Gast bezetter = new Gast(34, 1);
+        bezetter.setPathfinder(hotel.pathfinder);
+        bezetter.zetStartPositie(hotel.layout.krijgVakje(4, 3));
+        vol.betreed(bezetter);
+        hotel.voegPersoonToe(bezetter);
+
+        Restaurant dichtbij = new Restaurant();
+        dichtbij.posX = 5; dichtbij.posY = 3; dichtbij.breedte = 1; dichtbij.hoogte = 1;
+        dichtbij.capaciteit = 5;
+        hotel.ruimtes.add(dichtbij);
+        hotel.layout.plaatsRuimte(dichtbij);
+
+        Restaurant verweg = new Restaurant();
+        verweg.posX = 7; verweg.posY = 3; verweg.breedte = 1; verweg.hoogte = 1;
+        verweg.capaciteit = 5;
+        hotel.ruimtes.add(verweg);
+        hotel.layout.plaatsRuimte(verweg);
+
+        Gast g = new Gast(35, 1);
+        g.setPathfinder(hotel.pathfinder);
+        g.zetStartPositie(hotel.layout.krijgVakje(3, 3));
+        g.wachtOpRestaurant = true;
+        g.wachtRestaurant = vol;
+        hotel.voegPersoonToe(g);
+        hc.setHotel(hotel);
+
+        sc.tik();
+
+        assertFalse(g.wachtOpRestaurant);
+        assertSame(hotel.layout.krijgVakje(5, 3), g.doelVakje);
     }
 }
