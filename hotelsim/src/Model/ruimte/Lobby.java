@@ -121,17 +121,26 @@ public class Lobby extends Ruimte implements IEventListener {
     // als een uitcheckende gast de lobby betreedt, verwijder hem alleen als hij het balievakje bereikt
     @Override
     public void betreed(Model.persoon.Persoon p) {
+        // standaard gedrag van de superclass uitvoeren (bv. persoon toevoegen aan vakje)
         super.betreed(p);
+        // alleen gasten hebben uitcheck-logica
         if (p instanceof Gast) {
+
             Gast gast = (Gast) p;
+            // check: alleen verwijderen als de gast aan het uitchecken is
+            // én precies op het balievakje staat (niet ergens anders in de lobby)
             if (gast.uitcheckend && gast.huidigVakje != null
                     && gast.huidigVakje.x == balieX
                     && gast.huidigVakje.y == balieY) {
+
+                // gast eerst uit het vakje verwijderen (visueel en logisch uit grid halen)
                 gast.huidigVakje.verwijderPersoon(gast);
+                // zet huidige positie op null omdat hij uit het hotel verdwijnt
                 gast.huidigVakje = null;
                 gast.wisRoute();
-                // ook uit lift-wachtrij/-passagiers verwijderen
+                // ook verwijderen uit de lift-systemen (wachtrijen + eventuele lift status)
                 if (hotel.lift != null) hotel.lift.verwijderUitWachtrij(gast);
+                // gast volledig verwijderen uit de lijst van actieve personen in het hotel
                 hotel.personen.remove(gast);
             }
         }

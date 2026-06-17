@@ -10,129 +10,284 @@ import Model.ruimte.Ruimte;
 import Model.ruimte.Trap;
 import org.json.JSONObject;
 
-// Verantwoordelijkheid: layouts laden en opslaan
+// Verantwoordelijkheid:
+// Deze controller is verantwoordelijk voor het laden,
+// aanmaken en opslaan van hotel-layouts.
+// Hij zet JSON-data om naar een volledig Hotel-object.
 public class LayoutController {
 
-    // beheert alle geladen hotels
+    // HotelManager bewaart alle geladen hotels en layouts.
+    // Hierdoor kunnen ze later opnieuw opgehaald worden via een ID.
     private HotelManager hotelManager = new HotelManager();
 
+    // Logger voor meldingen en foutopsporing.
     private ILogger logger;
 
-    // laad een nieuw hotel vanuit een JSON bestand
+    // Laadt een nieuw hotel vanuit een JSON-bestand.
+    // bestandsnaam = naam die gebruikt wordt binnen de applicatie
+    // Geeft een uniek ID terug van het geladen hotel.
+    // Bij een fout wordt -1 teruggegeven.
     public int laadVanBestand(String bestandspad, String bestandsnaam) {
-        //lees het JSON bestand via de parser
+
+        // Lees het JSON-bestand in via de LayoutParser.
         ParseResultaat resultaat = new LayoutParser().laad(bestandspad);
-        //als laden mislukt geef -1 terug, want id begint bij 1
+
+        // Als het laden mislukt is, stop dan onmiddellijk.
+        // We gebruiken -1 omdat geldige ID's vanaf 1 beginnen.
         if (resultaat == null) return -1;
 
-        //maak nieuwe hotel
+        // Maak een volledig nieuw hotel-object aan.
         Hotel nieuwHotel = new Hotel();
 
-        // grid groter maken:
-        // +3 voor lift (links) en trap (rechts, 2 breed)
-        // +2 voor lobby (y=1, onderaan) en extra ruimte bovenaan
-        // +1 voor "buiten"-rij op y=0 (evacuatiebestemming, buiten het gebouw)
-        // JSON-ruimtes krijgen posY+2 zodat lobby op y=2 zit en y=1 de buiten-rij is
-        int gridBreedte = resultaat.breedte + 3;
-        int gridHoogte = resultaat.hoogte + 3; // +1 buiten, +1 lobby, +1 marge bovenaan
+        // =====================================================
+        // BEREKEN AFMETINGEN VAN HET HOTELGRID
+        // =====================================================
 
+        // Het originele JSON-bestand bevat enkel de kamers en ruimtes.
+        int gridBreedte = resultaat.breedte + 3;
+
+        // We voegen extra rijen toe:
+        int gridHoogte = resultaat.hoogte + 3;
+
+        // Bewaar de berekende afmetingen in het hotel.
         nieuwHotel.breedte = gridBreedte;
         nieuwHotel.hoogte = gridHoogte;
+
+        // Maak een nieuwe lege layout met deze afmetingen.
         nieuwHotel.layout = new Layout(gridBreedte, gridHoogte);
 
-        // zoek de hoogste kamer-y in de JSON (na +2 offset) voor kamernummering
+        // =====================================================
+        // ZOEK DE ONDERSTE KAMER
+        // =====================================================
+
+        // Wordt gebruikt voor kamernummering.
         int ondersteKamerPosY = 1;
+
+        // Loop door alle ruimtes uit de JSON.
         for (JSONObject obj : resultaat.ruimteData) {
+
+            // Controleer of deze ruimte een kamer is.
             if (obj.getString("AreaType").equals("Room")) {
-                ondersteKamerPosY = Math.max(ondersteKamerPosY, obj.getInt("_posY") + 2);
+
+                // Zoek de grootste Y-positie.
+                // +2 omdat kamers later twee rijen naar beneden verschoven worden.
+                ondersteKamerPosY = Math.max(
+                        ondersteKamerPosY,
+                        obj.getInt("_posY") + 2
+                );
             }
         }
 
-        // maak ruimtes aan; posY krijgt +2 zodat lobby (y=2) en buiten (y=1) eronder passen
-        RuimteFactory factory = new RuimteFactory(logger, ondersteKamerPosY);
+        // =====================================================
+        // RUIMTES AANMAKEN
+        // =====================================================
 
+        // De RuimteFactory maakt de juiste ruimteklasse aan op basis van de AreaType uit de JSON.
+        RuimteFactory factory =
+                new RuimteFactory(logger, ondersteKamerPosY);
+
+        // Doorloop alle ruimtegegevens uit de JSON.
         for (JSONObject obj : resultaat.ruimteData) {
-            Ruimte r = factory.maakRuimte(obj.getString("AreaType"), obj);
-            r.posX = obj.getInt("_posX") + 1; // ruimte voor lift
-            r.posY = obj.getInt("_posY") + 2; // +2 zodat lobby op y=2 en buiten op y=1 passen
+
+            // Maak een nieuwe ruimte aan.
+            Ruimte r =
+                    factory.maakRuimte(
+                            obj.getString("AreaType"),
+                            obj
+                    );
+
+            // Positie aanpassen:
+            //
+            // +1 omdat links een lift komt.
+            r.posX = obj.getInt("_posX") + 1;
+
+            // +2 omdat onderaan plaats moet zijn
+            // voor buiten en de lobby.
+            r.posY = obj.getInt("_posY") + 2;
+
+            // Breedte uit JSON overnemen.
             r.breedte = obj.getInt("_breedte");
+
+            // Hoogte uit JSON overnemen.
             r.hoogte = obj.getInt("_hoogte");
+
+            // Voeg ruimte toe aan de lijst van ruimtes.
             nieuwHotel.ruimtes.add(r);
+
+            // Plaats ruimte in de layout-grid.
             nieuwHotel.layout.plaatsRuimte(r);
         }
 
-        // y=1  = "buiten" — evacuatiebestemming, leeg vakje voor de lobby
-        // y=2  = lobby
-        // y=3..gridHoogte = kamers en andere ruimtes
+        // =====================================================
+        // VASTE VERDIEPINGEN
+        // =====================================================
+
+        // y = 1 stelt de buitenwereld voor.
+        // Hier moeten gasten naartoe evacueren.
         int buitenPosY = 1;
+
+        // y = 2 is de lobby.
         int lobbyPosY = 2;
+
+        // Vanaf y = 3 beginnen de echte kamers.
         int kamersStartY = 3;
 
+        // =====================================================
+        // LIFT AANMAKEN
+        // =====================================================
+
+        // Maak een lift aan.
         Lift lift = new Lift(nieuwHotel);
+        // Lift staat helemaal links.
         lift.posX = 1;
+        // Lift begint vanaf de eerste kamerverdieping.
         lift.posY = kamersStartY;
+        // Lift is één vak breed.
         lift.breedte = 1;
-        lift.hoogte = gridHoogte - kamersStartY + 1; // van kamersStartY t/m gridHoogte
+        // Lift loopt over alle verdiepingen.
+        lift.hoogte = gridHoogte - kamersStartY + 1;
+        // Maak wachtrijen voor alle verdiepingen.
         lift.initWachtrijen(gridHoogte);
-        lift.setLobbyVerdieping(lobbyPosY); // lift start bij de lobby (y=2)
+        // Stel de lobbyverdieping in.
+        lift.setLobbyVerdieping(lobbyPosY);
+        // Bewaar lift in het hotel.
         nieuwHotel.lift = lift;
+        // Voeg lift toe aan de ruimtelijst.
         nieuwHotel.ruimtes.add(lift);
+        // Plaats lift in de layout.
         nieuwHotel.layout.plaatsRuimte(lift);
 
+        // =====================================================
+        // TRAP AANMAKEN
+        // =====================================================
+
+        // Maak een trap aan.
         Trap trap = new Trap(3);
+        // Trap staat helemaal rechts.
         trap.posX = gridBreedte - 1;
+        // Start op eerste kamerverdieping.
         trap.posY = kamersStartY;
+        // Trap is twee vakken breed.
         trap.breedte = 2;
+        // Trap loopt over alle verdiepingen.
         trap.hoogte = gridHoogte - kamersStartY + 1;
+        // Bewaar trap in hotel.
         nieuwHotel.trap = trap;
+        // Voeg trap toe aan lijst.
         nieuwHotel.ruimtes.add(trap);
+        // Plaats trap in layout.
         nieuwHotel.layout.plaatsRuimte(trap);
 
-        // lobby: posY=2, breedte van x=1 t/m trap
-        Lobby lobby = new Lobby(1, lobbyPosY, gridBreedte - 2, 1, gridBreedte / 2, lobbyPosY, nieuwHotel, logger);
+        // =====================================================
+        // LOBBY AANMAKEN
+        // =====================================================
+
+        Lobby lobby = new Lobby(
+                1,
+                lobbyPosY,
+                gridBreedte - 2,
+                1,
+                gridBreedte / 2,
+                lobbyPosY,
+                nieuwHotel,
+                logger
+        );
+
+        // Bewaar lobby.
         nieuwHotel.lobby = lobby;
+
+        // Voeg lobby toe aan ruimtelijst.
         nieuwHotel.ruimtes.add(lobby);
+
+        // Plaats lobby in layout.
         nieuwHotel.layout.plaatsRuimte(lobby);
 
+        // =====================================================
+        // EXTRA HOTELCOMPONENTEN
+        // =====================================================
+
+        // Maak een pathfinder.
+        // Deze berekent routes door het hotel.
         nieuwHotel.pathfinder = new Pathfinder(nieuwHotel);
 
-        // koppel de brandalarmservice aan het hotel
-        BrandalarmService brandalarmService = new BrandalarmService(nieuwHotel, logger);
+        // Maak een brandalarmservice.
+        BrandalarmService brandalarmService =
+                new BrandalarmService(nieuwHotel, logger);
+
+        // Bewaar de service in het hotel.
         nieuwHotel.brandalarmService = brandalarmService;
 
-        // laat de personenfactory de standaard schoonmakers voor dit hotel opzetten
-        PersonenFactory personenFactory = new PersonenFactory();
-        personenFactory.maakStandaardSchoonmakers(nieuwHotel, gridBreedte, gridHoogte, lobbyPosY);
+        // =====================================================
+        // STANDAARD SCHOONMAKERS AANMAKEN
+        // =====================================================
 
-        //sla de layout op in hotelmanager met bestandsnaam als naam
-        int id = hotelManager.addLayout(bestandsnaam, nieuwHotel.layout);
-        //sla het hele hotel object op in hotelmanager met zelfde id als sleutel
+        // PersonenFactory maakt standaard personeel aan.
+        PersonenFactory personenFactory = new PersonenFactory();
+
+        // Voeg standaard schoonmakers toe aan het hotel.
+        personenFactory.maakStandaardSchoonmakers(
+                nieuwHotel,
+                gridBreedte,
+                gridHoogte,
+                lobbyPosY
+        );
+
+        // =====================================================
+        // OPSLAAN IN HOTELMANAGER
+        // =====================================================
+
+        // Sla de layout op en ontvang een uniek ID.
+        int id =
+                hotelManager.addLayout(
+                        bestandsnaam,
+                        nieuwHotel.layout
+                );
+
+        // Sla het volledige hotel op met hetzelfde ID.
         hotelManager.loadHotel(id, nieuwHotel);
+
+        // Geef het ID terug.
         return id;
     }
 
-    // maak handmatig een lege layout aan
+    // Maak handmatig een volledig lege layout.
     public int maakHandmatigeLayout(String naam, int breedte, int hoogte) {
-        //maak nieuw lege hotel
+
+        // Maak een nieuw hotel.
         Hotel nieuwHotel = new Hotel();
-        //maak lege grid
+
+        // Maak een lege layout-grid.
         nieuwHotel.layout = new Layout(breedte, hoogte);
-        //sla afmetingen op in hotel
+
+        // Bewaar de afmetingen in het hotel.
         nieuwHotel.breedte = breedte;
         nieuwHotel.hoogte = hoogte;
-        //sla layout op met opgegeven naam en krijg id terug
-        int id = hotelManager.addLayout(naam, nieuwHotel.layout);
-        //sla hotel op met zelfde id
+
+        // Sla layout op en ontvang een ID.
+        int id =
+                hotelManager.addLayout(
+                        naam,
+                        nieuwHotel.layout
+                );
+
+        // Sla ook het hotel op met hetzelfde ID.
         hotelManager.loadHotel(id, nieuwHotel);
+
+        // Geef het ID terug.
         return id;
     }
 
+    // Stelt de logger in.
     public void setLogger(ILogger logger) {
+
+        // Bewaar de logger zodat deze later gebruikt kan worden.
         this.logger = logger;
     }
 
-    // geef een hotel terug op basis van id
+    // Haal een hotel op aan de hand van zijn ID.
     public Hotel getHotel(int id) {
+
+        // Vraag het hotel op uit de HotelManager.
         return hotelManager.getHotel(id);
     }
 }

@@ -73,14 +73,26 @@ public class RuimteFactory {
             verdieping = 1;
         }
 
+        // bepaalt het volgende vrije kamernummer voor een bepaalde verdieping
         int volgendKamernummer;
+
+        // kijkt of er al eerder kamers zijn aangemaakt op deze verdieping
         if (volgendeKamernummersPerVerdieping.containsKey(verdieping)) {
+
+            // als er al een waarde bestaat: pak het laatst gebruikte kamernummer
             volgendKamernummer = volgendeKamernummersPerVerdieping.get(verdieping);
+
         } else {
+
+            // als dit de eerste kamer op deze verdieping is:
+            // start bij bijv. 101, 201, 301 enz. (verdieping * 100 + 1)
             volgendKamernummer = verdieping * 100 + 1;
         }
 
+        // sla het volgende kamernummer op (+1 zodat de volgende keer een nieuw nummer komt)
         volgendeKamernummersPerVerdieping.put(verdieping, volgendKamernummer + 1);
+
+        // geef het huidige kamernummer terug
         return volgendKamernummer;
     }
 }

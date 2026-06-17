@@ -45,14 +45,23 @@ public class BrandalarmService {
                     g.gebruiktLift = false;
                     // als in de lift: zet op het lift-vakje zodat evacueer() werkt
                     if (g.inLift && hotel.lift != null) {
+
+                        // bepaal het vakje direct naast de lift waar de gast moet uitstappen
                         int uitstapX = hotel.lift.posX + 1;
                         int uitstapY = hotel.lift.getHuidigeVerdieping();
+                        // haal het vakje uit het layout-systeem
                         Model.layout.Vakje uitstapVakje = hotel.layout.krijgVakje(uitstapX, uitstapY);
+                        // alleen verdergaan als het uitstapvakje bestaat
                         if (uitstapVakje != null) {
+                            // verwijder gast eerst uit het huidige vakje (oude positie opruimen)
                             if (g.huidigVakje != null) g.huidigVakje.verwijderPersoon(g);
+                            // update de nieuwe positie van de gast
                             g.huidigVakje = uitstapVakje;
+                            // plaats de gast op het nieuwe vakje
                             uitstapVakje.voegPersoonToe(g);
                         }
+
+                        // gast zit niet meer in de lift
                         g.inLift = false;
                     }
                 }

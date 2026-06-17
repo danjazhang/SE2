@@ -54,13 +54,33 @@ public class LayoutParser {
         }
     }
 
+    // Zet een string met coördinaten (bijv. "3,5") om naar een int-array [x, y]
+// Wordt gebruikt om posities uit tekst/config te kunnen lezen
     private int[] parsePositie(String positie) {
+
+        // Splitst de string op de komma, zodat je twee losse delen krijgt
         String[] delen = positie.split(",");
-        return new int[]{Integer.parseInt(delen[0].trim()), Integer.parseInt(delen[1].trim())};
+
+        // trim() haalt spaties weg en parseInt zet tekst om naar een getal
+        // resultaat: [x, y]
+        return new int[]{
+                Integer.parseInt(delen[0].trim()),
+                Integer.parseInt(delen[1].trim())
+        };
     }
 
+    // Zet een string met afmetingen (bijv. "10,4") om naar een int-array [breedte, hoogte]
+// Wordt gebruikt om dimensies van ruimtes of objecten in te lezen
     private int[] parseDimensie(String dimensie) {
+
+        // Splitst de string op de komma in twee delen
         String[] delen = dimensie.split(",");
-        return new int[]{Integer.parseInt(delen[0].trim()), Integer.parseInt(delen[1].trim())};
+
+        // Zet beide delen om naar integers en verwijdert spaties
+        // resultaat: [breedte, hoogte]
+        return new int[]{
+                Integer.parseInt(delen[0].trim()),
+                Integer.parseInt(delen[1].trim())
+        };
     }
 }

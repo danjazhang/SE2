@@ -5,130 +5,197 @@ import Model.layout.Vakje;
 import Model.persoon.Gast;
 import java.util.*;
 
+// De Lift-klasse simuleert een lift in het hotel
+// Hij verplaatst zich tussen verdiepingen en vervoert gasten
 public class Lift extends Ruimte {
 
-    // huidige y-positie van de lift-cabine in het grid
+    // huidige verdieping (y-positie) waar de lift zich bevindt
     private int huidigeVerdieping = 1;
 
-    // y-positie van de lobby — lift start hier en keert hier terug als niemand wacht
+    // lobby-verdieping (startpunt en standaard terugkeerpunt van de lift)
     private int lobbyVerdieping = 1;
 
-    // alleen gasten gebruiken de lift, dus List<Gast> in plaats van List<Persoon>
+    // lijst met gasten die momenteel in de lift zitten
     private List<Gast> passagiers = new ArrayList<>();
 
-    // wachtrijen per y-positie — alleen gasten wachten op de lift
+    // wachtrijen per verdieping (key = y-positie, value = queue van wachtende gasten)
     private Map<Integer, Queue<Gast>> wachtrijen = new HashMap<>();
 
+    // referentie naar het hotel (nodig om vakjes en layout te benaderen)
     private Hotel hotel;
+
+    // bepaalt of de lift buiten werking is (bijv. brandalarm)
     private boolean uitBedrijf = false;
 
-    // statusmachine: RIJDEN → UITSTAPPEN (1 tick wachten) → INSTAPPEN (1 tick wachten) → RIJDEN
+    // statusmachine van de lift:
+    // RIJDEN = bewegen tussen verdiepingen
+    // UITSTAPPEN = passagiers laten uitstappen
+    // INSTAPPEN = nieuwe passagiers laten instappen
     private enum LiftStatus { RIJDEN, UITSTAPPEN, INSTAPPEN }
+
+    // huidige status van de lift
     private LiftStatus status = LiftStatus.RIJDEN;
 
+    // constructor: koppelt lift aan hotel
     public Lift(Hotel hotel) {
         this.hotel = hotel;
+
+        // standaard start op verdieping 1
         this.huidigeVerdieping = 1;
+
+        // lobby is ook standaard verdieping 1
         this.lobbyVerdieping = 1;
     }
 
-    // stel de y-rij van de lobby in — lift start en keert terug naar deze positie
+    // zet de lobbyverdieping en zet de lift daar ook meteen neer
     public void setLobbyVerdieping(int y) {
         this.lobbyVerdieping = y;
         this.huidigeVerdieping = y;
     }
 
+    // zet lift aan of uit (bijv. brandalarm)
     public void zetUitBedrijf(boolean uitBedrijf) {
         this.uitBedrijf = uitBedrijf;
     }
 
-    // initialiseer wachtrijen voor alle y-rijen
+    // maakt wachtrijen aan voor alle verdiepingen in het hotel
     public void initWachtrijen(int maxY) {
         for (int i = 1; i <= maxY; i++) {
             wachtrijen.put(i, new LinkedList<>());
         }
     }
 
-    // voeg gast toe aan de wachtrij voor de opgegeven y-rij
+    // roept de lift naar een bepaalde verdieping voor een gast
     public void roep(Gast g, int verdieping) {
+
+        // als lift uit staat: negeren
         if (uitBedrijf) return;
+        // zorg dat er een wachtrij bestaat voor deze verdieping
         wachtrijen.putIfAbsent(verdieping, new LinkedList<>());
         Queue<Gast> q = wachtrijen.get(verdieping);
+        // voorkom dubbele entries in de wachtrij
         if (!q.contains(g)) q.add(g);
     }
 
-    // reset alle wachtrijen — aanroepen na brandalarm zodat oude oproepen verdwijnen
+    // reset alle wachtrijen (bijv. na brandalarm)
     public void resetWachtrijen() {
+
+        // maak alle queues leeg
         for (Queue<Gast> q : wachtrijen.values()) {
             q.clear();
         }
+        // reset status van de lift
         status = LiftStatus.RIJDEN;
     }
 
-    // verwijder een gast uit alle wachtrijen en passagierslijst (bij summoning/verwijdering)
+    // verwijdert een gast uit alle wachtrijen en uit de lift zelf
     public void verwijderUitWachtrij(Gast g) {
+
+        // loop door alle wachtrijen en verwijder gast
         for (Queue<Gast> q : wachtrijen.values()) {
             q.remove(g);
         }
+        // verwijder ook uit passagiers (als hij in de lift zit)
         passagiers.remove(g);
     }
 
-    // één simulatie-tick
+    // ------------------------------------------------------------
+    // SIMULATIE TICK
+    // ------------------------------------------------------------
     public void tik() {
+
+        // als lift uit bedrijf is (bijv. brandalarm)
         if (uitBedrijf) {
-            // tijdens alarm: alleen huidige passagiers afleveren
+
+            // alleen bestaande passagiers nog afleveren
             if (!passagiers.isEmpty()) {
+                // eerste passagier bepaalt bestemming
                 int doel = passagiers.get(0).gewensteVerdieping;
+                // beweeg 1 stap richting doelverdieping
                 if (huidigeVerdieping < doel) huidigeVerdieping++;
                 else if (huidigeVerdieping > doel) huidigeVerdieping--;
+                // update positie van passagiers in de wereld
                 updatePassagierPosities();
+                // laat passagiers uitstappen als ze op juiste verdieping zijn
                 uitstappen();
             }
+
             return;
         }
 
-        // statusmachine: 1 tick voor uitstappen, dan direct instappen
+        // ------------------------------------------------------------
+        // STATUSMACHINE
+        // ------------------------------------------------------------
+
+        // als lift net moet laten uitstappen
         if (status == LiftStatus.UITSTAPPEN) {
+            // laat mensen uitstappen
             uitstappen();
-            // direct instappen als iemand wacht, anders terug naar RIJDEN
+            // daarna meteen instappen als mogelijk
             instappen();
+            // terug naar rijden
             status = LiftStatus.RIJDEN;
             return;
         }
 
-        // RIJDEN: beweeg naar doel
+        // ------------------------------------------------------------
+        // BEWEGEN
+        // ------------------------------------------------------------
+
+        // bepaal waar de lift heen moet
         int doel = bepaalDoel();
+
+        // als nog niet op bestemming
         if (huidigeVerdieping != doel) {
+
+            // beweeg 1 verdieping omhoog of omlaag
             if (huidigeVerdieping < doel) huidigeVerdieping++;
             else huidigeVerdieping--;
             updatePassagierPosities();
+
         } else {
-            // op doel aangekomen: direct uitstappen én instappen
+
+            // aangekomen: laat mensen in- en uitstappen
             updatePassagierPosities();
             uitstappen();
             instappen();
         }
     }
 
-    // update posities van passagiers naar het huidige liftvakje
+    // ------------------------------------------------------------
+    // PASSAGIERS POSITIES UPDATEN
+    // ------------------------------------------------------------
+
+    // zet alle passagiers op het juiste vakje van de lift
     private void updatePassagierPosities() {
+
+        // vind vakje van lift op huidige verdieping
         Vakje liftVakje = hotel.layout.krijgVakje(this.posX, huidigeVerdieping);
+
+        // update positie van elke gast in de lift
         for (Gast g : passagiers) {
+            // verwijder oude positie
             if (g.huidigVakje != null) g.huidigVakje.verwijderPersoon(g);
+            // zet nieuwe positie
             g.huidigVakje = liftVakje;
+            // plaats in nieuw vakje
             if (liftVakje != null) liftVakje.voegPersoonToe(g);
         }
     }
 
+    // ------------------------------------------------------------
+    // DOELBEPALING
+    // ------------------------------------------------------------
+
     /**
-     * Bepaal doelverdieping:
-     * 1. passagiers aan boord → ga naar hun gewenste y
-     * 2. lobby heeft prioriteit als er iemand wacht (gasten komen altijd van de lobby)
-     * 3. dichtstbijzijnde andere wachtrij
-     * 4. niemand → terug naar lobby
+     * bepaalt waar de lift heen moet:
+     * 1. als er passagiers zijn → naar hun doelverdieping
+     * 2. anders → naar wachtrijen
+     * 3. anders → terug naar lobby
      */
     private int bepaalDoel() {
-        // passagiers aan boord
+
+        // als er passagiers zijn → volg eerste passagier
         if (!passagiers.isEmpty()) {
             return passagiers.get(0).gewensteVerdieping;
         }
@@ -137,78 +204,137 @@ public class Lift extends Ruimte {
         int best = -1;
         int minDist = Integer.MAX_VALUE;
 
+        // zoek dichtstbijzijnde wachtrij met gasten
         for (Map.Entry<Integer, Queue<Gast>> entry : wachtrijen.entrySet()) {
+
             if (!heeftGeldigeWachter(entry.getValue())) continue;
+
             int y = entry.getKey();
+
+            // lobby heeft prioriteit
             if (y == lobbyVerdieping) {
                 lobbyMetWachter = y;
             }
+
+            // bereken afstand tot huidige positie
             int dist = Math.abs(huidigeVerdieping - y);
+
             if (dist < minDist) {
                 minDist = dist;
                 best = y;
             }
         }
 
-        // lobby heeft altijd prioriteit als er niemand aan boord is
+        // eerst lobby, anders dichtstbijzijnde wachtrij
         if (lobbyMetWachter != -1) return lobbyMetWachter;
         if (best != -1) return best;
+
+        // default: ga naar lobby
         return lobbyVerdieping;
     }
 
-    // controleer of een wachtrij minstens één gast heeft met een geldig huidigVakje
+    // controleert of wachtrij echt bruikbare gasten bevat
     private boolean heeftGeldigeWachter(Queue<Gast> q) {
+
         if (q == null || q.isEmpty()) return false;
         for (Gast g : q) {
             if (g.huidigVakje != null) return true;
         }
+
         return false;
     }
 
-    // laat passagiers uitstappen op hun gewenste y-positie
+    // ------------------------------------------------------------
+    // UITSTAPPEN
+    // ------------------------------------------------------------
+
+    // laat gasten uitstappen op juiste verdieping
     private void uitstappen() {
+
         Iterator<Gast> it = passagiers.iterator();
+
         while (it.hasNext()) {
+
             Gast g = it.next();
+
+            // als gast op juiste verdieping is
             if (g.gewensteVerdieping == huidigeVerdieping) {
+
                 it.remove();
+                // reset lift-status van gast
                 g.inLift = false;
                 g.gebruiktLift = false;
+
+                // markeer dat hij moet uitstappen
                 g.moetUitstappen = true;
             }
         }
     }
 
-    // laat wachtende gasten instappen als ze fysiek naast de lift staan
-    // verwijder ook gasten met null huidigVakje (gesummond/verwijderd)
+    // ------------------------------------------------------------
+    // INSTAPPEN
+    // ------------------------------------------------------------
+
+    // laat gasten instappen als ze naast de lift staan
     private void instappen() {
+
         Queue<Gast> q = wachtrijen.get(huidigeVerdieping);
+
         if (q == null || q.isEmpty()) return;
+
+        // vakje van lift op huidige verdieping
         Vakje liftVakje = hotel.layout.krijgVakje(this.posX, huidigeVerdieping);
+
         Iterator<Gast> it = q.iterator();
+
         while (it.hasNext()) {
+
             Gast g = it.next();
-            // verwijder gasten die niet meer bestaan
-            if (g.huidigVakje == null) { it.remove(); continue; }
-            // gast moet op de wachtplek staan: x = posX+1, zelfde y
+
+            // verwijder als gast niet meer bestaat
+            if (g.huidigVakje == null) {
+                it.remove();
+                continue;
+            }
+
+            // gast moet fysiek naast lift staan
             if (g.huidigVakje.x != this.posX + 1) continue;
             if (g.huidigVakje.y != huidigeVerdieping) continue;
+
+            // haal uit wachtrij
             it.remove();
+
+            // verplaats gast in lift
             g.huidigVakje.verwijderPersoon(g);
             g.huidigVakje = liftVakje;
+
             if (liftVakje != null) liftVakje.voegPersoonToe(g);
+
+            // voeg toe aan passagiers
             passagiers.add(g);
+
+            // update status
             g.inLift = true;
             g.wachtOpLift = false;
         }
     }
 
-    public int getHuidigeVerdieping() { return huidigeVerdieping; }
+    // ------------------------------------------------------------
+    // GETTERS
+    // ------------------------------------------------------------
 
-    // geeft een kopie terug zodat de originele lijst niet gewijzigd kan worden van buiten
-    public List<Gast> getPassagiers() { return new ArrayList<>(passagiers); }
+    public int getHuidigeVerdieping() {
+        return huidigeVerdieping;
+    }
 
+    // kopie van passagierslijst (veilig voor buitengebruik)
+    public List<Gast> getPassagiers() {
+        return new ArrayList<>(passagiers);
+    }
+
+    // aantal wachtende gasten op een verdieping
     public int aantalWachtend(int verdieping) {
+
         Queue<Gast> q = wachtrijen.get(verdieping);
 
         if (q == null) {
