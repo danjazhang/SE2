@@ -59,9 +59,6 @@ public class Gast extends Persoon {
         this.kamer = null;
     }
 
-    // Placeholder activiteit
-    public void gaNaarActiviteit() {}
-
     // Laat gast naar kamer gaan
     public void gaNaarkamer() {
 

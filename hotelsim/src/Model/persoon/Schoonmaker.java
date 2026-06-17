@@ -137,8 +137,6 @@ public class Schoonmaker extends Persoon {
         }
     }
 
-    public void gaNaarOptimalePositie() {}
-
     @Override
     public boolean isSchoonmaker() { return true; }
 

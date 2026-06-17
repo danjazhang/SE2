@@ -355,11 +355,6 @@ public class SchoonmakerTest {
         assertDoesNotThrow(() -> new Schoonmaker().setHuidigeTijd(42));
     }
 
-    // gaNaarOptimalePositie: geen crash
-    @Test void testGaNaarOptimalePositie() {
-        assertDoesNotThrow(() -> new Schoonmaker().gaNaarOptimalePositie());
-    }
-
     // --- getStatusTekst ---
 
     // bevat "Schoonmaker"
