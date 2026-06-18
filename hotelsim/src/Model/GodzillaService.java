@@ -28,6 +28,10 @@ public class GodzillaService {
     // Begint bij kolom 1 (de meest linkse kolom).
     private int volgendeKolom = 1;
 
+    // Bepaalt hoeveel ticks er tussen twee nieuwe brandkolommen zitten.
+    // Met 3 betekent dit: pas elke derde tick komt er een nieuwe kolom bij.
+    private int brandInterval = 3;
+
     // Constructor: sla het hotel en de logger op.
     public GodzillaService(Hotel hotel, ILogger logger) {
         this.hotel = hotel;
@@ -49,6 +53,9 @@ public class GodzillaService {
     public void behandel(int currentHTE) {
         // Als alle kolommen al branden, stop dan: het hotel is volledig afgebrand.
         if (volgendeKolom > hotel.breedte) return;
+
+        // Laat het vuur niet op elke tick groeien, maar alleen op vaste intervallen.
+        if (currentHTE % brandInterval != 0) return;
 
         brandKolom(currentHTE);
     }
