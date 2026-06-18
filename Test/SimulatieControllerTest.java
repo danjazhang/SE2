@@ -637,7 +637,8 @@ public class SimulatieControllerTest {
         assertEquals(-1, g.summonTick);
     }
 
-    // tik: gast met eindbestemming wordt niet gesummoned
+    // tik: gast met eindbestemming EN gebruiktLift=true wordt niet gesummoned
+    // (eindbestemming alleen beschermt niet meer; gast moet ook in lift-toestand zitten)
     @Test void testGastMetEindbestemmingWordtNietGesummoned() {
         Hotel hotel = maakHotel();
         sc.setMaxWachtTicks(1);
@@ -649,6 +650,7 @@ public class SimulatieControllerTest {
         g.setPathfinder(hotel.pathfinder);
         g.zetStartPositie(hotel.layout.krijgVakje(3, 3));
         g.eindbestemming = r;
+        g.inLift = true; // gast zit in de lift → niet stilstaand
         hotel.voegPersoonToe(g);
         hc.setHotel(hotel);
         for (int i = 0; i < 5; i++) sc.tik();

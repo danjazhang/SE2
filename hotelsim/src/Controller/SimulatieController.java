@@ -549,7 +549,6 @@ public class SimulatieController {
             // ======================================================
             // CHECK: IS DE GAST STILSTAAND?
             // ======================================================
-            // we bepalen hier of de gast “vast” staat zonder actie
 
             boolean inRuimte =
                     g.huidigVakje != null &&
@@ -558,33 +557,30 @@ public class SimulatieController {
                             !(g.huidigVakje.ruimte instanceof Model.ruimte.Trap) &&
                             !(g.huidigVakje.ruimte instanceof Model.ruimte.Lobby);
 
-            // check of gast buiten het hotel staat
             boolean buiten =
                     hotel.lobby != null &&
                             g.huidigVakje != null &&
                             g.huidigVakje.y == hotel.lobby.posY - 1;
 
-            // definitie van “stilstaand”:
-            // gast doet niks, heeft geen route en zit niet in speciale toestand
+            // stilstaand: geen doelvakje, niet in lift, niet uitcheckend,
+            // niet in een ruimte, niet buiten
             boolean stilstaand =
                     g.doelVakje == null &&
                             !g.inLift &&
                             !g.uitcheckend &&
                             !inRuimte &&
                             !buiten &&
-                            g.eindbestemming == null &&
-                            !g.keertTerugNaAlarm &&
                             g.huidigVakje != null;
 
             // ======================================================
-            // STILSTAANDE GAST → WACHTTELLER OPBOUWEN
+            // STILSTAANDE GAST -> WACHTTELLER OPBOUWEN
             // ======================================================
             if (stilstaand) {
 
                 // verhoog aantal ticks dat gast stilstaat
                 g.wachtTicks++;
 
-                // als te lang stil → summon starten
+                // als te lang stil -> summon starten
                 if (g.wachtTicks >= maxWachtTicks) {
 
                     // start summoning animatie
@@ -595,7 +591,7 @@ public class SimulatieController {
                 }
 
             } else {
-                // als gast wel beweegt of bezig is → reset wachtteller
+                // gast beweegt of zit in speciale toestand -> reset wachtteller
                 g.wachtTicks = 0;
             }
         }
