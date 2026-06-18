@@ -1,17 +1,16 @@
 package Model.events;
 
 // Abstracte basisklasse voor alle interne eind events in het hotel
-// De eind events zoals FilmEindEvent erven van deze klasse
 // Ze worden aangemaakt door de ruimtes zelf als de eindtijd bereikt is
 public abstract class InternEvent {
 
-    // tijdstip waarop het event plaatsvindt
+    // variabele die het tijdstip opslaat
     private int tijd;
 
-    // gastnummer van de gast die het event veroorzaakt
+    // variable die het gastid opslaat
     private int gastId;
 
-    // constructor: sla tijdstip en gastnummer op
+    // constructor: slaat meegegeven t en g op in de variabele van dit object
     public InternEvent(int tijd, int gastId) {
         this.tijd = tijd;
         this.gastId = gastId;

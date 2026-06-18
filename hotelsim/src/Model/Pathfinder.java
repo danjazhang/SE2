@@ -9,34 +9,45 @@ import Model.ruimte.*;
 
 public class Pathfinder {
 
+    //atributen opgeslagen als variabelen
     private Layout layout;
     private Hotel hotel;
 
+    //constructor
     public Pathfinder(Hotel hotel) {
+        //haal hotel en layout uit hotel op en sla op in deze objecten
         this.hotel = hotel;
         this.layout = hotel.layout;
     }
 
     // bepaal volgende stap richting doel
     public Vakje volgendeStap(Vakje huidig, Vakje doel) {
+        // als h en d niet bestaan, geef null terug
         if (huidig == null || doel == null) return null;
+        // sla x en y van huidige vakje op
         int x = huidig.x;
         int y = huidig.y;
 
-        // op de trap: beweeg verticaal richting doel-y, of horizontaal als y al gelijk is
+        // als huidige ruimte onderdeel is van een trap
         if (huidig.ruimte instanceof Trap) {
+            //als huidige y lager is dan, ga 1 vakje omhoog
             if (y < doel.y) return layout.krijgVakje(x, y + 1);
+            //als huidige y hoger is dan doel y, 1 vakje omlaag
             if (y > doel.y) return layout.krijgVakje(x, y - 1);
-            // zelfde y: verlaat de trap horizontaal richting doel
+            //als x kleiner is dan doel x, 1 vakje naar recht
             if (x < doel.x) return layout.krijgVakje(x + 1, y);
+            //als x groter is dan doel x, 1 vakje naar links
             if (x > doel.x) return layout.krijgVakje(x - 1, y);
             return null;
         }
 
-        // zelfde y als doel: beweeg horizontaal
+        // als huidige y gelijk is aan doel y
         if (y == doel.y) {
+            //als x kleiner is dan doel x, verhoog met 1
             if (x < doel.x) x++;
+            // anders als x groter is dan doel x, verlaag met 1
             else if (x > doel.x) x--;
+            //geef vakje op nieuwe positie terug
             return layout.krijgVakje(x, y);
         }
 
@@ -46,8 +57,9 @@ public class Pathfinder {
             if (y > doel.y) return layout.krijgVakje(x, y - 1);
         }
 
-        // op leeg vakje/lobby: beweeg horizontaal richting doel-x
+        // als x niet gelijk is aan doel x
         if (x != doel.x) {
+            // als x kleiner is dan doel x, ga stap naar links
             if (x < doel.x) return layout.krijgVakje(x + 1, y);
             return layout.krijgVakje(x - 1, y);
         }
@@ -88,49 +100,107 @@ public class Pathfinder {
     }
 
     // reset lift-gerelateerde status als de gast wacht op de lift maar een nieuwe route krijgt
+// dit voorkomt dat een gast "vast blijft hangen" in een oude lift-aanvraag
     private void resetLiftStatusAlsNodig(Persoon p) {
+
+        // alleen gasten gebruiken de lift-logica
         if (!(p instanceof Gast)) return;
+
         Gast g = (Gast) p;
+
+        // als de gast wel een lift heeft aangevraagd maar nog niet in de lift zit
         if (g.gebruiktLift && !g.inLift) {
+
+            // reset alle lift-statussen zodat hij opnieuw kan plannen
             g.gebruiktLift = false;
             g.wachtOpLift  = false;
+
+            // haal de gast ook uit de lift-wachtrij (anders blijft hij daar hangen)
             if (hotel.lift != null) hotel.lift.verwijderUitWachtrij(g);
         }
     }
 
-    // route via lift
+    // route berekenen via de lift
+// wordt gebruikt als de lift de snelste of gewenste optie is
     private void routeViaLift(Persoon p, Vakje start, Vakje doel) {
+
         Gast g = (Gast) p;
+
+        // zoek de wachtruimte (vakje naast de lift waar gasten moeten wachten)
         Vakje liftVakje = vindLiftWachtplek(start.y);
-        if (liftVakje == null) { routeViaTrap(p, start, doel); return; }
+
+        // als er geen lift beschikbaar is → fallback naar trap
+        if (liftVakje == null) {
+            routeViaTrap(p, start, doel);
+            return;
+        }
+
+        // gast gebruikt nu de lift
         g.gebruiktLift = true;
+
+        // onthoud naar welke verdieping de gast wil
         g.gewensteVerdieping = doel.y;
+
+        // eerste doel: wachten bij de lift
         p.zetDoel(liftVakje);
+
+        // activeer de lift en roep hem naar de startverdieping
         hotel.lift.roep(g, start.y);
     }
 
-    // route via trap
+    // route berekenen via trappen in plaats van lift
+// kan meerdere stappen bevatten als meerdere verdiepingen nodig zijn
     private void routeViaTrap(Persoon p, Vakje start, Vakje doel) {
+
+        // eerste trap op huidige verdieping zoeken
         Vakje trap1 = vindTrap(start.y);
+
+        // tweede trap op doelverdieping zoeken
         Vakje trap2 = vindTrap(doel.y);
+
+        // als er een trap op startverdieping is → eerst daarheen
         if (trap1 != null) p.zetDoel(trap1);
+
+        // als er een andere trap op doelverdieping is → als tussenstap toevoegen
         if (trap2 != null && !trap2.equals(trap1)) p.voegTussendoelToe(trap2);
+
+        // uiteindelijke bestemming blijft altijd het einddoel
         p.voegTussendoelToe(doel);
     }
 
+    // zoekt de wachtruimte naast de lift op een bepaalde verdieping
     private Vakje vindLiftWachtplek(int y) {
+
+        // door alle ruimtes in het hotel lopen
         for (Ruimte r : hotel.ruimtes) {
-            if (r instanceof Lift) return layout.krijgVakje(r.posX + 1, y);
+
+            // we zoeken de lift-ruimte zelf
+            if (r instanceof Lift) {
+
+                // wachtplek zit naast de lift (posX + 1) op de juiste verdieping (y)
+                return layout.krijgVakje(r.posX + 1, y);
+            }
         }
+
+        // geen lift gevonden → geen wachtplek beschikbaar
         return null;
     }
 
+    // schat hoe lang het duurt voordat een gast met de lift op bestemming is
     private int schatLiftTijd(Vakje start, Vakje doel) {
+
         Lift lift = hotel.lift;
+
+        // tijd tot de lift naar de startverdieping komt
         int wacht = Math.abs(lift.getHuidigeVerdieping() - start.y);
+
+        // tijd om van startverdieping naar doelverdieping te reizen
         int rit   = Math.abs(start.y - doel.y);
+
+        // extra wachttijd door andere mensen in de lift-queue
         int queue = lift.aantalWachtend(start.y);
-        // +2 voor instappen en uitstappen (statusmachine ticks)
+
+        // +2 ticks voor instappen en uitstappen (animatie / statusovergangen)
         return wacht + rit + queue + 2;
     }
 
